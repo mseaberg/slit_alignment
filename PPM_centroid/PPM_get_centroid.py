@@ -240,7 +240,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
     def change_state(self):
         if self.runButton.text() == 'Run':
 
-            self.registration = RunRegistration(self.yag1, self.data_dict)
+            self.registration = RunRegistration(self.data_dict)
             self.thread = QtCore.QThread()
             self.thread.start()
 
@@ -338,14 +338,13 @@ class RunRegistration(QtCore.QObject):
 
     sig = QtCore.pyqtSignal(dict)
 
-    def __init__(self, yag, data_dict):
+    def __init__(self, data_dict):
         super(RunRegistration, self).__init__()
 
         #self.my_signal = QtCore.Signal()
 
         #self.gui = gui
 
-        self.yag1 = yag
         self.epics_name = ''
         if len(sys.argv)>1:
             self.cam_name = sys.argv[1]
