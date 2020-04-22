@@ -24,7 +24,6 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         super(App, self).__init__()
         self.setupUi(self)
 
-
         self.runButton.clicked.connect(self.change_state)
 
         self.minValue.returnPressed.connect(self.set_min)
@@ -198,7 +197,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
     def change_state(self):
         if self.runButton.text() == 'Run':
 
-            self.registration = RunRegistration(self.data_dict)
+            self.registration = RunProcessing(self.data_dict)
             self.thread = QtCore.QThread()
             self.thread.start()
 
@@ -292,12 +291,12 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.label.setText(data_dict['tx'])
 
 
-class RunRegistration(QtCore.QObject):
+class RunProcessing(QtCore.QObject):
 
     sig = QtCore.pyqtSignal(dict)
 
     def __init__(self, data_dict):
-        super(RunRegistration, self).__init__()
+        super(RunProcessing, self).__init__()
 
         #self.my_signal = QtCore.Signal()
 
