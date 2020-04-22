@@ -93,48 +93,6 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.pix_size_text.setPos(300,.5)
         self.view0.addItem(self.pix_size_text)
 
-
-        # Top left image
-        self.view1 = self.canvas.addViewBox(row=0,col=3,rowspan=1,colspan=1)
-        self.view1.setAspectLocked(True)
-        self.view1.setRange(QtCore.QRectF(0,0, 90, 90))
-        self.img1 = pg.ImageItem(border='w',title='Top Left')
-        self.view1.addItem(self.img1)
-        recttl = QtWidgets.QGraphicsRectItem(0, 0, 90, 90)
-        recttl.setPen(QPen(Qt.red, 2, Qt.SolidLine))
-        self.view1.addItem(recttl)
-
-
-        # Top right image
-        self.view2 = self.canvas.addViewBox(row=0,col=4,rowspan=1,colspan=1)
-        self.view2.setAspectLocked(True)
-        self.view2.setRange(QtCore.QRectF(0,0, 90, 90))
-        self.img2 = pg.ImageItem(border='w',title='Top Right')
-        self.view2.addItem(self.img2)
-        recttr = QtWidgets.QGraphicsRectItem(0, 0, 90, 90)
-        recttr.setPen(QPen(Qt.green, 2, Qt.SolidLine))
-        self.view2.addItem(recttr)
-
-        # Bottom left image
-        self.view3 = self.canvas.addViewBox(row=1,col=3,rowspan=1,colspan=1)
-        self.view3.setAspectLocked(True)
-        self.view3.setRange(QtCore.QRectF(0,0, 90, 90))
-        self.img3 = pg.ImageItem(border='w',title='Bottom Left')
-        self.view3.addItem(self.img3)
-        rectbl = QtWidgets.QGraphicsRectItem(0, 0, 90, 90)
-        rectbl.setPen(QPen(Qt.cyan, 2, Qt.SolidLine))
-        self.view3.addItem(rectbl)
-
-        # Bottom right image
-        self.view4 = self.canvas.addViewBox(row=1,col=4,rowspan=1,colspan=1)
-        self.view4.setAspectLocked(True)
-        self.view4.setRange(QtCore.QRectF(0,0, 90, 90))
-        self.img4 = pg.ImageItem(border='w',title='Bottom Right')
-        self.view4.addItem(self.img4)
-        rectbr = QtWidgets.QGraphicsRectItem(0, 0, 90, 90)
-        rectbr.setPen(QPen(Qt.darkMagenta, 2, Qt.SolidLine))
-        self.view4.addItem(rectbr)
-
         #  contrast plot
         self.contrast_plot = self.canvas.addPlot(row=0,col=3,rowspan=1,colspan=2)
 
