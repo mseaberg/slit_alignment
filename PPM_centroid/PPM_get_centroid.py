@@ -37,60 +37,6 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.view0.setRange(QtCore.QRectF(0,0, 2048, 2048))
         self.img0 = pg.ImageItem(border='w')
         self.view0.addItem(self.img0)
-        rect1 = QtWidgets.QGraphicsRectItem(0,0,160,160)
-        rect1.setPen(QPen(Qt.cyan, 8, Qt.SolidLine))
-        rect2 = QtWidgets.QGraphicsRectItem(1888,0,160,160)
-        rect2.setPen(QPen(Qt.darkMagenta, 8, Qt.SolidLine))
-        rect3 = QtWidgets.QGraphicsRectItem(0,1888,160,160)
-        rect3.setPen(QPen(Qt.red, 8, Qt.SolidLine))
-        rect4 = QtWidgets.QGraphicsRectItem(1888,1888,160,160)
-        rect4.setPen(QPen(Qt.green, 8, Qt.SolidLine))
-
-
-        #circ1 = QtWidgets.QGraphicsEllipseItem(1024-25,1024-25,50,50)
-        #circ1.setPen(QPen(Qt.green, 8, Qt.SolidLine))
-        crossx = QtWidgets.QGraphicsLineItem(1024-25,1024,1024+25,1024)
-        crossy = QtWidgets.QGraphicsLineItem(1024,1024-25,1024,1024+25)
-        crossx.setPen(QPen(Qt.green, 8, Qt.SolidLine))
-        crossy.setPen(QPen(Qt.green, 8, Qt.SolidLine))
-
-        
-        #self.circ0 = QtWidgets.QGraphicsEllipseItem(1024-25,1024-25,50,50)
-        #self.circ0.setPen(QPen(Qt.red, 8, Qt.SolidLine))
-        self.crossx = QtWidgets.QGraphicsLineItem(1024-25,1024,1024+25,1024)
-        self.crossy = QtWidgets.QGraphicsLineItem(1024,1024-25,1024,1024+25)
-        self.crossx.setPen(QPen(Qt.red, 8, Qt.SolidLine))
-        self.crossy.setPen(QPen(Qt.red, 8, Qt.SolidLine))
-
-        
-        self.circ1 = QtWidgets.QGraphicsRectItem(256-25,1792-25,50,50)
-        self.circ1.setPen(QPen(Qt.red, 8, Qt.SolidLine))
-        self.circ2 = QtWidgets.QGraphicsRectItem(1792-25,1792-25,50,50)
-        self.circ2.setPen(QPen(Qt.green, 8, Qt.SolidLine))
-        self.circ3 = QtWidgets.QGraphicsRectItem(256-25,256-25,50,50)
-        self.circ3.setPen(QPen(Qt.cyan, 8, Qt.SolidLine))
-        self.circ4 = QtWidgets.QGraphicsRectItem(1792-25,256-25,50,50)
-        self.circ4.setPen(QPen(Qt.darkMagenta, 8, Qt.SolidLine))
-        self.view0.addItem(rect1)
-        self.view0.addItem(rect2)
-        self.view0.addItem(rect3)
-        self.view0.addItem(rect4)
-        #self.view0.addItem(circ1)
-        self.view0.addItem(crossx)
-        self.view0.addItem(crossy)
-        self.view0.addItem(self.crossx)
-        self.view0.addItem(self.crossy)
-        #self.view0.addItem(self.circ0)
-        self.view0.addItem(self.circ1)
-        self.view0.addItem(self.circ2)
-        self.view0.addItem(self.circ3)
-        self.view0.addItem(self.circ4)
-
-        self.pix_size_text = pg.TextItem('Pixel size: %.2f microns' % 0.0,
-                color=(200,200,200), border='c', fill='b',anchor=(0,1))
-        self.pix_size_text.setFont(QtGui.QFont("", 10, QtGui.QFont.Bold))
-        self.pix_size_text.setPos(300,.5)
-        self.view0.addItem(self.pix_size_text)
 
         #  contrast plot
         self.contrast_plot = self.canvas.addPlot(row=0,col=3,rowspan=1,colspan=2)
@@ -100,7 +46,6 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setFamily('Arial')
-
 
         xaxis = self.contrast_plot.getAxis('bottom')
         xaxis.setLabel(text='Time (s)',**labelStyle)
@@ -116,7 +61,6 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.hplot = {}
         names = ['Top Left','Top Right','Bottom Left','Bottom Right']
         colors = ['r','g','c','m']
-        
         
         #legend = self.contrast_plot.addLegend()
         for i in range(1):
