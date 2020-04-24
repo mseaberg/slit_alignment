@@ -163,17 +163,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.imagerComboBox.addItems(self.imager_list)
 
         self.data_dict = {}
-        self.data_dict['im0'] = im0
-        self.data_dict['contrast'] = np.zeros((4, 100))
-        self.data_dict['rotation'] = np.zeros((4,100))
-        self.data_dict['cx'] = np.empty(100)
-        self.data_dict['cy'] = np.empty(100)
-        self.data_dict['timestamps'] = np.empty(100)
-        self.data_dict['iteration'] = np.tile(np.linspace(-99, 0, 100), (4, 1))
-        self.data_dict['counter'] = 0.
-        self.data_dict['center'] = np.zeros((4,2))
-        self.data_dict['scale'] = np.zeros(4)
-        self.data_dict['pixSize'] = 0.0
+        self.reset_data_dict()
         #self.data_dict['centering'] = np.zeros(2)
         self.set_min()
         self.set_max()
@@ -191,6 +181,19 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         # update imager
         self.imager = self.imager_list[index]
         self.imagerpv = self.imagerpv_list[index]
+        # reset data_dict
+
+    def reset_data_dict(self):
+        self.data_dict['contrast'] = np.zeros((4, 100))
+        self.data_dict['rotation'] = np.zeros((4, 100))
+        self.data_dict['cx'] = np.empty(100)
+        self.data_dict['cy'] = np.empty(100)
+        self.data_dict['timestamps'] = np.empty(100)
+        self.data_dict['iteration'] = np.tile(np.linspace(-99, 0, 100), (4, 1))
+        self.data_dict['counter'] = 0.
+        self.data_dict['center'] = np.zeros((4, 2))
+        self.data_dict['scale'] = np.zeros(4)
+        self.data_dict['pixSize'] = 0.0
 
 
     def change_state(self):
