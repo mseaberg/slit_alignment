@@ -32,9 +32,9 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save_image)
 
         # connect line combo box
-        self.lineComboBox.currentIndexChanged(self.change_line)
+        self.lineComboBox.currentIndexChanged.connect(self.change_line)
         # connect imager combo box
-        self.imagerComboBox.currentIndexChanged(self.change_imager)
+        self.imagerComboBox.currentIndexChanged.connect(self.change_imager)
 
         # Full image
         self.view0 = self.canvas.addViewBox(row=0,col=0,rowspan=2,colspan=3)
@@ -130,7 +130,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         # imager combo box
         self.line_list = ['L0', 'L1', 'K0', 'K1', 'K2', 'K3', 'K4']
         self.line = 'L0'
-        self.lineComboBox.addItems(line_list)
+        self.lineComboBox.addItems(self.line_list)
 
         # dictionary of imagers
         self.imager_dict = {
@@ -145,22 +145,22 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
 
         # dictionary of imager PV prefixes
         self.imagerpv_dict = {
-            'L0': ['IM1L0:XTES:CAM:', 'IM2L0:XTES:CAM:', 'IM3L0:PPM:CAM:', 'IM4L0:XTES:CAM:'],
-            'L1': ['IM1L1:PPM:CAM:', 'IM2L1:PPM:CAM:', 'IM3L1:PPM:CAM:', 'IM4L1:PPM:CAM:'],
-            'K0': ['IM1K0:XTES:CAM:', 'IM2K0:XTES:CAM:'],
-            'K1': ['IM1K1:PPM:CAM:', 'IM2K1:PPM:CAM:'],
-            'K2': ['IM1K2:PPM:CAM:', 'IM2K2:PPM:CAM:', 'IM3K2:PPM:CAM:', 'IM4K2:PPM:CAM:', 'IM5K2:PPM:CAM:',
-                   'IM6K2:PPM:CAM:', 'IM7K2:PPM:CAM:'],
-            'K3': ['IM1K3:PPM:CAM:', 'IM2K3:PPM:CAM:', 'IM3K3:PPM:CAM:'],
-            'K4': ['IM1K4:PPM:CAM:', 'IM2K4:PPM:CAM:', 'IM3K4:PPM:CAM:', 'IM4K4:PPM:CAM:', 'IM5K4:PPM:CAM:',
-                   'IM5K4:PPM:CAM:']
+            'L0': ['IM1L0:XTES:', 'IM2L0:XTES:', 'IM3L0:PPM:', 'IM4L0:XTES:'],
+            'L1': ['IM1L1:PPM:', 'IM2L1:PPM:', 'IM3L1:PPM:', 'IM4L1:PPM:'],
+            'K0': ['IM1K0:XTES:', 'IM2K0:XTES:'],
+            'K1': ['IM1K1:PPM:', 'IM2K1:PPM:'],
+            'K2': ['IM1K2:PPM:', 'IM2K2:PPM:', 'IM3K2:PPM:', 'IM4K2:PPM:', 'IM5K2:PPM:',
+                   'IM6K2:PPM:', 'IM7K2:PPM:'],
+            'K3': ['IM1K3:PPM:', 'IM2K3:PPM:', 'IM3K3:PPM:'],
+            'K4': ['IM1K4:PPM:', 'IM2K4:PPM:', 'IM3K4:PPM:', 'IM4K4:PPM:', 'IM5K4:PPM:',
+                   'IM5K4:PPM:']
         }
         self.imager_list = self.imager_dict['L0']
         self.imager = self.imager_list[0]
         self.imagerpv_list = self.imagerpv_dict['L0']
         self.imagerpv = self.imagerpv_list[0]
 
-        self.imagerCombobox.addItems(self.imager_list)
+        self.imagerComboBox.addItems(self.imager_list)
 
         self.data_dict = {}
         self.data_dict['im0'] = im0
@@ -301,7 +301,8 @@ class RunProcessing(QtCore.QObject):
 
         #self.gui = gui
 
-        self.epics_name = imager_prefix
+        self.cam_name = imager_prefix + 'CAM:'
+        self.epics_name = self.cam_name + 'IMAGE2:'
 
         # if len(sys.argv)>1:
         #     self.cam_name = sys.argv[1]
