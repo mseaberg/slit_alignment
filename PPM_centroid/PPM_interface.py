@@ -42,9 +42,9 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         # Full image
         #self.view0 = self.canvas.addViewBox(row=0,col=0,rowspan=2,colspan=3)
         self.view0 = self.canvas.addViewBox()
-        self.im0Rect = self.setup_viewbox(self.view0, 2048)
+        self.im0Rect = self.setup_viewbox(self.view0, 512)
         self.view0.setAspectLocked(True)
-        self.view0.setRange(QtCore.QRectF(0,0, 2048, 2048))
+        self.view0.setRange(QtCore.QRectF(0,0, 512, 512))
         self.img0 = pg.ImageItem(border='w')
         self.view0.addItem(self.img0)
 
@@ -353,7 +353,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
 
         N, M = np.shape(data_dict['im1'])
 
-        self.view0.setRange(QtCore.QRectF(0,0, M, N))
+        # self.view0.setRange(QtCore.QRectF(0,0, M, N))
 
         now = datetime.now()
         now_stamp = datetime.timestamp(now)
