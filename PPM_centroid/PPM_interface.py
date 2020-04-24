@@ -6,14 +6,10 @@ from epics import PV
 import numpy as np
 import imageio
 import scipy.ndimage.interpolation as interpolate
-import scipy.ndimage as ndimage
 import sys
 import time
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
-from PyQt5.QtGui import QPen
-from PyQt5.QtCore import Qt
 import pyqtgraph as pg
-from pcdsdevices.areadetector.detectors import PCDSAreaDetector
 from PyQt5.uic import loadUiType
 import warnings
 from processing_module import RunProcessing
