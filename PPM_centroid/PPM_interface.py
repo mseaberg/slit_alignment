@@ -16,7 +16,7 @@ import pyqtgraph as pg
 from pcdsdevices.areadetector.detectors import PCDSAreaDetector
 from PyQt5.uic import loadUiType
 import warnings
-from .processing_module import RunProcessing
+from processing_module import RunProcessing
 
 Ui_MainWindow, QMainWindow = loadUiType('PPM_screen.ui')
 
