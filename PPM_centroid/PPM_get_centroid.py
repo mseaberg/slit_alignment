@@ -125,13 +125,16 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         N, M = np.shape(im1)
         scale = 2048.0 / N
 
-        im0 = interpolate.zoom(im1, scale)
+        self.im0 = interpolate.zoom(im1, scale)
 
-        # imager combo box
+
+        # initialize data dictionary
+        self.data_dict = {}
+        self.reset_data_dict()
+
+
+        # list of beamlines
         self.line_list = ['L0', 'L1', 'K0', 'K1', 'K2', 'K3', 'K4']
-        self.line = 'L0'
-        self.lineComboBox.addItems(self.line_list)
-
         # dictionary of imagers
         self.imager_dict = {
             'L0': ['IM1L0', 'IM2L0', 'IM3L0', 'IM4L0'],
@@ -155,15 +158,18 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
             'K4': ['IM1K4:PPM:', 'IM2K4:PPM:', 'IM3K4:PPM:', 'IM4K4:PPM:', 'IM5K4:PPM:',
                    'IM5K4:PPM:']
         }
+        # initialize line combo box
+        self.line = 'L0'
+        self.lineComboBox.addItems(self.line_list)
+
+
         self.imager_list = self.imager_dict['L0']
         self.imager = self.imager_list[0]
         self.imagerpv_list = self.imagerpv_dict['L0']
         self.imagerpv = self.imagerpv_list[0]
-
+        self.imagerComboBox.clear()
         self.imagerComboBox.addItems(self.imager_list)
 
-        self.data_dict = {}
-        self.reset_data_dict()
         #self.data_dict['centering'] = np.zeros(2)
         self.set_min()
         self.set_max()
@@ -182,13 +188,15 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.imager = self.imager_list[index]
         self.imagerpv = self.imagerpv_list[index]
         # reset data_dict
+        self.reset_data_dict()
 
     def reset_data_dict(self):
+        self.data_dict['im0'] = self.im0
         self.data_dict['contrast'] = np.zeros((4, 100))
         self.data_dict['rotation'] = np.zeros((4, 100))
-        self.data_dict['cx'] = np.empty(100)
-        self.data_dict['cy'] = np.empty(100)
-        self.data_dict['timestamps'] = np.empty(100)
+        self.data_dict['cx'] = -np.ones(100)
+        self.data_dict['cy'] = -np.ones(100)
+        self.data_dict['timestamps'] = -np.ones(100)
         self.data_dict['iteration'] = np.tile(np.linspace(-99, 0, 100), (4, 1))
         self.data_dict['counter'] = 0.
         self.data_dict['center'] = np.zeros((4, 2))
@@ -282,11 +290,21 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         timestamp = data_dict['timestamps'] - now_stamp
         cx = data_dict['cx']
         cy = data_dict['cy']
+
+        mask = cx>0
+        cx = cx[mask]
+        cy = cy[mask]
+        timestamp = timestamp[mask]
         
+        cx_range = np.max(cx)-np.min(cx)
+        cy_range = np.max(cy)-np.min(cy)
+
         self.hplot[0].setData(timestamp, cx)
         self.contrast_plot.setXRange(-10, 0)
+        #self.contrast_plot.setYRange(np.mean(cx)-5*cx_range, np.mean(cx)+5*cx_range)
         self.rplot[0].setData(timestamp, cy)
         self.rotation_plot.setXRange(-10, 0)
+        #self.rotation_plot.setYRange(np.mean(cy)-5*cy_range, np.mean(cy)+5*cy_range)
 
         #self.circ0.setRect(full_center[1]-25,full_center[0]-25,50,50)
 
@@ -460,10 +478,10 @@ class RunProcessing(QtCore.QObject):
 
             #self.gui.img0.setImage(np.flipud(self.im1).T,levels=(0,300))
 
-            self.data_dict['contrast'] = np.roll(self.data_dict['contrast'],-1,axis=1)
-            self.data_dict['rotation'] = np.roll(self.data_dict['rotation'],-1,axis=1)
-            self.data_dict['iteration'] = np.roll(self.data_dict['iteration'],-1,axis=1)
-            self.data_dict['iteration'][:,-1] = self.counter
+            #self.data_dict['contrast'] = np.roll(self.data_dict['contrast'],-1,axis=1)
+            #self.data_dict['rotation'] = np.roll(self.data_dict['rotation'],-1,axis=1)
+            #self.data_dict['iteration'] = np.roll(self.data_dict['iteration'],-1,axis=1)
+            #self.data_dict['iteration'][:,-1] = self.counter
 
             self.data_dict['cx'] = np.roll(self.data_dict['cx'],-1)
             self.data_dict['cy'] = np.roll(self.data_dict['cy'],-1)
