@@ -34,14 +34,15 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.imagerComboBox.currentIndexChanged.connect(self.change_imager)
 
         # Full image
-        self.view0 = self.canvas.addViewBox(row=0,col=0,rowspan=2,colspan=3)
+        #self.view0 = self.canvas.addViewBox(row=0,col=0,rowspan=2,colspan=3)
+        self.view0 = self.canvas.addViewBox()
         self.view0.setAspectLocked(True)
         self.view0.setRange(QtCore.QRectF(0,0, 2048, 2048))
         self.img0 = pg.ImageItem(border='w')
         self.view0.addItem(self.img0)
 
         #  contrast plot
-        self.contrast_plot = self.canvas.addPlot(row=0,col=3,rowspan=1,colspan=2)
+        self.xcentroid_plot = self.plotCanvas.addPlot(row=0,col=0,rowspan=1,colspan=2)
 
         labelStyle = {'color': '#FFF', 'font-size': '12pt'}
 
@@ -49,16 +50,16 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         font.setPointSize(10)
         font.setFamily('Arial')
 
-        xaxis = self.contrast_plot.getAxis('bottom')
+        xaxis = self.xcentroid_plot.getAxis('bottom')
         xaxis.setLabel(text='Time (s)',**labelStyle)
         xaxis.tickFont = font
         xaxis.setPen(pg.mkPen('w',width=1))
-        yaxis = self.contrast_plot.getAxis('left')
+        yaxis = self.xcentroid_plot.getAxis('left')
         yaxis.setLabel(text='X Centroid (pixels)',**labelStyle)
         yaxis.tickFont = font
         yaxis.setPen(pg.mkPen('w',width=1))
 
-        self.contrast_plot.showGrid(x=True,y=True,alpha=.8)
+        self.xcentroid_plot.showGrid(x=True,y=True,alpha=.8)
         #self.contrast_plot.setYRange(0,1.5)
         self.hplot = {}
         names = ['Top Left','Top Right','Bottom Left','Bottom Right']
@@ -68,11 +69,11 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         for i in range(1):
 
             #self.hplot[i] = self.contrast_plot.plot(np.linspace(-99,0,100),np.zeros(100),pen=(i,4),name=names[i])
-            self.hplot[i] = self.contrast_plot.plot(np.linspace(-99,0,100), np.zeros(100),
+            self.hplot[i] = self.xcentroid_plot.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(colors[i], width=5),name=names[i])
 
         #  rotation plot
-        self.rotation_plot = self.canvas.addPlot(row=1,col=3,rowspan=1,colspan=2)
+        self.ycentroid_plot = self.plotCanvas.addPlot(row=1,col=0,rowspan=1,colspan=2)
 
         labelStyle = {'color': '#FFF', 'font-size': '12pt'}
 
@@ -80,33 +81,33 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         font.setPointSize(10)
         font.setFamily('Arial')
 
-        xaxis = self.rotation_plot.getAxis('bottom')
+        xaxis = self.ycentroid_plot.getAxis('bottom')
         xaxis.setLabel(text='Time (s)',**labelStyle)
         xaxis.tickFont = font
         xaxis.setPen(pg.mkPen('w',width=1))
-        yaxis = self.rotation_plot.getAxis('left')
+        yaxis = self.ycentroid_plot.getAxis('left')
         yaxis.setLabel(text='Y Centroid (pixels)',**labelStyle)
         yaxis.tickFont = font
         yaxis.setPen(pg.mkPen('w',width=1))
 
-        self.rotation_plot.showGrid(x=True,y=True,alpha=.8)
+        self.ycentroid_plot.showGrid(x=True,y=True,alpha=.8)
         #self.contrast_plot.setYRange(0,1.5)
-        self.rplot = {}
+        self.vplot = {}
         names = ['Top Left','Top Right','Bottom Left','Bottom Right']
         colors = ['r','g','c','m']
 
-        legend = self.contrast_plot.addLegend()
+        #legend = self.contrast_plot.addLegend()
         for i in range(1):
 
             #self.hplot[i] = self.contrast_plot.plot(np.linspace(-99,0,100),np.zeros(100),pen=(i,4),name=names[i])
-            self.rplot[i] = self.rotation_plot.plot(np.linspace(-99,0,100), np.zeros(100),
+            self.vplot[i] = self.ycentroid_plot.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(colors[i], width=5),name=names[i])
 
-        legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
-        for item in legend.items:
-            for single_item in item:
-                if isinstance(single_item, pg.graphicsItems.LabelItem.LabelItem):
-                    single_item.setText(single_item.text, **legendLabelStyle)
+        #legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
+        #for item in legend.items:
+        #    for single_item in item:
+        #        if isinstance(single_item, pg.graphicsItems.LabelItem.LabelItem):
+        #            single_item.setText(single_item.text, **legendLabelStyle)
 
         # the image to be transformed
         #im1 = np.array(imageio.imread("test_pattern.png")[32:2650, 32:2650, 3],dtype='float')
@@ -296,10 +297,10 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         cy_range = np.max(cy)-np.min(cy)
 
         self.hplot[0].setData(timestamp, cx)
-        self.contrast_plot.setXRange(-10, 0)
+        self.xcentroid_plot.setXRange(-10, 0)
         #self.contrast_plot.setYRange(np.mean(cx)-5*cx_range, np.mean(cx)+5*cx_range)
-        self.rplot[0].setData(timestamp, cy)
-        self.rotation_plot.setXRange(-10, 0)
+        self.vplot[0].setData(timestamp, cy)
+        self.ycentroid_plot.setXRange(-10, 0)
         #self.rotation_plot.setYRange(np.mean(cy)-5*cy_range, np.mean(cy)+5*cy_range)
 
         #self.circ0.setRect(full_center[1]-25,full_center[0]-25,50,50)
