@@ -211,8 +211,8 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
 
             self.registration.sig.connect(self.update_plots)
 
-            self.lineComboBox.enabled(False)
-            self.imageComboBox.enabled(False)
+            self.lineComboBox.setEnabled(False)
+            self.imagerComboBox.setEnabled(False)
 
         elif self.runButton.text() == 'Stop':
 
@@ -220,8 +220,8 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
             self.thread.quit()
             self.thread.wait()
             self.runButton.setText('Run')
-            self.lineComboBox.enabled(True)
-            self.imageComboBox.enabled(True)
+            self.lineComboBox.setEnabled(True)
+            self.imagerComboBox.setEnabled(True)
 
     def set_min(self):
         self.minimum = float(self.minValue.text())
