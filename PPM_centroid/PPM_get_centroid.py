@@ -340,11 +340,11 @@ class RunProcessing(QtCore.QObject):
         xbin = PV(self.epics_name + 'ROI:BinX_RBV').get()
         ybin = PV(self.epics_name + 'ROI:BinY_RBV').get()
         # get array size
-        xsize = PV(self.epics_name + 'ROI:ArraySizeX_RBV').get()
-        ysize = PV(self.epics_name + 'ROI:ArraySizeY_RBV').get()
+        self.xsize = PV(self.epics_name + 'ROI:ArraySizeX_RBV').get()
+        self.ysize = PV(self.epics_name + 'ROI:ArraySizeY_RBV').get()
 
-        x = np.linspace(xmin, xmax-(xbin-1), xsize)
-        y = np.linspace(ymin, ymax-(ybin-1), ysize)
+        x = np.linspace(xmin, xmax-(xbin-1), self.xsize)
+        y = np.linspace(ymin, ymax-(ybin-1), self.ysize)
         self.x, self.y = np.meshgrid(x,y)
 
         FOV_dict = {
@@ -427,7 +427,7 @@ class RunProcessing(QtCore.QObject):
         try:
             #image_data = self.gige.image2.get()
             image_data = self.image_pv.get_with_metadata()
-            img = np.reshape(image_data['value'],(512,512)).astype(float)
+            img = np.reshape(image_data['value'],(self.ysize, self.xsize)).astype(float)
             time_stamp = image_data['timestamp']
             #time_stamp = image_data.time_stamp
             #img = np.array(image_data.shaped_image,dtype='float')
