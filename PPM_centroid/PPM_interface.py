@@ -380,8 +380,8 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.ycentroid_plot.setXRange(-10, 0)
         #self.rotation_plot.setYRange(np.mean(cy)-5*cy_range, np.mean(cy)+5*cy_range)
 
-        self.rightHorizontalLineout.setData(data_dict['x'], data_dict['lineout_x'])
-        self.rightVerticalLineout.setData(data_dict['lineout_y'], data_dict['y'])
+        self.horizontalLineout.setData(data_dict['x'], data_dict['lineout_x'])
+        self.verticalLineout.setData(data_dict['lineout_y'], data_dict['y'])
 
         #self.circ0.setRect(full_center[1]-25,full_center[0]-25,50,50)
 
