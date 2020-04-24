@@ -192,8 +192,8 @@ class RunProcessing(QtCore.QObject):
             lineout_y = np.sum(self.im1, axis=1)
 
             self.data_dict['im1'] = self.im1
-            self.data_dict['lineout_x'] = lineout_x/np.sum(lineout_x)
-            self.data_dict['lineout_y'] = lineout_y/np.sum(lineout_y)
+            self.data_dict['lineout_x'] = lineout_x/np.max(lineout_x)
+            self.data_dict['lineout_y'] = lineout_y/np.max(lineout_y)
             self.data_dict['x'] = self.x1d
             self.data_dict['y'] = self.y1d
             # translation = alignment_output['translation']

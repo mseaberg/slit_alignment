@@ -42,7 +42,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         # Full image
         #self.view0 = self.canvas.addViewBox(row=0,col=0,rowspan=2,colspan=3)
         self.view0 = self.canvas.addViewBox()
-        self.im0Rect = self.setup_viewbox(self.view0, 2048)
+        #self.im0Rect = self.setup_viewbox(self.view0, 2048)
         self.view0.setAspectLocked(True)
         self.view0.setRange(QtCore.QRectF(0,0, 2048, 2048))
         self.img0 = pg.ImageItem(border='w')
@@ -380,8 +380,8 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.ycentroid_plot.setXRange(-10, 0)
         #self.rotation_plot.setYRange(np.mean(cy)-5*cy_range, np.mean(cy)+5*cy_range)
 
-        self.rightHorizontalLineout.setData(data_dict['x'], data_dict['lineout_x'])
-        self.rightVerticalLineout.setData(data_dict['lineout_y'], data_dict['y'])
+        self.horizontalLineout.setData(data_dict['x'], data_dict['lineout_x'])
+        self.verticalLineout.setData(data_dict['lineout_y'], data_dict['y'])
 
         #self.circ0.setRect(full_center[1]-25,full_center[0]-25,50,50)
 
