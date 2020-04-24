@@ -74,12 +74,6 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
             self.hplot[i] = self.contrast_plot.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(colors[i], width=5),name=names[i])
 
-        #legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
-        #for item in legend.items:
-        #    for single_item in item:
-        #        if isinstance(single_item, pg.graphicsItems.LabelItem.LabelItem):
-        #            single_item.setText(single_item.text, **legendLabelStyle)
-
         #  rotation plot
         self.rotation_plot = self.canvas.addPlot(row=1,col=3,rowspan=1,colspan=2)
 
