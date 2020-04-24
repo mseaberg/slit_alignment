@@ -33,6 +33,12 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         # connect imager combo box
         self.imagerComboBox.currentIndexChanged.connect(self.change_imager)
 
+        # font styles
+        self.labelStyle = {'color': '#FFF', 'font-size': '10pt'}
+        self.font = QtGui.QFont()
+        self.font.setPointSize(10)
+        self.font.setFamily('Arial')
+
         # Full image
         #self.view0 = self.canvas.addViewBox(row=0,col=0,rowspan=2,colspan=3)
         self.view0 = self.canvas.addViewBox()
@@ -63,19 +69,13 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         # font.setPointSize(10)
         # font.setFamily('Arial')
 
-        # font styles
-        self.labelStyle = {'color': '#FFF', 'font-size': '10pt'}
-        self.font = QtGui.QFont()
-        self.font.setPointSize(10)
-        self.font.setFamily('Arial')
-
         xaxis = self.xcentroid_plot.getAxis('bottom')
-        xaxis.setLabel(text='Time (s)',**labelStyle)
-        xaxis.tickFont = font
+        xaxis.setLabel(text='Time (s)',**self.labelStyle)
+        xaxis.tickFont = self.font
         xaxis.setPen(pg.mkPen('w',width=1))
         yaxis = self.xcentroid_plot.getAxis('left')
-        yaxis.setLabel(text='X Centroid (pixels)',**labelStyle)
-        yaxis.tickFont = font
+        yaxis.setLabel(text='X Centroid (pixels)',**self.labelStyle)
+        yaxis.tickFont = self.font
         yaxis.setPen(pg.mkPen('w',width=1))
 
         self.xcentroid_plot.showGrid(x=True,y=True,alpha=.8)
