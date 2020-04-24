@@ -39,9 +39,9 @@ class RunProcessing(QtCore.QObject):
         self.xsize = PV(self.epics_name + 'ROI:ArraySizeX_RBV').get()
         self.ysize = PV(self.epics_name + 'ROI:ArraySizeY_RBV').get()
 
-        x = np.linspace(xmin, xmax - (xbin - 1), self.xsize)
-        y = np.linspace(ymin, ymax - (ybin - 1), self.ysize)
-        self.x, self.y = np.meshgrid(x, y)
+        self.x1d = np.linspace(xmin, xmax - (xbin - 1), self.xsize)
+        self.y1d = np.linspace(ymin, ymax - (ybin - 1), self.ysize)
+        self.x, self.y = np.meshgrid(self.x1d, self.y1d)
 
         FOV_dict = {
             'IM2K4': 8.5,
@@ -188,7 +188,14 @@ class RunProcessing(QtCore.QObject):
 
             # self.data_dict['contrast'][:,-1] = alignment_output['contrast']
 
+            lineout_x = np.sum(self.im1, axis=0)
+            lineout_y = np.sum(self.im1, axis=1)
+
             self.data_dict['im1'] = self.im1
+            self.data_dict['lineout_x'] = lineout_x/np.sum(lineout_x)
+            self.data_dict['lineout_y'] = lineout_y/np.sum(lineout_y)
+            self.data_dict['x'] = self.x1d
+            self.data_dict['y'] = self.y1d
             # translation = alignment_output['translation']
 
             # centering_x = 1024 + np.sum(translation[:,1])/4

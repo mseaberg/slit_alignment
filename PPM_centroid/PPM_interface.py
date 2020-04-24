@@ -36,19 +36,38 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         # Full image
         #self.view0 = self.canvas.addViewBox(row=0,col=0,rowspan=2,colspan=3)
         self.view0 = self.canvas.addViewBox()
+        self.im0Rect = self.setup_viewbox(self.view0, 2048)
         self.view0.setAspectLocked(True)
         self.view0.setRange(QtCore.QRectF(0,0, 2048, 2048))
         self.img0 = pg.ImageItem(border='w')
         self.view0.addItem(self.img0)
 
-        #  contrast plot
+        # horizontal lineout
+        self.horizontalPlot, self.horizontalLineout = (
+            self.initialize_lineout(self.hLineoutCanvas,
+                                    self.view0,
+                                    'horizontal'))
+
+        # vertical lineout
+        self.verticalPlot, self.verticalLineout = (
+            self.initialize_lineout(self.vLineoutCanvas,
+                                    self.view0,
+                                    'vertical'))
+
+        #  x centroid plot
         self.xcentroid_plot = self.plotCanvas.addPlot(row=0,col=0,rowspan=1,colspan=2)
 
-        labelStyle = {'color': '#FFF', 'font-size': '12pt'}
+        # labelStyle = {'color': '#FFF', 'font-size': '12pt'}
+        #
+        # font = QtGui.QFont()
+        # font.setPointSize(10)
+        # font.setFamily('Arial')
 
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setFamily('Arial')
+        # font styles
+        self.labelStyle = {'color': '#FFF', 'font-size': '10pt'}
+        self.font = QtGui.QFont()
+        self.font.setPointSize(10)
+        self.font.setFamily('Arial')
 
         xaxis = self.xcentroid_plot.getAxis('bottom')
         xaxis.setLabel(text='Time (s)',**labelStyle)
@@ -194,6 +213,61 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['center'] = np.zeros((4, 2))
         self.data_dict['scale'] = np.zeros(4)
         self.data_dict['pixSize'] = 0.0
+        self.data_dict['lineout_x'] = np.zeros(100)
+        self.data_dict['lineout_y'] = np.zeros(100)
+        self.data_dict['x'] = np.linspace(-1024, 1023, 100)
+        self.data_dict['y'] = np.linspace(-1024, 1023, 100)
+
+    def setup_viewbox(self, viewbox, width):
+        """
+        Helper function to set up viewbox with title
+        :param viewbox: pyqtgraph viewbox
+        :param width: image width in pixels (int)
+        """
+        viewbox.setAspectLocked(True)
+        viewbox.setRange(QtCore.QRectF(-width/2., -width/2., width, width))
+        rect1 = QtGui.QGraphicsRectItem(-width/2., -width/2., width, width)
+        rect1.setPen(QtGui.QPen(QtCore.Qt.white, width/50., QtCore.Qt.SolidLine))
+        viewbox.addItem(rect1)
+        return rect1
+
+    def initialize_lineout(self, canvas, view, direction):
+        """
+        Method to set up lineout plots.
+        """
+        if direction == 'horizontal':
+            lineoutPlot = canvas.addPlot()
+            lineoutData = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100))
+            lineoutPlot.setYRange(0, 1)
+            self.label_plot(lineoutPlot, 'x (pixels)', 'Intensity')
+            lineoutPlot.setXLink(view)
+        elif direction == 'vertical':
+            lineoutPlot = canvas.addPlot()
+            lineoutData = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100))
+            lineoutPlot.setXRange(0, 1)
+            self.label_plot(lineoutPlot, 'Intensity', 'y (pixels)')
+            lineoutPlot.setYLink(view)
+        else:
+            lineoutPlot = None
+            lineoutData = None
+            pass
+        return lineoutPlot, lineoutData
+
+    def label_plot(self, plot, xlabel, ylabel):
+        """
+        Helper function to set plot labels
+        :param plot: pyqtgraph plot item
+        :param xlabel: x-axis label (str)
+        :param ylabel: y-axis label (str)
+        """
+        xaxis = plot.getAxis('bottom')
+        xaxis.setLabel(text=xlabel, **self.labelStyle)
+        xaxis.tickFont = self.font
+        xaxis.setPen(pg.mkPen('w', width=1))
+        yaxis = plot.getAxis('left')
+        yaxis.setLabel(text=ylabel, **self.labelStyle)
+        yaxis.tickFont = self.font
+        yaxis.setPen(pg.mkPen('w', width=1))
 
 
     def change_state(self):
@@ -296,12 +370,18 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         cx_range = np.max(cx)-np.min(cx)
         cy_range = np.max(cy)-np.min(cy)
 
+        # lineouts
+
+
         self.hplot[0].setData(timestamp, cx)
         self.xcentroid_plot.setXRange(-10, 0)
         #self.contrast_plot.setYRange(np.mean(cx)-5*cx_range, np.mean(cx)+5*cx_range)
         self.vplot[0].setData(timestamp, cy)
         self.ycentroid_plot.setXRange(-10, 0)
         #self.rotation_plot.setYRange(np.mean(cy)-5*cy_range, np.mean(cy)+5*cy_range)
+
+        self.rightHorizontalLineout.setData(data_dict['x'], data_dict['lineout_x'])
+        self.rightVerticalLineout.setData(data_dict['lineout_y'], data_dict['y'])
 
         #self.circ0.setRect(full_center[1]-25,full_center[0]-25,50,50)
 
