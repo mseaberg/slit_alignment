@@ -31,6 +31,11 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
 
         self.actionSave.triggered.connect(self.save_image)
 
+        # connect line combo box
+        self.lineComboBox.currentIndexChanged(self.change_line)
+        # connect imager combo box
+        self.imagerComboBox.currentIndexChanged(self.change_imager)
+
         # Full image
         self.view0 = self.canvas.addViewBox(row=0,col=0,rowspan=2,colspan=3)
         self.view0.setAspectLocked(True)
@@ -122,6 +127,41 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
 
         im0 = interpolate.zoom(im1, scale)
 
+        # imager combo box
+        self.line_list = ['L0', 'L1', 'K0', 'K1', 'K2', 'K3', 'K4']
+        self.line = 'L0'
+        self.lineComboBox.addItems(line_list)
+
+        # dictionary of imagers
+        self.imager_dict = {
+            'L0': ['IM1L0', 'IM2L0', 'IM3L0', 'IM4L0'],
+            'L1': ['IM1L1', 'IM2L1', 'IM3L1', 'IM4L1'],
+            'K0': ['IM1K0', 'IM2K0'],
+            'K1': ['IM1K1', 'IM2K1'],
+            'K2': ['IM1K2', 'IM2K2', 'IM3K2', 'IM4K2', 'IM5K2', 'IM6K2', 'IM7K2'],
+            'K3': ['IM1K3', 'IM2K3', 'IM3K3'],
+            'K4': ['IM1K4', 'IM2K4', 'IM3K4', 'IM4K4', 'IM5K4', 'IM5K4']
+        }
+
+        # dictionary of imager PV prefixes
+        self.imagerpv_dict = {
+            'L0': ['IM1L0:XTES:CAM:', 'IM2L0:XTES:CAM:', 'IM3L0:PPM:CAM:', 'IM4L0:XTES:CAM:'],
+            'L1': ['IM1L1:PPM:CAM:', 'IM2L1:PPM:CAM:', 'IM3L1:PPM:CAM:', 'IM4L1:PPM:CAM:'],
+            'K0': ['IM1K0:XTES:CAM:', 'IM2K0:XTES:CAM:'],
+            'K1': ['IM1K1:PPM:CAM:', 'IM2K1:PPM:CAM:'],
+            'K2': ['IM1K2:PPM:CAM:', 'IM2K2:PPM:CAM:', 'IM3K2:PPM:CAM:', 'IM4K2:PPM:CAM:', 'IM5K2:PPM:CAM:',
+                   'IM6K2:PPM:CAM:', 'IM7K2:PPM:CAM:'],
+            'K3': ['IM1K3:PPM:CAM:', 'IM2K3:PPM:CAM:', 'IM3K3:PPM:CAM:'],
+            'K4': ['IM1K4:PPM:CAM:', 'IM2K4:PPM:CAM:', 'IM3K4:PPM:CAM:', 'IM4K4:PPM:CAM:', 'IM5K4:PPM:CAM:',
+                   'IM5K4:PPM:CAM:']
+        }
+        self.imager_list = self.imager_dict['L0']
+        self.imager = self.imager_list[0]
+        self.imagerpv_list = self.imagerpv_dict['L0']
+        self.imagerpv = self.imagerpv_list[0]
+
+        self.imagerCombobox.addItems(self.imager_list)
+
         self.data_dict = {}
         self.data_dict['im0'] = im0
         self.data_dict['contrast'] = np.zeros((4, 100))
@@ -138,10 +178,25 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.set_min()
         self.set_max()
 
+    def change_line(self, index):
+        # update line
+        self.line = self.line_list[index]
+        self.imager_list = self.imager_dict[self.line]
+        self.imagerpv_list = self.imagerpv_dict[self.line]
+        self.imagerComboBox.clear()
+        self.imagerComboBox.addItems(self.imager_list)
+        self.change_imager(0)
+
+    def change_imager(self, index):
+        # update imager
+        self.imager = self.imager_list[index]
+        self.imagerpv = self.imagerpv_list[index]
+
+
     def change_state(self):
         if self.runButton.text() == 'Run':
 
-            self.registration = RunProcessing(self.data_dict)
+            self.registration = RunProcessing(self.imagerpv, self.data_dict)
             self.thread = QtCore.QThread()
             self.thread.start()
 
@@ -239,17 +294,18 @@ class RunProcessing(QtCore.QObject):
 
     sig = QtCore.pyqtSignal(dict)
 
-    def __init__(self, data_dict):
+    def __init__(self, imager_prefix, data_dict):
         super(RunProcessing, self).__init__()
 
         #self.my_signal = QtCore.Signal()
 
         #self.gui = gui
 
-        self.epics_name = ''
-        if len(sys.argv)>1:
-            self.cam_name = sys.argv[1]
-            self.epics_name = sys.argv[1] + 'IMAGE2:'
+        self.epics_name = imager_prefix
+
+        # if len(sys.argv)>1:
+        #     self.cam_name = sys.argv[1]
+        #     self.epics_name = sys.argv[1] + 'IMAGE2:'
 
         self.image_pv = PV(self.epics_name + 'ArrayData')
         
