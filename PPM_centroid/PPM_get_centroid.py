@@ -61,7 +61,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.hplot = {}
         names = ['Top Left','Top Right','Bottom Left','Bottom Right']
         colors = ['r','g','c','m']
-        
+
         #legend = self.contrast_plot.addLegend()
         for i in range(1):
 
