@@ -231,6 +231,19 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         viewbox.addItem(rect1)
         return rect1
 
+    def update_viewbox(self, viewbox, width, height, rect):
+        """
+        Helper function to adjust viewbox settings
+        :param viewbox: pyqtgraph viewbox
+        :param width: new width in pixels (int)
+        :param height: new height in pixels (int)
+        :param rect: QtGui.QGraphicsRectItem
+        :return:
+        """
+        viewbox.setRange(QtCore.QRectF(-width/2, -height/2, width, height))
+        rect.setPen(QtGui.QPen(QtCore.Qt.white, width/50., QtCore.Qt.SolidLine))
+        rect.setRect(-width/2, -height/2, width, height)
+
     def initialize_lineout(self, canvas, view, direction):
         """
         Method to set up lineout plots.
@@ -269,9 +282,19 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         yaxis.tickFont = self.font
         yaxis.setPen(pg.mkPen('w', width=1))
 
+    def get_FOV(self):
+        # get ROI info
+        width = PV(self.epics_name + 'CAM:IMAGE2:ROI:SizeX_RBV').get()
+        height = PV(self.epics_name + 'CAM:IMAGE2:ROI:SizeY_RBV').get()
+
+        return width, height
 
     def change_state(self):
         if self.runButton.text() == 'Run':
+
+            width, height = self.get_FOV()
+
+            self.update_viewbox(self.view0, width, height, self.im0Rect)
 
             self.registration = RunProcessing(self.imagerpv, self.data_dict)
             self.thread = QtCore.QThread()
