@@ -284,8 +284,8 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
 
     def get_FOV(self):
         # get ROI info
-        width = PV(self.epics_name + 'CAM:IMAGE2:ROI:SizeX_RBV').get()
-        height = PV(self.epics_name + 'CAM:IMAGE2:ROI:SizeY_RBV').get()
+        width = PV(self.imagerpv + 'CAM:IMAGE2:ROI:SizeX_RBV').get()
+        height = PV(self.imagerpv + 'CAM:IMAGE2:ROI:SizeY_RBV').get()
 
         return width, height
 
