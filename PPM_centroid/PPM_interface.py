@@ -42,13 +42,9 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         # Full image
         #self.view0 = self.canvas.addViewBox(row=0,col=0,rowspan=2,colspan=3)
         self.view0 = self.canvas.addViewBox()
-<<<<<<< HEAD
-        #self.im0Rect = self.setup_viewbox(self.view0, 2048)
-=======
-        self.im0Rect = self.setup_viewbox(self.view0, 512)
->>>>>>> fd4a7af8d8048c57ac6b78a492af6544b2d6dd36
+        self.im0Rect = self.setup_viewbox(self.view0, 1024)
         self.view0.setAspectLocked(True)
-        self.view0.setRange(QtCore.QRectF(0,0, 512, 512))
+        #self.view0.setRange(QtCore.QRectF(0,0, 512, 512))
         self.img0 = pg.ImageItem(border='w')
         self.view0.addItem(self.img0)
 
@@ -349,11 +345,15 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
             self.minValue.setText('%d' % self.minimum)
             self.maxValue.setText('%d' % self.maximum)
             
-
+        x = data_dict['x']
+        y = data_dict['y']
+        x_width = np.max(x) - np.min(x)
+        y_width = np.max(y) - np.min(y)
 
         self.data_dict = data_dict
         self.img0.setImage(np.flipud(data_dict['im1']).T,
                 levels=(self.minimum, self.maximum))
+        self.img0.setRect(QtCore.QRectF(np.min(x),np.min(y),x_width, y_width))
 
         N, M = np.shape(data_dict['im1'])
 
@@ -366,7 +366,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         cx = data_dict['cx']
         cy = data_dict['cy']
 
-        mask = cx>0
+        mask = data_dict['timestamps']>0
         cx = cx[mask]
         cy = cy[mask]
         timestamp = timestamp[mask]

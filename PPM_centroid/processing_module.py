@@ -40,7 +40,9 @@ class RunProcessing(QtCore.QObject):
         self.ysize = PV(self.epics_name + 'ROI:ArraySizeY_RBV').get()
 
         self.x1d = np.linspace(xmin, xmax - (xbin - 1), self.xsize)
+        self.x1d -= (xmax+1)/2
         self.y1d = np.linspace(ymin, ymax - (ybin - 1), self.ysize)
+        self.y1d -= (ymax+1)/2
         self.x, self.y = np.meshgrid(self.x1d, self.y1d)
 
         FOV_dict = {
