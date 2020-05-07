@@ -22,7 +22,7 @@ Ui_MainWindow, QMainWindow = loadUiType('image_register.ui')
 
 class App(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
-        super(App, self).__init__()
+        super(App, self).__init__(parent)
         self.setupUi(self)
 
 
