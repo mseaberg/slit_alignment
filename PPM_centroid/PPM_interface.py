@@ -12,7 +12,7 @@ from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 from PyQt5.uic import loadUiType
 import warnings
-from processing_module import RunProcessing
+from .processing_module import RunProcessing
 
 Ui_MainWindow, QMainWindow = loadUiType('PPM_screen.ui')
 
@@ -27,6 +27,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.maxValue.returnPressed.connect(self.set_max)
 
         self.actionSave.triggered.connect(self.save_image)
+        self.actionAlignment_Screen.connect(self.run_alignment_screen)
 
         # connect line combo box
         self.lineComboBox.currentIndexChanged.connect(self.change_line)
@@ -184,6 +185,9 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         #self.data_dict['centering'] = np.zeros(2)
         self.set_min()
         self.set_max()
+
+    def run_alignment_screen(self):
+        pass
 
     def change_line(self, index):
         # update line
@@ -415,10 +419,10 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.label.setText(data_dict['tx'])
 
 
-if __name__ == '__main__':
-
-    warnings.filterwarnings('ignore', '.*output shape of zoom.*')
-    app = QtGui.QApplication(sys.argv)
-    thisapp = App()
-    thisapp.show()
-    sys.exit(app.exec_())
+# if __name__ == '__main__':
+#
+#     warnings.filterwarnings('ignore', '.*output shape of zoom.*')
+#     app = QtGui.QApplication(sys.argv)
+#     thisapp = App()
+#     thisapp.show()
+#     sys.exit(app.exec_())
