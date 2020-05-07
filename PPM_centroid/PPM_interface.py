@@ -13,12 +13,13 @@ import pyqtgraph as pg
 from PyQt5.uic import loadUiType
 import warnings
 from processing_module import RunProcessing
+from Image_registration_epics import App
 
 Ui_MainWindow, QMainWindow = loadUiType('PPM_screen.ui')
 
-class App(QtGui.QMainWindow, Ui_MainWindow):
+class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
-        super(App, self).__init__()
+        super(PPM_Interface, self).__init__()
         self.setupUi(self)
 
         self.runButton.clicked.connect(self.change_state)
@@ -187,7 +188,9 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.set_max()
 
     def run_alignment_screen(self):
-        pass
+
+        alignment_app = App()
+        alignment_app.show()
 
     def change_line(self, index):
         # update line
@@ -402,8 +405,6 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         cy_range = np.max(cy)-np.min(cy)
 
         # lineouts
-
-
         self.hplot[0].setData(timestamp, cx)
         self.xcentroid_plot.setXRange(-10, 0)
         #self.contrast_plot.setYRange(np.mean(cx)-5*cx_range, np.mean(cx)+5*cx_range)
@@ -417,12 +418,3 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         #self.circ0.setRect(full_center[1]-25,full_center[0]-25,50,50)
 
         self.label.setText(data_dict['tx'])
-
-
-# if __name__ == '__main__':
-#
-#     warnings.filterwarnings('ignore', '.*output shape of zoom.*')
-#     app = QtGui.QApplication(sys.argv)
-#     thisapp = App()
-#     thisapp.show()
-#     sys.exit(app.exec_())
