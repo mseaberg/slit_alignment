@@ -12,7 +12,7 @@ from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 from PyQt5.uic import loadUiType
 import warnings
-from .processing_module import RunProcessing
+from processing_module import RunProcessing
 
 Ui_MainWindow, QMainWindow = loadUiType('PPM_screen.ui')
 
@@ -27,7 +27,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.maxValue.returnPressed.connect(self.set_max)
 
         self.actionSave.triggered.connect(self.save_image)
-        self.actionAlignment_Screen.connect(self.run_alignment_screen)
+        self.actionAlignment_Screen.triggered.connect(self.run_alignment_screen)
 
         # connect line combo box
         self.lineComboBox.currentIndexChanged.connect(self.change_line)
