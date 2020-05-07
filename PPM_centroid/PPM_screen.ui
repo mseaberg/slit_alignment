@@ -262,8 +262,6 @@
      </layout>
     </item>
    </layout>
-   <zorder></zorder>
-   <zorder>frame</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -279,6 +277,7 @@
      <string>File</string>
     </property>
     <addaction name="actionSave"/>
+    <addaction name="actionAlignment_Screen"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -291,6 +290,11 @@
   <action name="actionSave_screenshot">
    <property name="text">
     <string>Save screenshot</string>
+   </property>
+  </action>
+  <action name="actionAlignment_Screen">
+   <property name="text">
+    <string>Alignment Screen</string>
    </property>
   </action>
  </widget>
