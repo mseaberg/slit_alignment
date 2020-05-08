@@ -133,7 +133,7 @@ class YagAlign:
         # log-polar coordinate system
         r1 = np.linspace(0, np.log(self.Nt / 8) / np.log(self.logbase), 128)
         r1p = np.linspace(0, np.log(self.Nt / 8) / np.log(self.logbase), 128)
-        theta1 = np.linspace(-np.pi / 36, np.pi / 36, 11)
+        theta1 = np.linspace(-np.pi / 2, np.pi / 2, 181)
         r1, theta1 = np.meshgrid(r1, theta1)
 
         r2 = np.exp(r1 * np.log(self.logbase))
@@ -169,7 +169,7 @@ class YagAlign:
         # find correlation peak
         peak = np.unravel_index(np.argmax(cps_real), cps_real.shape)
         # determine rotation from peak location
-        theta_offset = theta1[peak[0], 0] * 180 / np.pi + 5
+        theta_offset = theta1[peak[0], 0] * 180 / np.pi + 90
         # determine zoom from peak location
         scale = self.logbase ** r1p[peak[1]]
 
