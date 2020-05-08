@@ -189,7 +189,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
     def run_alignment_screen(self):
 
-        alignment_app = App(parent=self)
+        cam_name = self.imagerpv + 'CAM:'
+
+        alignment_app = App(parent=self, imager=cam_name)
         alignment_app.show()
 
     def change_line(self, index):

@@ -21,10 +21,12 @@ Ui_MainWindow, QMainWindow = loadUiType('image_register.ui')
 
 
 class App(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, imager=None, parent=None):
         super(App, self).__init__(parent)
         self.setupUi(self)
 
+        # set imager
+        self.imager = imager
 
         self.runButton.clicked.connect(self.change_state)
 
@@ -251,7 +253,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
     def change_state(self):
         if self.runButton.text() == 'Run':
 
-            self.registration = RunRegistration(self.yag1, self.data_dict)
+            self.registration = RunRegistration(self.yag1, self.data_dict, imager=self.imager)
             self.thread = QtCore.QThread()
             self.thread.start()
 

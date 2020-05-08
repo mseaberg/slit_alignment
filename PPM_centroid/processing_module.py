@@ -231,7 +231,7 @@ class RunProcessing(QtCore.QObject):
 class RunRegistration(QtCore.QObject):
     sig = QtCore.pyqtSignal(dict)
 
-    def __init__(self, yag, data_dict):
+    def __init__(self, yag, data_dict, imager=None):
         super(RunRegistration, self).__init__()
 
         # self.my_signal = QtCore.Signal()
@@ -240,8 +240,9 @@ class RunRegistration(QtCore.QObject):
 
         self.yag1 = yag
         self.epics_name = ''
-        if len(sys.argv) > 1:
-            self.epics_name = sys.argv[1]
+        #if len(sys.argv) > 1:
+        if imager is not None:
+            self.epics_name = imager
 
         FOV_dict = {
             'IM2K4': 8.5,
