@@ -189,7 +189,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
     def run_alignment_screen(self):
 
-        alignment_app = App()
+        alignment_app = App(parent=self)
         alignment_app.show()
 
     def change_line(self, index):
