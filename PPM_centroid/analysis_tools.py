@@ -330,10 +330,10 @@ class XTESAlign:
 
         Nt, Mt = np.shape(data)
         Nd = 1024
-        # data = np.pad(data,
-        #              ((int((Nd - Nt) / 2 + 1), int((Nd - Nt) / 2)),
-        #               (int((Nd - Mt) / 2 + 1), int((Nd - Mt) / 2))),
-        #              mode='constant', constant_values=self.get_borderval(data))
+        data = np.pad(data,
+                     ((int((Nd - Nt) / 2 + 1), int((Nd - Nt) / 2)),
+                      (int((Nd - Mt) / 2 + 1), int((Nd - Mt) / 2))),
+                     mode='constant', constant_values=self.get_borderval(data))
 
         # assume that the data coming in is already pretty well-centered
         shifts, transforms = self.get_transform(data)
@@ -353,9 +353,13 @@ class XTESAlign:
 
     def get_transform(self, img):
 
+        Ni, Mi = np.shape(img)
+
+        Nr = 128
+
         # log-polar coordinate system
-        r1 = np.linspace(0, np.log(self.Nt / 8) / np.log(self.logbase), 128)
-        r1p = np.linspace(0, np.log(self.Nt / 8) / np.log(self.logbase), 128)
+        r1 = np.linspace(0, np.log(self.Nt / 8) / np.log(self.logbase), Nr)
+        r1p = np.linspace(0, np.log(self.Nt / 8) / np.log(self.logbase), Nr)
 
         # this works much better if a wide range is used...
         theta1 = np.linspace(-np.pi/2, np.pi / 2, 181)
@@ -398,19 +402,25 @@ class XTESAlign:
         # set first column of x-corr to zero (by design we don't expect that zoom = 1)
         cps_real[:, 0] = 0
         # restrict zoom to be within a certain range
-        cps_real[:, 32:] = 0
+        # cps_real[:, 32:] = 0
 
         plt.figure()
         plt.imshow(cps_real)
 
         # find correlation peak
         peak = np.unravel_index(np.argmax(cps_real), cps_real.shape)
+
+        # determine zoom from peak location
+        if peak[1] > Nr/2:
+            scale_peak = Nr-peak[1]
+            scale = self.logbase**(-r1p[scale_peak])
+        else:
+            scale = self.logbase**r1p[peak[1]]
+
         # determine rotation from peak location
         print(theta1[peak[0], 0] * 180 / np.pi)
         # theta_offset = theta1[peak[0], 0] * 180 / np.pi + 18
         theta_offset = theta1[peak[0], 0] * 180 / np.pi + 90
-        # determine zoom from peak location
-        scale = self.logbase ** r1p[peak[1]]
 
         # get theta nearest to zero
         if theta_offset > 45:
@@ -433,6 +443,9 @@ class XTESAlign:
 
         zoom_embed = self.embed_to(zoom_embed, zoom_out)
 
+        plt.figure()
+        plt.imshow(zoom_embed)
+
         ## figure out translation
         # we already have F1
         F2p = self.FT(zoom_embed)
@@ -446,7 +459,7 @@ class XTESAlign:
 
         # find peak (relative to center)
         peak = np.unravel_index(np.argmax(cps_real), cps_real.shape)
-        peak = np.array(peak) - 512
+        peak = np.array(peak) - int(Ni/2)
 
         # line up with template based on translation
         shifted = np.roll(zoom_embed, peak, axis=(0, 1))
