@@ -136,8 +136,8 @@ class RunProcessing(QtCore.QObject):
 
             # lineout_x = np.sum(self.PPM_object.im1, axis=0)
             # lineout_y = np.sum(self.im1, axis=1)
-            lineout_x = self.PPM_object.lineout_x
-            lineout_y = self.PPM_object.lineout_y
+            lineout_x = self.PPM_object.x_lineout
+            lineout_y = self.PPM_object.y_lineout
 
             self.data_dict['im1'] = self.PPM_object.profile
             self.data_dict['lineout_x'] = lineout_x/np.max(lineout_x)
