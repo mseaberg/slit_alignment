@@ -112,9 +112,9 @@ class RunProcessing(QtCore.QObject):
             self.PPM_object.get_image()
 
             # self.im1 = np.ones((2048,2048))*255
-            self.im1, time_stamp = self.get_image()
-
-            cx, cy = self.get_centroids(self.im1)
+            # self.im1, time_stamp = self.get_image()
+            #
+            # cx, cy = self.get_centroids(self.im1)
 
             # self.gui.img0.setImage(np.flipud(self.im1).T,levels=(0,300))
 
