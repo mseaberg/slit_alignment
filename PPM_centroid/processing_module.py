@@ -174,6 +174,8 @@ class RunProcessing(QtCore.QObject):
                 self.reset_camera()
 
 
+
+
 class RunRegistration(QtCore.QObject):
     sig = QtCore.pyqtSignal(dict)
 
