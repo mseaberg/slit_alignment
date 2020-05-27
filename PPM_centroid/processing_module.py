@@ -173,6 +173,10 @@ class RunProcessing(QtCore.QObject):
             else:
                 self.reset_camera()
 
+    def stop(self):
+        self.running = False
+        self.PPM_object.stop()
+
 
 
 
