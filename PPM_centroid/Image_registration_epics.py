@@ -16,6 +16,7 @@ from PyQt5.uic import loadUiType
 import warnings
 from processing_module import RunRegistration
 from analysis_tools import YagAlign
+from analysis_tools import XTESAlign
 
 Ui_MainWindow, QMainWindow = loadUiType('image_register.ui')
 
@@ -222,10 +223,10 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
                 if isinstance(single_item, pg.graphicsItems.LabelItem.LabelItem):
                     single_item.setText(single_item.text, **legendLabelStyle)
 
-
-
-
-        self.yag1 = YagAlign()
+        if self.imager[-9:] == 'XTES:CAM:':
+            self.yag1 = XTESAlign()
+        else:
+            self.yag1 = YagAlign()
 
         # the image to be transformed
         #im1 = np.array(imageio.imread("test_pattern.png")[32:2650, 32:2650, 3],dtype='float')
