@@ -261,13 +261,13 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             lineoutPlot = canvas.addPlot()
             lineoutData = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100))
             lineoutPlot.setYRange(0, 1)
-            self.label_plot(lineoutPlot, 'x (pixels)', 'Intensity')
+            self.label_plot(lineoutPlot, u'x (\u03BCm)', 'Intensity')
             lineoutPlot.setXLink(view)
         elif direction == 'vertical':
             lineoutPlot = canvas.addPlot()
             lineoutData = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100))
             lineoutPlot.setXRange(0, 1)
-            self.label_plot(lineoutPlot, 'Intensity', 'y (pixels)')
+            self.label_plot(lineoutPlot, 'Intensity', u'y (\u03BCm)')
             lineoutPlot.setYLink(view)
         else:
             lineoutPlot = None
