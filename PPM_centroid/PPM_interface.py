@@ -291,21 +291,23 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         yaxis.tickFont = self.font
         yaxis.setPen(pg.mkPen('w', width=1))
 
-    def get_FOV(self):
-        # get ROI info
-        width = PV(self.imagerpv + 'CAM:IMAGE2:ROI:SizeX_RBV').get()
-        height = PV(self.imagerpv + 'CAM:IMAGE2:ROI:SizeY_RBV').get()
-
-        return width, height
+    # def get_FOV(self):
+    #     # get ROI info
+    # 
+    #     # width = PV(self.imagerpv + 'CAM:IMAGE2:ROI:SizeX_RBV').get()
+    #     # height = PV(self.imagerpv + 'CAM:IMAGE2:ROI:SizeY_RBV').get()
+    # 
+    #     return width, height
 
     def change_state(self):
         if self.runButton.text() == 'Run':
 
-            width, height = self.get_FOV()
+            self.registration = RunProcessing(self.imagerpv, self.data_dict)
+
+            width, height = self.registration.get_FOV()
 
             self.update_viewbox(self.view0, width, height, self.im0Rect)
 
-            self.registration = RunProcessing(self.imagerpv, self.data_dict)
             self.thread = QtCore.QThread()
             self.thread.start()
 

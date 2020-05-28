@@ -31,6 +31,11 @@ class RunProcessing(QtCore.QObject):
 
         #### Start  #####################
         self._update()
+        
+    def get_FOV(self):
+        width = self.PPM_object.FOV
+        height = np.copy(width)
+        return width, height
 
     def _update(self):
 
