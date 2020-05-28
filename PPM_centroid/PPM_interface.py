@@ -76,7 +76,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         xaxis.tickFont = self.font
         xaxis.setPen(pg.mkPen('w',width=1))
         yaxis = self.xcentroid_plot.getAxis('left')
-        yaxis.setLabel(text='X Centroid (pixels)',**self.labelStyle)
+        yaxis.setLabel(text=u'X Centroid (\u03BCm)',**self.labelStyle)
         yaxis.tickFont = self.font
         yaxis.setPen(pg.mkPen('w',width=1))
 
@@ -107,7 +107,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         xaxis.tickFont = font
         xaxis.setPen(pg.mkPen('w',width=1))
         yaxis = self.ycentroid_plot.getAxis('left')
-        yaxis.setLabel(text='Y Centroid (pixels)',**labelStyle)
+        yaxis.setLabel(text=u'Y Centroid (\u03BCm)',**labelStyle)
         yaxis.tickFont = font
         yaxis.setPen(pg.mkPen('w',width=1))
 

@@ -88,8 +88,6 @@ class RunProcessing(QtCore.QObject):
         self.PPM_object.stop()
 
 
-
-
 class RunRegistration(QtCore.QObject):
     sig = QtCore.pyqtSignal(dict)
 
