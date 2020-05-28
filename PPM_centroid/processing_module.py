@@ -81,7 +81,7 @@ class RunProcessing(QtCore.QObject):
                 QtCore.QTimer.singleShot(100, self._update)
                 self.counter += 1
             else:
-                self.reset_camera()
+                self.PPM_object.reset_camera()
 
     def stop(self):
         self.running = False
