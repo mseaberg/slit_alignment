@@ -159,7 +159,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             'K1': ['IM1K1', 'IM2K1'],
             'K2': ['IM1K2', 'IM2K2', 'IM3K2', 'IM4K2', 'IM5K2', 'IM6K2', 'IM7K2'],
             'K3': ['IM1K3', 'IM2K3', 'IM3K3'],
-            'K4': ['IM1K4', 'IM2K4', 'IM3K4', 'IM4K4', 'IM5K4', 'IM5K4']
+            'K4': ['IM1K4', 'IM2K4', 'IM3K4', 'IM4K4', 'IM5K4', 'IM6K4']
         }
 
         # dictionary of imager PV prefixes
@@ -172,8 +172,12 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                    'IM6K2:PPM:', 'IM7K2:PPM:'],
             'K3': ['IM1K3:PPM:', 'IM2K3:PPM:', 'IM3K3:PPM:'],
             'K4': ['IM1K4:PPM:', 'IM2K4:PPM:', 'IM3K4:PPM:', 'IM4K4:PPM:', 'IM5K4:PPM:',
-                   'IM5K4:PPM:']
+                   'IM6K4:PPM:']
         }
+
+        # list of imagers with a wavefront sensor
+        self.WFS_list = ['IM2K0', 'IM2L0', 'IM5K4', 'IM6K4', 'IM6K2', 'IM3K3', 'IM4L1']
+
         # initialize line combo box
         self.line = 'L0'
         self.lineComboBox.addItems(self.line_list)
@@ -185,6 +189,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.imagerpv = self.imagerpv_list[0]
         self.imagerComboBox.clear()
         self.imagerComboBox.addItems(self.imager_list)
+
+        # disable wavefront checkbox by default since IM1L0 doesn't have a WFS
+        self.wavefrontCheckBox.setEnabled(False)
 
         #self.data_dict['centering'] = np.zeros(2)
         self.set_min()
@@ -209,6 +216,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
     def change_imager(self, index):
         # update imager
         self.imager = self.imager_list[index]
+        # check if this imager has a wavefront sensor
+        if self.imager in self.WFS_list:
+            self.wavefrontCheckBox.setEnabled(True)
         self.imagerpv = self.imagerpv_list[index]
         # reset data_dict
         self.reset_data_dict()
