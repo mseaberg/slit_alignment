@@ -35,6 +35,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # connect imager combo box
         self.imagerComboBox.currentIndexChanged.connect(self.change_imager)
 
+        # initialize tab to basic tab
+        self.tabWidget.setCurrentIndex(0)
+
         # font styles
         self.labelStyle = {'color': '#FFF', 'font-size': '10pt'}
         self.font = QtGui.QFont()
