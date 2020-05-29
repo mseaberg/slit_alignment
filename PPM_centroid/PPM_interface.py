@@ -345,7 +345,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             # enable wavefront sensor checkbox if imager is has a wavefront sensor
             if self.imager in self.WFS_list:
                 self.wavefrontCheckBox.setEnabled(True)
-            self.wavefrontCheckBox.setEnabled(False)
             self.lineComboBox.setEnabled(True)
             self.imagerComboBox.setEnabled(True)
 
