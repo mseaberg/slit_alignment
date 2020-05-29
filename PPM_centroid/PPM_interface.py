@@ -219,6 +219,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # check if this imager has a wavefront sensor
         if self.imager in self.WFS_list:
             self.wavefrontCheckBox.setEnabled(True)
+        else:
+            self.wavefrontCheckBox.setEnabled(False)
         self.imagerpv = self.imagerpv_list[index]
         # reset data_dict
         self.reset_data_dict()
