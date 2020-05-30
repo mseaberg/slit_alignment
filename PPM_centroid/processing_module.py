@@ -12,14 +12,14 @@ import sys
 class RunProcessing(QtCore.QObject):
     sig = QtCore.pyqtSignal(dict)
 
-    def __init__(self, imager_prefix, data_dict, WFS=None):
+    def __init__(self, imager_prefix, data_dict, wfs_name=None):
         super(RunProcessing, self).__init__()
 
         # get wavefront sensor (may be None)
-        self.WFS = WFS
+        self.wfs_name = wfs_name
 
-        if WFS is not None:
-            self.WFS_object = optics.WFS_Device(WFS)
+        if wfs_name is not None:
+            self.WFS_object = optics.WFS_Device(wfs_name)
         else:
             self.WFS_object = None
 
