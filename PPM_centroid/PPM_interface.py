@@ -256,13 +256,13 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['x'] = np.linspace(-1024, 1023, 100)
         self.data_dict['y'] = np.linspace(-1024, 1023, 100)
 
-        if self.wavefrontCheckBox.isChecked():
-            self.data_dict['z_x'] = -np.ones(100)
-            self.data_dict['z_y'] = -np.ones(100)
-            self.data_dict['x_res'] = np.zeros(100)
-            self.data_dict['y_res'] = np.zeros(100)
-            self.data_dict['x_prime'] = np.linspace(-1024, 1023, 100)
-            self.data_dict['y_prime'] = np.linspace(-1024, 1023, 100)
+        # wavefront sensor data
+        self.data_dict['z_x'] = -np.ones(100)
+        self.data_dict['z_y'] = -np.ones(100)
+        self.data_dict['x_res'] = np.zeros(100)
+        self.data_dict['y_res'] = np.zeros(100)
+        self.data_dict['x_prime'] = np.linspace(-1024, 1023, 100)
+        self.data_dict['y_prime'] = np.linspace(-1024, 1023, 100)
 
 
     def setup_viewbox(self, viewbox, width):
