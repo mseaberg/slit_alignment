@@ -12,11 +12,19 @@ import sys
 class RunProcessing(QtCore.QObject):
     sig = QtCore.pyqtSignal(dict)
 
-    def __init__(self, imager_prefix, data_dict):
+    def __init__(self, imager_prefix, data_dict, WFS=None):
         super(RunProcessing, self).__init__()
 
+        # get wavefront sensor (may be None)
+        self.WFS = WFS
+
+        if WFS is not None:
+            self.WFS_object = optics.WFS_Device(WFS)
+        else:
+            self.WFS_object = None
+
         # PPM object for image acquisition and processing
-        self.PPM_object = optics.PPM_Imager(imager_prefix, threshold=0.1)
+        self.PPM_object = optics.PPM_Device(imager_prefix, threshold=0.1)
 
         self.running = True
 
@@ -37,6 +45,10 @@ class RunProcessing(QtCore.QObject):
         height = np.copy(width)
         return width, height
 
+    def update_1d_data(self, dict_key, new_value):
+        self.data_dict[dict_key] = np.roll(self.data_dict[dict_key], -1)
+        self.data_dict[dict_key][-1] = new_value
+
     def _update(self):
 
         if self.running:
@@ -44,12 +56,9 @@ class RunProcessing(QtCore.QObject):
             self.PPM_object.get_image()
 
             # update dictionary
-            self.data_dict['cx'] = np.roll(self.data_dict['cx'], -1)
-            self.data_dict['cy'] = np.roll(self.data_dict['cy'], -1)
-            self.data_dict['timestamps'] = np.roll(self.data_dict['timestamps'], -1)
-            self.data_dict['cx'][-1] = self.PPM_object.cx
-            self.data_dict['cy'][-1] = self.PPM_object.cy
-            self.data_dict['timestamps'][-1] = self.PPM_object.time_stamp
+            self.update_1d_data('cx', self.PPM_object.cx)
+            self.update_1d_data('cy', self.PPM_object.cy)
+            self.update_1d_data('timestamps', self.PPM_object.time_stamp)
 
             # get lineouts
             lineout_x = self.PPM_object.x_lineout
@@ -61,6 +70,18 @@ class RunProcessing(QtCore.QObject):
             self.data_dict['lineout_y'] = lineout_y/np.max(lineout_y)
             self.data_dict['x'] = self.PPM_object.x
             self.data_dict['y'] = self.PPM_object.y
+
+            # wavefront sensing
+            if self.WFS_object is not None:
+                wfs_data, wfs_param = self.PPM_object.retrieve_wavefront(self.WFS_object)
+
+                self.update_1d_data('z_x', wfs_data['z2x'])
+                self.update_1d_data('z_y', wfs_data['z2y'])
+                self.data_dict['x_res'] = wfs_data['x_res']
+                self.data_dict['y_res'] = wfs_data['y_res']
+                self.data_dict['x_prime'] = wfs_data['x_prime']
+                self.data_dict['y_prime'] = wfs_data['y_prime']
+
 
             # frame rate code
             now = time.time()

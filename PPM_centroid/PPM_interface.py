@@ -178,6 +178,17 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # list of imagers with a wavefront sensor
         self.WFS_list = ['IM2K0', 'IM2L0', 'IM5K4', 'IM6K4', 'IM6K2', 'IM3K3', 'IM4L1']
 
+        # dictionary of wavefront sensor corresponding to imager
+        self.WFS_dict = {
+            'IM2K0': 'PF1K0',
+            'IM2L0': 'PF1L0',
+            'IM5K4': 'PF1K4',
+            'IM6K4': 'PF2K4',
+            'IM6K2': 'PF1K2',
+            'IM3K3': 'PF1K3',
+            'IM4L1': 'PF1L1'
+        }
+
         # initialize line combo box
         self.line = 'L0'
         self.lineComboBox.addItems(self.line_list)
@@ -196,6 +207,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         #self.data_dict['centering'] = np.zeros(2)
         self.set_min()
         self.set_max()
+
+        # initialize registration object
+        self.registration = None
 
     def run_alignment_screen(self):
 
@@ -241,6 +255,15 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['lineout_y'] = np.zeros(100)
         self.data_dict['x'] = np.linspace(-1024, 1023, 100)
         self.data_dict['y'] = np.linspace(-1024, 1023, 100)
+
+        if self.wavefrontCheckBox.isChecked():
+            self.data_dict['z_x'] = -np.ones(100)
+            self.data_dict['z_y'] = -np.ones(100)
+            self.data_dict['x_res'] = np.zeros(100)
+            self.data_dict['y_res'] = np.zeros(100)
+            self.data_dict['x_prime'] = np.linspace(-1024, 1023, 100)
+            self.data_dict['y_prime'] = np.linspace(-1024, 1023, 100)
+
 
     def setup_viewbox(self, viewbox, width):
         """
@@ -317,7 +340,11 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
     def change_state(self):
         if self.runButton.text() == 'Run':
 
-            self.registration = RunProcessing(self.imagerpv, self.data_dict)
+            if self.wavefrontCheckBox.isChecked():
+                wfs_name = self.WFS_dict[self.imager]
+                self.registration = RunProcessing(self.imagerpv, self.data_dict, wfs_name=wfs_name)
+            else:
+                self.registration = RunProcessing(self.imagerpv, self.data_dict)
 
             width, height = self.registration.get_FOV()
 
