@@ -314,7 +314,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         if direction == 'horizontal':
             lineoutPlot = canvas.addPlot()
-            legend = lineoutPlot.addLegend()
+            legend = lineoutPlot.addLegend(offset=(30,5))
             lineoutData = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100),
                                            pen=pg.mkPen(colors[0], width=2),name=names[0])
             lineoutFit = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100),
@@ -325,13 +325,11 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             lineoutPlot.setXLink(view)
         elif direction == 'vertical':
             lineoutPlot = canvas.addPlot()
-            legend = lineoutPlot.addLegend()
             lineoutData = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100),
                                            pen=pg.mkPen(colors[0], width=2),name=names[0])
             lineoutFit = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100),
                                            pen=pg.mkPen(colors[1], width=2),name=names[1])
             lineoutPlot.setXRange(0, 1)
-            self.setup_legend(legend)
             self.label_plot(lineoutPlot, 'Intensity', u'y (\u03BCm)')
             lineoutPlot.setYLink(view)
         else:
