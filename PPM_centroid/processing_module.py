@@ -51,7 +51,7 @@ class RunProcessing(QtCore.QObject):
         self.data_dict[dict_key][-1] = new_value
 
     def running_average(self, source_key, dest_key):
-        self.data_dict[dest_key] = pd.Series(self.data_dict[source_key]).rolling(10).mean()
+        self.data_dict[dest_key] = pd.Series(self.data_dict[source_key]).rolling(10, min_periods=1).mean().values
 
     def _update(self):
 
