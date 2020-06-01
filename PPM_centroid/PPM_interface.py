@@ -65,8 +65,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                                     self.view0,
                                     'vertical'))
 
-        #  x centroid plot
-        self.xcentroid_plot = self.plotCanvas.addPlot(row=0,col=0,rowspan=1,colspan=2)
+        #  centroid plot
+        self.centroid_plot = self.plotCanvas.addPlot(row=0,col=0,rowspan=1,colspan=2)
 
         # labelStyle = {'color': '#FFF', 'font-size': '12pt'}
         #
@@ -74,30 +74,30 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # font.setPointSize(10)
         # font.setFamily('Arial')
 
-        xaxis = self.xcentroid_plot.getAxis('bottom')
+        xaxis = self.centroid_plot.getAxis('bottom')
         xaxis.setLabel(text='Time (s)',**self.labelStyle)
         xaxis.tickFont = self.font
         xaxis.setPen(pg.mkPen('w',width=1))
-        yaxis = self.xcentroid_plot.getAxis('left')
-        yaxis.setLabel(text=u'X Centroid (\u03BCm)',**self.labelStyle)
+        yaxis = self.centroid_plot.getAxis('left')
+        yaxis.setLabel(text=u'Beam Centroid (\u03BCm)',**self.labelStyle)
         yaxis.tickFont = self.font
         yaxis.setPen(pg.mkPen('w',width=1))
 
-        self.xcentroid_plot.showGrid(x=True,y=True,alpha=.8)
+        self.centroid_plot.showGrid(x=True,y=True,alpha=.8)
         #self.contrast_plot.setYRange(0,1.5)
-        self.hplot = {}
-        names = ['Top Left','Top Right','Bottom Left','Bottom Right']
-        colors = ['r','g','c','m']
+        self.centroid_lines = {}
+        names = ['X','Y']
+        colors = ['r','c']
 
         #legend = self.contrast_plot.addLegend()
-        for i in range(1):
+        for i in range(2):
 
             #self.hplot[i] = self.contrast_plot.plot(np.linspace(-99,0,100),np.zeros(100),pen=(i,4),name=names[i])
-            self.hplot[i] = self.xcentroid_plot.plot(np.linspace(-99,0,100), np.zeros(100),
+            self.centroid_lines[i] = self.centroid_plot.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(colors[i], width=5),name=names[i])
 
         #  rotation plot
-        self.ycentroid_plot = self.plotCanvas.addPlot(row=1,col=0,rowspan=1,colspan=2)
+        self.width_plot = self.plotCanvas.addPlot(row=1,col=0,rowspan=1,colspan=2)
 
         labelStyle = {'color': '#FFF', 'font-size': '12pt'}
 
@@ -105,26 +105,26 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         font.setPointSize(10)
         font.setFamily('Arial')
 
-        xaxis = self.ycentroid_plot.getAxis('bottom')
+        xaxis = self.width_plot.getAxis('bottom')
         xaxis.setLabel(text='Time (s)',**labelStyle)
         xaxis.tickFont = font
         xaxis.setPen(pg.mkPen('w',width=1))
-        yaxis = self.ycentroid_plot.getAxis('left')
-        yaxis.setLabel(text=u'Y Centroid (\u03BCm)',**labelStyle)
+        yaxis = self.width_plot.getAxis('left')
+        yaxis.setLabel(text=u'Beam FWHM (\u03BCm)',**labelStyle)
         yaxis.tickFont = font
         yaxis.setPen(pg.mkPen('w',width=1))
 
-        self.ycentroid_plot.showGrid(x=True,y=True,alpha=.8)
+        self.width_plot.showGrid(x=True,y=True,alpha=.8)
         #self.contrast_plot.setYRange(0,1.5)
-        self.vplot = {}
-        names = ['Top Left','Top Right','Bottom Left','Bottom Right']
-        colors = ['r','g','c','m']
+        self.width_lines = {}
+        names = ['X', 'Y']
+        colors = ['r', 'c']
 
         #legend = self.contrast_plot.addLegend()
         for i in range(1):
 
             #self.hplot[i] = self.contrast_plot.plot(np.linspace(-99,0,100),np.zeros(100),pen=(i,4),name=names[i])
-            self.vplot[i] = self.ycentroid_plot.plot(np.linspace(-99,0,100), np.zeros(100),
+            self.width_lines[i] = self.width_plot.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(colors[i], width=5),name=names[i])
 
         #legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
@@ -446,21 +446,27 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         timestamp = data_dict['timestamps'] - now_stamp
         cx = data_dict['cx']
         cy = data_dict['cy']
+        wx = data_dict['wx']
+        wy = data_dict['wy']
 
         mask = data_dict['timestamps']>0
         cx = cx[mask]
         cy = cy[mask]
+        wx = wx[mask]
+        wy = wy[mask]
         timestamp = timestamp[mask]
         
         cx_range = np.max(cx)-np.min(cx)
         cy_range = np.max(cy)-np.min(cy)
 
         # lineouts
-        self.hplot[0].setData(timestamp, cx)
-        self.xcentroid_plot.setXRange(-10, 0)
+        self.centroid_lines[0].setData(timestamp, cx)
+        self.centroid_lines[1].setData(timestamp, cy)
+        self.centroid_plot.setXRange(-10, 0)
         #self.contrast_plot.setYRange(np.mean(cx)-5*cx_range, np.mean(cx)+5*cx_range)
-        self.vplot[0].setData(timestamp, cy)
-        self.ycentroid_plot.setXRange(-10, 0)
+        self.width_lines[0].setData(timestamp, wx)
+        self.width_lines[1].setData(timestamp, wy)
+        self.width_plot.setXRange(-10, 0)
         #self.rotation_plot.setYRange(np.mean(cy)-5*cy_range, np.mean(cy)+5*cy_range)
 
         self.horizontalLineout.setData(data_dict['x'], data_dict['lineout_x'])
