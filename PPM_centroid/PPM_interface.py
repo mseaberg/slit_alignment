@@ -314,7 +314,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         if direction == 'horizontal':
             lineoutPlot = canvas.addPlot()
-            legend = lineoutPlot.addLegend(offset=(30,5))
+            legend = lineoutPlot.addLegend(offset=(10,0))
             lineoutData = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100),
                                            pen=pg.mkPen(colors[0], width=2),name=names[0])
             lineoutFit = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100),
