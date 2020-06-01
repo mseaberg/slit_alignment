@@ -309,18 +309,29 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         """
         Method to set up lineout plots.
         """
+        names = ['Lineout', 'Fit']
+        colors = ['r', 'c']
+
         if direction == 'horizontal':
             lineoutPlot = canvas.addPlot()
-            lineoutData = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100))
-            lineoutFit = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100))
+            legend = lineoutPlot.addLegend()
+            lineoutData = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100),
+                                           pen=pg.mkPen(colors[0], width=2),name=names[0])
+            lineoutFit = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100),
+                                           pen=pg.mkPen(colors[1], width=2),name=names[1])
             lineoutPlot.setYRange(0, 1)
+            self.setup_legend(legend)
             self.label_plot(lineoutPlot, u'x (\u03BCm)', 'Intensity')
             lineoutPlot.setXLink(view)
         elif direction == 'vertical':
             lineoutPlot = canvas.addPlot()
-            lineoutData = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100))
-            lineoutFit = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100))
+            legend = lineoutPlot.addLegend()
+            lineoutData = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100),
+                                           pen=pg.mkPen(colors[0], width=2),name=names[0])
+            lineoutFit = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100),
+                                           pen=pg.mkPen(colors[1], width=2),name=names[1])
             lineoutPlot.setXRange(0, 1)
+            self.setup_legend(legend)
             self.label_plot(lineoutPlot, 'Intensity', u'y (\u03BCm)')
             lineoutPlot.setYLink(view)
         else:
