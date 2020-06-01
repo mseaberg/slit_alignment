@@ -89,12 +89,20 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         names = ['X','Y']
         colors = ['r','c']
 
-        #legend = self.contrast_plot.addLegend()
+        legend = self.centroid_plot.addLegend()
         for i in range(2):
 
             #self.hplot[i] = self.contrast_plot.plot(np.linspace(-99,0,100),np.zeros(100),pen=(i,4),name=names[i])
             self.centroid_lines[i] = self.centroid_plot.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(colors[i], width=5),name=names[i])
+
+        self.setup_legend(legend)
+
+        # legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
+        # for item in legend.items:
+        #    for single_item in item:
+        #        if isinstance(single_item, pg.graphicsItems.LabelItem.LabelItem):
+        #            single_item.setText(single_item.text, **legendLabelStyle)
 
         #  rotation plot
         self.width_plot = self.plotCanvas.addPlot(row=1,col=0,rowspan=1,colspan=2)
@@ -120,12 +128,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         names = ['X', 'Y']
         colors = ['r', 'c']
 
-        #legend = self.contrast_plot.addLegend()
-        for i in range(1):
+        legend = self.width_plot.addLegend()
+        for i in range(2):
 
             #self.hplot[i] = self.contrast_plot.plot(np.linspace(-99,0,100),np.zeros(100),pen=(i,4),name=names[i])
             self.width_lines[i] = self.width_plot.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(colors[i], width=5),name=names[i])
+
+        self.setup_legend(legend)
 
         #legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
         #for item in legend.items:
@@ -210,6 +220,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         # initialize registration object
         self.registration = None
+
+    def setup_legend(self, legend):
+
+        legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
+        for item in legend.items:
+           for single_item in item:
+               if isinstance(single_item, pg.graphicsItems.LabelItem.LabelItem):
+                   single_item.setText(single_item.text, **legendLabelStyle)
 
     def run_alignment_screen(self):
 
