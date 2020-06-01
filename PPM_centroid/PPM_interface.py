@@ -54,13 +54,13 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.view0.addItem(self.img0)
 
         # horizontal lineout
-        self.horizontalPlot, self.horizontalLineout = (
+        self.horizontalPlot, self.horizontalLineout, self.horizontalFit = (
             self.initialize_lineout(self.hLineoutCanvas,
                                     self.view0,
                                     'horizontal'))
 
         # vertical lineout
-        self.verticalPlot, self.verticalLineout = (
+        self.verticalPlot, self.verticalLineout, self.verticalFit = (
             self.initialize_lineout(self.vLineoutCanvas,
                                     self.view0,
                                     'vertical'))
@@ -92,19 +92,12 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         legend = self.centroid_plot.addLegend()
         for i in range(2):
 
-            #self.hplot[i] = self.contrast_plot.plot(np.linspace(-99,0,100),np.zeros(100),pen=(i,4),name=names[i])
             self.centroid_lines[i] = self.centroid_plot.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(colors[i], width=5),name=names[i])
 
         self.setup_legend(legend)
 
-        # legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
-        # for item in legend.items:
-        #    for single_item in item:
-        #        if isinstance(single_item, pg.graphicsItems.LabelItem.LabelItem):
-        #            single_item.setText(single_item.text, **legendLabelStyle)
-
-        #  rotation plot
+        # plot FWHM widths
         self.width_plot = self.plotCanvas.addPlot(row=1,col=0,rowspan=1,colspan=2)
 
         labelStyle = {'color': '#FFF', 'font-size': '12pt'}
@@ -131,7 +124,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         legend = self.width_plot.addLegend()
         for i in range(2):
 
-            #self.hplot[i] = self.contrast_plot.plot(np.linspace(-99,0,100),np.zeros(100),pen=(i,4),name=names[i])
             self.width_lines[i] = self.width_plot.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(colors[i], width=5),name=names[i])
 
@@ -273,6 +265,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['pixSize'] = 0.0
         self.data_dict['lineout_x'] = np.zeros(100)
         self.data_dict['lineout_y'] = np.zeros(100)
+        self.data_dict['fit_x'] = np.zeros(100)
+        self.data_dict['fit_y'] = np.zeros(100)
         self.data_dict['x'] = np.linspace(-1024, 1023, 100)
         self.data_dict['y'] = np.linspace(-1024, 1023, 100)
 
@@ -318,20 +312,23 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         if direction == 'horizontal':
             lineoutPlot = canvas.addPlot()
             lineoutData = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100))
+            lineoutFit = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100))
             lineoutPlot.setYRange(0, 1)
             self.label_plot(lineoutPlot, u'x (\u03BCm)', 'Intensity')
             lineoutPlot.setXLink(view)
         elif direction == 'vertical':
             lineoutPlot = canvas.addPlot()
             lineoutData = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100))
+            lineoutFit = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100))
             lineoutPlot.setXRange(0, 1)
             self.label_plot(lineoutPlot, 'Intensity', u'y (\u03BCm)')
             lineoutPlot.setYLink(view)
         else:
             lineoutPlot = None
             lineoutData = None
+            lineoutFit = None
             pass
-        return lineoutPlot, lineoutData
+        return lineoutPlot, lineoutData, lineoutFit
 
     def label_plot(self, plot, xlabel, ylabel):
         """
@@ -490,7 +487,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         #self.rotation_plot.setYRange(np.mean(cy)-5*cy_range, np.mean(cy)+5*cy_range)
 
         self.horizontalLineout.setData(data_dict['x'], data_dict['lineout_x'])
+        self.horizontalFit.setData(data_dict['x'], data_dict['fit_x'])
         self.verticalLineout.setData(data_dict['lineout_y'], data_dict['y'])
+        self.verticalFit.setData(data_dict['fit_y'], data_dict['y'])
 
         #self.circ0.setRect(full_center[1]-25,full_center[0]-25,50,50)
 

@@ -66,12 +66,19 @@ class RunProcessing(QtCore.QObject):
             lineout_x = self.PPM_object.x_lineout
             lineout_y = self.PPM_object.y_lineout
 
+            # gaussian fits
+            fit_x = np.exp(-(self.PPM_object.x - self.PPM_object.cx) ** 2 / 2 / (self.PPM_object.wx / 2.355) ** 2)
+            fit_y = np.exp(-(self.PPM_object.y - self.PPM_object.cy) ** 2 / 2 / (self.PPM_object.wy / 2.355) ** 2)
+
             # update dictionary
             self.data_dict['im1'] = self.PPM_object.profile
             self.data_dict['lineout_x'] = lineout_x/np.max(lineout_x)
             self.data_dict['lineout_y'] = lineout_y/np.max(lineout_y)
+            self.data_dict['fit_x'] = fit_x
+            self.data_dict['fit_y'] = fit_y
             self.data_dict['x'] = self.PPM_object.x
             self.data_dict['y'] = self.PPM_object.y
+
 
             # wavefront sensing
             if self.WFS_object is not None:
