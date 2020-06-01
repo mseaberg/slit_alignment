@@ -245,6 +245,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['rotation'] = np.zeros((4, 100))
         self.data_dict['cx'] = -np.ones(100)
         self.data_dict['cy'] = -np.ones(100)
+        self.data_dict['wx'] = -np.ones(100)
+        self.data_dict['wy'] = -np.ones(100)
         self.data_dict['timestamps'] = -np.ones(100)
         self.data_dict['iteration'] = np.tile(np.linspace(-99, 0, 100), (4, 1))
         self.data_dict['counter'] = 0.

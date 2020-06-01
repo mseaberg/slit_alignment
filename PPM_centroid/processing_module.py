@@ -58,6 +58,8 @@ class RunProcessing(QtCore.QObject):
             # update dictionary
             self.update_1d_data('cx', self.PPM_object.cx)
             self.update_1d_data('cy', self.PPM_object.cy)
+            self.update_1d_data('wx', self.PPM_object.wx)
+            self.update_1d_data('wy', self.PPM_object.wy)
             self.update_1d_data('timestamps', self.PPM_object.time_stamp)
 
             # get lineouts
