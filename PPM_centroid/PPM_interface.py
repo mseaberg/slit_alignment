@@ -86,11 +86,11 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.centroid_plot.showGrid(x=True,y=True,alpha=.8)
         #self.contrast_plot.setYRange(0,1.5)
         self.centroid_lines = {}
-        names = ['X','Y']
-        colors = ['r','c']
+        names = ['X','Y','X smoothed','Y smoothed']
+        colors = ['r','c','m','g']
 
         legend = self.centroid_plot.addLegend()
-        for i in range(2):
+        for i in range(4):
 
             self.centroid_lines[i] = self.centroid_plot.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(colors[i], width=5),name=names[i])
@@ -118,11 +118,11 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.width_plot.showGrid(x=True,y=True,alpha=.8)
         #self.contrast_plot.setYRange(0,1.5)
         self.width_lines = {}
-        names = ['X', 'Y']
-        colors = ['r', 'c']
+        names = ['X', 'Y', 'X smoothed', 'Y smoothed']
+        colors = ['r', 'c','m','g']
 
         legend = self.width_plot.addLegend()
-        for i in range(2):
+        for i in range(4):
 
             self.width_lines[i] = self.width_plot.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(colors[i], width=5),name=names[i])
@@ -257,6 +257,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['cy'] = -np.ones(100)
         self.data_dict['wx'] = -np.ones(100)
         self.data_dict['wy'] = -np.ones(100)
+        self.data_dict['cx_smooth'] = -np.ones(100)
+        self.data_dict['cy_smooth'] = -np.ones(100)
+        self.data_dict['wx_smooth'] = -np.ones(100)
+        self.data_dict['wy_smooth'] = -np.ones(100)
         self.data_dict['timestamps'] = -np.ones(100)
         self.data_dict['iteration'] = np.tile(np.linspace(-99, 0, 100), (4, 1))
         self.data_dict['counter'] = 0.
@@ -472,14 +476,22 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         timestamp = data_dict['timestamps'] - now_stamp
         cx = data_dict['cx']
         cy = data_dict['cy']
+        cxs = data_dict['cx_smooth']
+        cys = data_dict['cy_smooth']
         wx = data_dict['wx']
         wy = data_dict['wy']
+        wxs = data_dict['wx_smooth']
+        wys = data_dict['wy_smooth']
 
         mask = data_dict['timestamps']>0
         cx = cx[mask]
         cy = cy[mask]
+        cxs = cxs[mask]
+        cys = cys[mask]
         wx = wx[mask]
         wy = wy[mask]
+        wxs = wxs[mask]
+        wys = wys[mask]
         timestamp = timestamp[mask]
         
         cx_range = np.max(cx)-np.min(cx)
@@ -488,10 +500,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # lineouts
         self.centroid_lines[0].setData(timestamp, cx)
         self.centroid_lines[1].setData(timestamp, cy)
+        self.centroid_lines[2].setData(timestamp, cxs)
+        self.centroid_lines[3].setData(timestamp, cys)
         self.centroid_plot.setXRange(-10, 0)
         #self.contrast_plot.setYRange(np.mean(cx)-5*cx_range, np.mean(cx)+5*cx_range)
         self.width_lines[0].setData(timestamp, wx)
         self.width_lines[1].setData(timestamp, wy)
+        self.width_lines[2].setData(timestamp, wxs)
+        self.width_lines[3].setData(timestamp, wys)
         self.width_plot.setXRange(-10, 0)
         #self.rotation_plot.setYRange(np.mean(cy)-5*cy_range, np.mean(cy)+5*cy_range)
 

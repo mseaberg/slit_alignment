@@ -7,6 +7,7 @@ from pyqtgraph.Qt import QtCore
 from pcdsdevices.areadetector.detectors import PCDSAreaDetector
 from lcls_beamline_toolbox.xraybeamline2d import optics
 import sys
+import pandas as pd
 
 
 class RunProcessing(QtCore.QObject):
@@ -49,6 +50,9 @@ class RunProcessing(QtCore.QObject):
         self.data_dict[dict_key] = np.roll(self.data_dict[dict_key], -1)
         self.data_dict[dict_key][-1] = new_value
 
+    def running_average(self, source_key, dest_key):
+        self.data_dict[dest_key] = pd.Series(self.data_dict[source_key]).rolling(10).mean()
+
     def _update(self):
 
         if self.running:
@@ -60,6 +64,10 @@ class RunProcessing(QtCore.QObject):
             self.update_1d_data('cy', self.PPM_object.cy)
             self.update_1d_data('wx', self.PPM_object.wx)
             self.update_1d_data('wy', self.PPM_object.wy)
+            self.running_average('cx', 'cx_smooth')
+            self.running_average('cy', 'cy_smooth')
+            self.running_average('wx', 'wx_smooth')
+            self.running_average('wy', 'wy_smooth')
             self.update_1d_data('timestamps', self.PPM_object.time_stamp)
 
             # get lineouts
