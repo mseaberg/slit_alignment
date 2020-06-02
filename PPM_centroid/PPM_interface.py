@@ -15,6 +15,7 @@ from PyQt5.QtCore import Qt
 import warnings
 from processing_module import RunProcessing
 from Image_registration_epics import App
+import PPM_widgets
 
 Ui_MainWindow, QMainWindow = loadUiType('PPM_screen.ui')
 
@@ -55,26 +56,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.view0.addItem(self.img0)
 
         # crosshairs
-        self.redcrossh = QtWidgets.QGraphicsLineItem(1024 - 25, 1024, 1024 + 25, 1024)
-        self.redcrossv = QtWidgets.QGraphicsLineItem(1024, 1024 - 25, 1024, 1024 + 25)
-        self.redcrossh.setPen(QtGui.QPen(Qt.red, 8, Qt.SolidLine))
-        self.redcrossv.setPen(QtGui.QPen(Qt.red, 8, Qt.SolidLine))
-
-        self.view0.addItem(self.redcrossh)
-        self.view0.addItem(self.redcrossv)
-
-        self.redCrosshairLine = [self.redcrossh, self.redcrossv]
+        self.red_crosshair_widget = PPM_widgets.Crosshair('red', self.redCrosshair,
+                                                          self.red_x, self.red_y, self.im0Rect)
+        self.red_crosshair_widget.embed(self.view0)
 
         # crosshairs
-        self.bluecrossh = QtWidgets.QGraphicsLineItem(1024 - 25, 1024, 1024 + 25, 1024)
-        self.bluecrossv = QtWidgets.QGraphicsLineItem(1024, 1024 - 25, 1024, 1024 + 25)
-        self.bluecrossh.setPen(QtGui.QPen(Qt.blue, 8, Qt.SolidLine))
-        self.bluecrossv.setPen(QtGui.QPen(Qt.blue, 8, Qt.SolidLine))
-
-        self.view0.addItem(self.bluecrossh)
-        self.view0.addItem(self.bluecrossv)
-
-        self.blueCrosshairLine = [self.bluecrossh, self.bluecrossv]
+        self.blue_crosshair_widget = PPM_widgets.Crosshair('blue', self.blueCrosshair,
+                                                          self.blue_x, self.blue_y, self.im0Rect)
+        self.blue_crosshair_widget.embed(self.view0)
 
         # proxy = pg.SignalProxy(self.img0.scene().sigMouseMoved, rateLimit=60, slot=self.mouseMoved)
         self.im0Rect.scene().sigMouseClicked.connect(self.mouseClicked)
@@ -230,63 +219,38 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.registration = None
 
         # initialize crosshair selection (None selected)
-        self.current_crosshair_x = None
-        self.current_crosshair_y = None
         self.current_crosshair = None
 
     def draw_red_crosshair(self):
-        self.draw_crosshair(crosshair=self.redCrosshairLine, crosshair_x=self.red_x, crosshair_y=self.red_y)
+        self.red_crosshair_widget.update_position()
 
     def draw_blue_crosshair(self):
-        self.draw_crosshair(crosshair=self.blueCrosshairLine, crosshair_x=self.blue_x, crosshair_y=self.blue_y)
-
-    def draw_crosshair(self, crosshair=None, crosshair_x=None, crosshair_y=None):
-        if crosshair is None:
-            crosshair = self.current_crosshair
-        if crosshair_x is None:
-            crosshair_x = self.current_crosshair_x
-        if crosshair_y is None:
-            crosshair_y = self.current_crosshair_y
-        if crosshair is not None:
-            xPos = float(crosshair_x.text())
-            yPos = float(crosshair_y.text())
-            crosshair[0].setLine(xPos - self.im0Rect.boundingRect().width()*.02, yPos,
-                                xPos + self.im0Rect.boundingRect().width()*.02, yPos)
-            crosshair[1].setLine(xPos, yPos - self.im0Rect.boundingRect().height()*.02,
-                                xPos, yPos + self.im0Rect.boundingRect().height()*.02)
+        self.blue_crosshair_widget.update_position()
 
     def red_crosshair_toggled(self, evt):
         if evt:
             if self.blueCrosshair.isChecked():
                 self.blueCrosshair.toggle()
-            self.current_crosshair_x = self.red_x
-            self.current_crosshair_y = self.red_y
-            self.current_crosshair = self.redCrosshairLine
+            self.current_crosshair = self.red_crosshair_widget
         else:
-            self.current_crosshair_x = None
-            self.current_crosshair_y = None
             self.current_crosshair = None
 
     def blue_crosshair_toggled(self, evt):
         if evt:
             if self.redCrosshair.isChecked():
                 self.redCrosshair.toggle()
-            self.current_crosshair_x = self.blue_x
-            self.current_crosshair_y = self.blue_y
-            self.current_crosshair = self.blueCrosshairLine
+            self.current_crosshair = self.blue_crosshair_widget
         else:
-            self.current_crosshair_x = None
-            self.current_crosshair_y = None
             self.current_crosshair = None
 
     def mouseClicked(self, evt):
         # translate scene coordinates to viewbox coordinates
         coords = self.view0.mapSceneToView(evt.scenePos())
 
-        if self.current_crosshair_x is not None:
-            self.current_crosshair_x.setText('%.1f' % coords.x())
-            self.current_crosshair_y.setText('%.1f' % coords.y())
-            self.draw_crosshair()
+        if self.current_crosshair is not None:
+            self.current_crosshair.xLineEdit.setText('%.1f' % coords.x())
+            self.current_crosshair.yLineEdit.setText('%.1f' % coords.y())
+            self.current_crosshair.update_position()
         # update label
         #self.label_mouse.setText(u'Mouse coordinates: %.2f \u03BCm, %.2f \u03BCm' % (coords.x(), coords.y()))
 
@@ -387,35 +351,35 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         rect.setPen(QtGui.QPen(QtCore.Qt.white, width/50., QtCore.Qt.SolidLine))
         rect.setRect(-width/2, -height/2, width, height)
 
-    def update_crosshair_width(self):
-        thickness = self.im0Rect.boundingRect().width()*.01
-        self.redcrossh.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
-        self.redcrossv.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
-        self.bluecrossh.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
-        self.bluecrossv.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
-
-        try:
-            xPos = float(self.red_x.text())
-            yPos = float(self.red_y.text())
-        except ValueError:
-            xPos = -self.im0Rect.boundingRect().width()/2
-            yPos = -self.im0Rect.boundingRect().width()/2
-        self.redcrossh.setLine(xPos - self.im0Rect.boundingRect().width() * .02, yPos,
-                             xPos + self.im0Rect.boundingRect().width() * .02, yPos)
-        self.redcrossv.setLine(xPos, yPos - self.im0Rect.boundingRect().height() * .02,
-                             xPos, yPos + self.im0Rect.boundingRect().height() * .02)
-       
-        try:
-            xPos = float(self.red_x.text())
-            yPos = float(self.red_y.text())
-        except ValueError:
-            xPos = -self.im0Rect.boundingRect().width()/2
-            yPos = -self.im0Rect.boundingRect().width()/2
-
-        self.bluecrossh.setLine(xPos - self.im0Rect.boundingRect().width() * .02, yPos,
-                               xPos + self.im0Rect.boundingRect().width() * .02, yPos)
-        self.bluecrossv.setLine(xPos, yPos - self.im0Rect.boundingRect().height() * .02,
-                               xPos, yPos + self.im0Rect.boundingRect().height() * .02)
+    # def update_crosshair_width(self):
+    #     thickness = self.im0Rect.boundingRect().width()*.01
+    #     self.redcrossh.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
+    #     self.redcrossv.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
+    #     self.bluecrossh.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
+    #     self.bluecrossv.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
+    #
+    #     try:
+    #         xPos = float(self.red_x.text())
+    #         yPos = float(self.red_y.text())
+    #     except ValueError:
+    #         xPos = -self.im0Rect.boundingRect().width()/2
+    #         yPos = -self.im0Rect.boundingRect().width()/2
+    #     self.redcrossh.setLine(xPos - self.im0Rect.boundingRect().width() * .02, yPos,
+    #                          xPos + self.im0Rect.boundingRect().width() * .02, yPos)
+    #     self.redcrossv.setLine(xPos, yPos - self.im0Rect.boundingRect().height() * .02,
+    #                          xPos, yPos + self.im0Rect.boundingRect().height() * .02)
+    #
+    #     try:
+    #         xPos = float(self.red_x.text())
+    #         yPos = float(self.red_y.text())
+    #     except ValueError:
+    #         xPos = -self.im0Rect.boundingRect().width()/2
+    #         yPos = -self.im0Rect.boundingRect().width()/2
+    #
+    #     self.bluecrossh.setLine(xPos - self.im0Rect.boundingRect().width() * .02, yPos,
+    #                            xPos + self.im0Rect.boundingRect().width() * .02, yPos)
+    #     self.bluecrossv.setLine(xPos, yPos - self.im0Rect.boundingRect().height() * .02,
+    #                            xPos, yPos + self.im0Rect.boundingRect().height() * .02)
 
     def initialize_lineout(self, canvas, view, direction):
         """
@@ -487,7 +451,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             width, height = self.registration.get_FOV()
 
             self.update_viewbox(self.view0, width, height, self.im0Rect)
-            self.update_crosshair_width()
+            # self.update_crosshair_width()
+            self.red_crosshair_widget.update_width()
+            self.blue_crosshair_widget.update_width()
 
             self.thread = QtCore.QThread()
             self.thread.start()
