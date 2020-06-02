@@ -54,7 +54,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.view0.addItem(self.img0)
 
         # proxy = pg.SignalProxy(self.img0.scene().sigMouseMoved, rateLimit=60, slot=self.mouseMoved)
-        self.im0Rect.scene().sigMouseMoved.connect(self.mouseMoved)
+        self.im0Rect.scene().sigMouseClicked.connect(self.mouseMoved)
 
         # horizontal lineout
         self.horizontalPlot, self.horizontalLineout, self.horizontalFit = (
@@ -132,20 +132,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         self.setup_legend(legend)
 
-
-        # im1 = np.array(imageio.imread("PPM_alignment/IM1K2.png"),dtype='float')
-        # im1 = 255 - im1
-        #
-        # N, M = np.shape(im1)
-        # scale = 2048.0 / N
-        #
-        # self.im0 = interpolate.zoom(im1, scale)
-
-
         # initialize data dictionary
         self.data_dict = {}
         self.reset_data_dict()
-
 
         # list of beamlines
         self.line_list = ['L0', 'L1', 'K0', 'K1', 'K2', 'K3', 'K4']
@@ -211,7 +200,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
     def mouseMoved(self, evt):
         # translate scene coordinates to viewbox coordinates
-        coords = self.view0.mapSceneToView(evt)
+        coords = self.view0.mapSceneToView(evt.scenePos())
         # update label
         self.label_mouse.setText(u'Mouse coordinates: %.2f \u03BCm, %.2f \u03BCm' % (coords.x(), coords.y()))
 
