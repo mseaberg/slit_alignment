@@ -28,8 +28,8 @@ class Crosshair:
     def update_width(self):
         rect_width = self.rect.boundingRect().width()
         thickness = rect_width * .01
-        self.crossh.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
-        self.crossv.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
+        self.crossh.setPen(QtGui.QPen(self.color, thickness, Qt.SolidLine))
+        self.crossv.setPen(QtGui.QPen(self.color, thickness, Qt.SolidLine))
 
         try:
             xPos = float(self.xLineEdit.text())
@@ -48,3 +48,4 @@ class Crosshair:
         yPos = float(self.yLineEdit.text())
         self.crossh.setLine(xPos - rect_width*.02, yPos, xPos + rect_width*.02, yPos)
         self.crossv.setLine(xPos, yPos - rect_width*.02, xPos, yPos + rect_width*.02)
+

@@ -71,10 +71,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # connect crosshair selection
         self.redCrosshair.toggled.connect(self.red_crosshair_toggled)
         self.blueCrosshair.toggled.connect(self.blue_crosshair_toggled)
-        self.red_x.returnPressed.connect(self.draw_red_crosshair)
-        self.red_y.returnPressed.connect(self.draw_red_crosshair)
-        self.blue_x.returnPressed.connect(self.draw_blue_crosshair)
-        self.blue_y.returnPressed.connect(self.draw_blue_crosshair)
+        self.red_x.returnPressed.connect(self.red_crosshair_widget.update_position)
+        self.red_y.returnPressed.connect(self.red_crosshair_widget.update_position)
+        self.blue_x.returnPressed.connect(self.blue_crosshair_widget.update_position)
+        self.blue_y.returnPressed.connect(self.blue_crosshair_widget.update_position)
 
         # horizontal lineout
         self.horizontalPlot, self.horizontalLineout, self.horizontalFit = (
@@ -221,12 +221,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # initialize crosshair selection (None selected)
         self.current_crosshair = None
 
-    def draw_red_crosshair(self):
-        self.red_crosshair_widget.update_position()
-
-    def draw_blue_crosshair(self):
-        self.blue_crosshair_widget.update_position()
-
     def red_crosshair_toggled(self, evt):
         if evt:
             if self.blueCrosshair.isChecked():
@@ -251,9 +245,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             self.current_crosshair.xLineEdit.setText('%.1f' % coords.x())
             self.current_crosshair.yLineEdit.setText('%.1f' % coords.y())
             self.current_crosshair.update_position()
-        # update label
-        #self.label_mouse.setText(u'Mouse coordinates: %.2f \u03BCm, %.2f \u03BCm' % (coords.x(), coords.y()))
-
 
     def setup_legend(self, legend):
 
