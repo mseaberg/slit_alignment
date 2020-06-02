@@ -47,25 +47,19 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.font.setFamily('Arial')
 
         # Full image
-        #self.view0 = self.canvas.addViewBox(row=0,col=0,rowspan=2,colspan=3)
         self.view0 = self.canvas.addViewBox()
         self.im0Rect = self.setup_viewbox(self.view0, 1024)
         self.view0.setAspectLocked(True)
-        #self.view0.setRange(QtCore.QRectF(0,0, 512, 512))
         self.img0 = pg.ImageItem(border='w')
         self.view0.addItem(self.img0)
 
-        # crosshairs
-        self.red_crosshair_widget = PPM_widgets.Crosshair('red', self.redCrosshair,
-                                                          self.red_x, self.red_y, self.im0Rect)
-        self.red_crosshair_widget.embed(self.view0)
+        # red crosshair
+        self.red_crosshair_widget = PPM_widgets.Crosshair('red', self.red_x, self.red_y, self.im0Rect, self.view0)
 
-        # crosshairs
-        self.blue_crosshair_widget = PPM_widgets.Crosshair('blue', self.blueCrosshair,
-                                                          self.blue_x, self.blue_y, self.im0Rect)
-        self.blue_crosshair_widget.embed(self.view0)
+        # blue crosshair
+        self.blue_crosshair_widget = PPM_widgets.Crosshair('blue', self.blue_x, self.blue_y, self.im0Rect, self.view0)
 
-        # proxy = pg.SignalProxy(self.img0.scene().sigMouseMoved, rateLimit=60, slot=self.mouseMoved)
+        # connect to mouse click on image
         self.im0Rect.scene().sigMouseClicked.connect(self.mouseClicked)
 
         # connect crosshair selection
@@ -91,12 +85,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         #  centroid plot
         self.centroid_plot = self.plotCanvas.addPlot(row=0,col=0,rowspan=1,colspan=2)
 
-        # labelStyle = {'color': '#FFF', 'font-size': '12pt'}
-        #
-        # font = QtGui.QFont()
-        # font.setPointSize(10)
-        # font.setFamily('Arial')
-
         xaxis = self.centroid_plot.getAxis('bottom')
         xaxis.setLabel(text='Time (s)',**self.labelStyle)
         xaxis.tickFont = self.font
@@ -107,7 +95,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         yaxis.setPen(pg.mkPen('w',width=1))
 
         self.centroid_plot.showGrid(x=True,y=True,alpha=.8)
-        #self.contrast_plot.setYRange(0,1.5)
         self.centroid_lines = {}
         names = ['X','Y','X smoothed','Y smoothed']
         colors = ['r','c','m','g']
@@ -211,7 +198,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # disable wavefront checkbox by default since IM1L0 doesn't have a WFS
         self.wavefrontCheckBox.setEnabled(False)
 
-        #self.data_dict['centering'] = np.zeros(2)
         self.set_min()
         self.set_max()
 
@@ -315,7 +301,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['x_prime'] = np.linspace(-1024, 1023, 100)
         self.data_dict['y_prime'] = np.linspace(-1024, 1023, 100)
 
-
     def setup_viewbox(self, viewbox, width):
         """
         Helper function to set up viewbox with title
@@ -341,36 +326,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         viewbox.setRange(QtCore.QRectF(-width/2, -height/2, width, height))
         rect.setPen(QtGui.QPen(QtCore.Qt.white, width/50., QtCore.Qt.SolidLine))
         rect.setRect(-width/2, -height/2, width, height)
-
-    # def update_crosshair_width(self):
-    #     thickness = self.im0Rect.boundingRect().width()*.01
-    #     self.redcrossh.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
-    #     self.redcrossv.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
-    #     self.bluecrossh.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
-    #     self.bluecrossv.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
-    #
-    #     try:
-    #         xPos = float(self.red_x.text())
-    #         yPos = float(self.red_y.text())
-    #     except ValueError:
-    #         xPos = -self.im0Rect.boundingRect().width()/2
-    #         yPos = -self.im0Rect.boundingRect().width()/2
-    #     self.redcrossh.setLine(xPos - self.im0Rect.boundingRect().width() * .02, yPos,
-    #                          xPos + self.im0Rect.boundingRect().width() * .02, yPos)
-    #     self.redcrossv.setLine(xPos, yPos - self.im0Rect.boundingRect().height() * .02,
-    #                          xPos, yPos + self.im0Rect.boundingRect().height() * .02)
-    #
-    #     try:
-    #         xPos = float(self.red_x.text())
-    #         yPos = float(self.red_y.text())
-    #     except ValueError:
-    #         xPos = -self.im0Rect.boundingRect().width()/2
-    #         yPos = -self.im0Rect.boundingRect().width()/2
-    #
-    #     self.bluecrossh.setLine(xPos - self.im0Rect.boundingRect().width() * .02, yPos,
-    #                            xPos + self.im0Rect.boundingRect().width() * .02, yPos)
-    #     self.bluecrossv.setLine(xPos, yPos - self.im0Rect.boundingRect().height() * .02,
-    #                            xPos, yPos + self.im0Rect.boundingRect().height() * .02)
 
     def initialize_lineout(self, canvas, view, direction):
         """
@@ -422,14 +377,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         yaxis.tickFont = self.font
         yaxis.setPen(pg.mkPen('w', width=1))
 
-    # def get_FOV(self):
-    #     # get ROI info
-    # 
-    #     # width = PV(self.imagerpv + 'CAM:IMAGE2:ROI:SizeX_RBV').get()
-    #     # height = PV(self.imagerpv + 'CAM:IMAGE2:ROI:SizeY_RBV').get()
-    # 
-    #     return width, height
-
     def change_state(self):
         if self.runButton.text() == 'Run':
 
@@ -442,7 +389,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             width, height = self.registration.get_FOV()
 
             self.update_viewbox(self.view0, width, height, self.im0Rect)
-            # self.update_crosshair_width()
+
+            # update crosshair sizes
             self.red_crosshair_widget.update_width()
             self.blue_crosshair_widget.update_width()
 
