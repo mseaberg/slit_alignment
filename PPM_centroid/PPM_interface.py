@@ -53,7 +53,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.img0 = pg.ImageItem(border='w')
         self.view0.addItem(self.img0)
 
-        proxy = pg.SignalProxy(self.img0.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
+        proxy = pg.SignalProxy(self.img0.scene().sigMouseMoved, rateLimit=60, slot=self.mouseMoved)
 
         # horizontal lineout
         self.horizontalPlot, self.horizontalLineout, self.horizontalFit = (
