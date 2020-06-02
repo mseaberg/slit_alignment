@@ -56,6 +56,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # proxy = pg.SignalProxy(self.img0.scene().sigMouseMoved, rateLimit=60, slot=self.mouseMoved)
         self.im0Rect.scene().sigMouseClicked.connect(self.mouseMoved)
 
+        # connect crosshair selection
+        self.redCrosshair.toggled.connect(self.red_crosshair_toggled)
+        self.blueCrosshair.toggled.connect(self.blue_crosshair_toggled)
+
         # horizontal lineout
         self.horizontalPlot, self.horizontalLineout, self.horizontalFit = (
             self.initialize_lineout(self.hLineoutCanvas,
@@ -198,11 +202,40 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # initialize registration object
         self.registration = None
 
+        # initialize crosshair selection (None selected)
+        self.current_crosshair_x = None
+        self.current_crosshair_y = None
+
+    def red_crosshair_toggled(self, evt):
+        if evt:
+            if self.blueCrosshair.isChecked():
+                self.blueCrosshair.toggle()
+            self.current_crosshair_x = self.red_x
+            self.current_crosshair_y = self.red_y
+        else:
+            self.current_crosshair_x = None
+            self.current_crosshair_y = None
+
+    def blue_crosshair_toggled(self, evt):
+        if evt:
+            if self.redCrosshair.isChecked():
+                self.redCrosshair.toggle()
+            self.current_crosshair_x = self.blue_x
+            self.current_crosshair_y = self.blue_y
+        else:
+            self.current_crosshair_x = None
+            self.current_crosshair_y = None
+
     def mouseMoved(self, evt):
         # translate scene coordinates to viewbox coordinates
         coords = self.view0.mapSceneToView(evt.scenePos())
+
+        if self.current_crosshair_x is not None:
+            self.current_crosshair_x.setText(coords.x())
+            self.current_crosshair_y.setText(coords.y())
         # update label
-        self.label_mouse.setText(u'Mouse coordinates: %.2f \u03BCm, %.2f \u03BCm' % (coords.x(), coords.y()))
+        #self.label_mouse.setText(u'Mouse coordinates: %.2f \u03BCm, %.2f \u03BCm' % (coords.x(), coords.y()))
+
 
     def setup_legend(self, legend):
 
