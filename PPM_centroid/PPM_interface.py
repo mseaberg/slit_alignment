@@ -250,10 +250,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         if crosshair is not None:
             xPos = float(crosshair_x.text())
             yPos = float(crosshair_y.text())
-            crosshair[0].setLine(xPos - self.im0Rect.width()*.01, yPos,
-                                xPos + self.im0Rect.width()*.01, yPos)
-            crosshair[1].setLine(xPos, yPos - self.im0Rect.height()*.01,
-                                xPos, yPos + self.im0Rect.height()*.01)
+            crosshair[0].setLine(xPos - self.im0Rect.boundingRect().width()*.01, yPos,
+                                xPos + self.im0Rect.boundingRect().width()*.01, yPos)
+            crosshair[1].setLine(xPos, yPos - self.im0Rect.boundingRect.height()*.01,
+                                xPos, yPos + self.im0Rect.boundingRect.height()*.01)
 
     def red_crosshair_toggled(self, evt):
         if evt:
