@@ -82,10 +82,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # connect crosshair selection
         self.redCrosshair.toggled.connect(self.red_crosshair_toggled)
         self.blueCrosshair.toggled.connect(self.blue_crosshair_toggled)
-        self.red_x.returnPressed.connect(self.draw_crosshair)
-        self.red_y.returnPressed.connect(self.draw_crosshair)
-        self.blue_x.returnPressed.connect(self.draw_crosshair)
-        self.blue_y.returnPressed.connect(self.draw_crosshair)
+        self.red_x.returnPressed.connect(self.draw_red_crosshair)
+        self.red_y.returnPressed.connect(self.draw_red_crosshair)
+        self.blue_x.returnPressed.connect(self.draw_blue_crosshair)
+        self.blue_y.returnPressed.connect(self.draw_blue_crosshair)
 
         # horizontal lineout
         self.horizontalPlot, self.horizontalLineout, self.horizontalFit = (
@@ -234,14 +234,26 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.current_crosshair_y = None
         self.current_crosshair = None
 
-    def draw_crosshair(self):
-        if self.current_crosshair is not None:
-            xPos = float(self.current_crosshair_x.text())
-            yPos = float(self.current_crosshair_y.text())
-            self.current_crosshair[0].setLine(xPos - 25, yPos,
-                                xPos + 25, yPos)
-            self.current_crosshair[1].setLine(xPos, yPos - 25,
-                                xPos, yPos + 25)
+    def draw_red_crosshair(self):
+        self.draw_crosshair(crosshair=self.redCrosshairLine, crosshair_x=self.red_x, crosshair_y=self.red_y)
+
+    def draw_blue_crosshair(self):
+        self.draw_crosshair(crosshair=self.blueCrosshairLine, crosshair_x=self.blue_x, crosshair_y=self.blue_y)
+
+    def draw_crosshair(self, crosshair=None, crosshair_x=None, crosshair_y=None):
+        if crosshair is None:
+            crosshair = self.current_crosshair
+        if crosshair_x is None:
+            crosshair_x = self.current_crosshair_x
+        if crosshair_y is None:
+            crosshair_y = self.current_crosshair_y
+        if crosshair is not None:
+            xPos = float(crosshair_x.text())
+            yPos = float(crosshair_y.text())
+            crosshair[0].setLine(xPos - self.im0Rect.width()*.01, yPos,
+                                xPos + self.im0Rect.width()*.01, yPos)
+            crosshair[1].setLine(xPos, yPos - self.im0Rect.height()*.01,
+                                xPos, yPos + self.im0Rect.height()*.01)
 
     def red_crosshair_toggled(self, evt):
         if evt:
