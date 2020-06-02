@@ -75,8 +75,14 @@ class RunProcessing(QtCore.QObject):
             lineout_y = self.PPM_object.y_lineout
 
             # gaussian fits
-            fit_x = np.exp(-(self.PPM_object.x - self.PPM_object.cx) ** 2 / 2 / (self.PPM_object.wx / 2.355) ** 2)
-            fit_y = np.exp(-(self.PPM_object.y - self.PPM_object.cy) ** 2 / 2 / (self.PPM_object.wy / 2.355) ** 2)
+            try:
+                fit_x = np.exp(-(self.PPM_object.x - self.PPM_object.cx) ** 2 / 2 / (self.PPM_object.wx / 2.355) ** 2)
+            except RuntimeWarning:
+                fit_x = np.zeros_like(lineout_x)
+            try:
+                fit_y = np.exp(-(self.PPM_object.y - self.PPM_object.cy) ** 2 / 2 / (self.PPM_object.wy / 2.355) ** 2)
+            except RuntimeWarning:
+                fit_y = np.zeros_like(lineout_y)
 
             # update dictionary
             self.data_dict['im1'] = self.PPM_object.profile
