@@ -547,6 +547,30 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>canvas_2</tabstop>
+  <tabstop>hLineoutCanvas_2</tabstop>
+  <tabstop>vLineoutCanvas_2</tabstop>
+  <tabstop>plotCanvas_2</tabstop>
+  <tabstop>runButton</tabstop>
+  <tabstop>checkBox</tabstop>
+  <tabstop>wavefrontCheckBox</tabstop>
+  <tabstop>lineComboBox</tabstop>
+  <tabstop>imagerComboBox</tabstop>
+  <tabstop>minValue</tabstop>
+  <tabstop>maxValue</tabstop>
+  <tabstop>redCrosshair</tabstop>
+  <tabstop>red_x</tabstop>
+  <tabstop>red_y</tabstop>
+  <tabstop>blueCrosshair</tabstop>
+  <tabstop>blue_x</tabstop>
+  <tabstop>blue_y</tabstop>
+  <tabstop>vLineoutCanvas</tabstop>
+  <tabstop>plotCanvas</tabstop>
+  <tabstop>hLineoutCanvas</tabstop>
+  <tabstop>canvas</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

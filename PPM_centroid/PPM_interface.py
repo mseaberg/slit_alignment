@@ -389,21 +389,29 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
     def update_crosshair_width(self):
         thickness = self.im0Rect.boundingRect().width()*.01
-        print(thickness)
         self.redcrossh.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
         self.redcrossv.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
         self.bluecrossh.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
         self.bluecrossv.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
 
-        xPos = float(self.red_x.text())
-        yPos = float(self.red_y.text())
+        try:
+            xPos = float(self.red_x.text())
+            yPos = float(self.red_y.text())
+        except ValueError:
+            xPos = -self.im0Rect.boundingRect().width()/2
+            yPos = -self.im0Rect.boundingRect().width()/2
         self.redcrossh.setLine(xPos - self.im0Rect.boundingRect().width() * .02, yPos,
                              xPos + self.im0Rect.boundingRect().width() * .02, yPos)
         self.redcrossv.setLine(xPos, yPos - self.im0Rect.boundingRect().height() * .02,
                              xPos, yPos + self.im0Rect.boundingRect().height() * .02)
+       
+        try:
+            xPos = float(self.red_x.text())
+            yPos = float(self.red_y.text())
+        except ValueError:
+            xPos = -self.im0Rect.boundingRect().width()/2
+            yPos = -self.im0Rect.boundingRect().width()/2
 
-        xPos = float(self.blue_x.text())
-        yPos = float(self.blue_y.text())
         self.bluecrossh.setLine(xPos - self.im0Rect.boundingRect().width() * .02, yPos,
                                xPos + self.im0Rect.boundingRect().width() * .02, yPos)
         self.bluecrossv.setLine(xPos, yPos - self.im0Rect.boundingRect().height() * .02,
