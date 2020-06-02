@@ -132,21 +132,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         self.setup_legend(legend)
 
-        #legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
-        #for item in legend.items:
-        #    for single_item in item:
-        #        if isinstance(single_item, pg.graphicsItems.LabelItem.LabelItem):
-        #            single_item.setText(single_item.text, **legendLabelStyle)
 
-        # the image to be transformed
-        #im1 = np.array(imageio.imread("test_pattern.png")[32:2650, 32:2650, 3],dtype='float')
-        im1 = np.array(imageio.imread("PPM_alignment/IM1K2.png"),dtype='float')
-        im1 = 255 - im1
-
-        N, M = np.shape(im1)
-        scale = 2048.0 / N
-
-        self.im0 = interpolate.zoom(im1, scale)
+        # im1 = np.array(imageio.imread("PPM_alignment/IM1K2.png"),dtype='float')
+        # im1 = 255 - im1
+        #
+        # N, M = np.shape(im1)
+        # scale = 2048.0 / N
+        #
+        # self.im0 = interpolate.zoom(im1, scale)
 
 
         # initialize data dictionary
@@ -217,12 +210,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.registration = None
 
     def mouseMoved(self, evt):
-        #pass
-        x_coord = evt.x()
-        y_coord = evt.y()
+        # translate scene coordinates to viewbox coordinates
         coords = self.view0.mapSceneToView(evt)
-        #print(evt.x())
-        # mousePoint = self.img0.mapSceneToView(evt[0])
+        # update label
         self.label_mouse.setText(u'Mouse coordinates: %.2f \u03BCm, %.2f \u03BCm' % (coords.x(), coords.y()))
 
     def setup_legend(self, legend):
@@ -262,7 +252,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.reset_data_dict()
 
     def reset_data_dict(self):
-        self.data_dict['im0'] = self.im0
+        self.data_dict['im0'] = np.zeros((1024,1024))
         self.data_dict['contrast'] = np.zeros((4, 100))
         self.data_dict['rotation'] = np.zeros((4, 100))
         self.data_dict['cx'] = -np.ones(100)
