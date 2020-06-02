@@ -386,10 +386,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         viewbox.setRange(QtCore.QRectF(-width/2, -height/2, width, height))
         rect.setPen(QtGui.QPen(QtCore.Qt.white, width/50., QtCore.Qt.SolidLine))
         rect.setRect(-width/2, -height/2, width, height)
-        self.bluecrossh.setPen(QtGui.QPen(Qt.blue, 8, Qt.SolidLine))
 
     def update_crosshair_width(self):
         thickness = self.im0Rect.boundingRect().width()*.01
+        print(thickness)
         self.redcrossh.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
         self.redcrossv.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
         self.bluecrossh.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
@@ -479,6 +479,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             width, height = self.registration.get_FOV()
 
             self.update_viewbox(self.view0, width, height, self.im0Rect)
+            self.update_crosshair_width()
 
             self.thread = QtCore.QThread()
             self.thread.start()
