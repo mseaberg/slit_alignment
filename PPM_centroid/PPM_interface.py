@@ -53,6 +53,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.img0 = pg.ImageItem(border='w')
         self.view0.addItem(self.img0)
 
+        proxy = pg.SignalProxy(self.img0.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
+
         # horizontal lineout
         self.horizontalPlot, self.horizontalLineout, self.horizontalFit = (
             self.initialize_lineout(self.hLineoutCanvas,
@@ -212,6 +214,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         # initialize registration object
         self.registration = None
+
+    def mouseMoved(self, evt):
+        mousePoint = self.img0.mapSceneToView(evt[0])
+        self.label_mouse.setText(u'Mouse coordinates: %.2f \u03BCm, %.2f \u03BCm' % (mousePoint.x(), mousePoint.y()))
 
     def setup_legend(self, legend):
 
