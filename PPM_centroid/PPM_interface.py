@@ -217,9 +217,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.registration = None
 
     def mouseMoved(self, evt):
+        pass
         #print(evt)
-        #mousePoint = self.img0.mapSceneToView(evt[0])
-        #self.label_mouse.setText(u'Mouse coordinates: %.2f \u03BCm, %.2f \u03BCm' % (mousePoint.x(), mousePoint.y()))
+        # mousePoint = self.img0.mapSceneToView(evt[0])
+        # self.label_mouse.setText(u'Mouse coordinates: %.2f \u03BCm, %.2f \u03BCm' % (mousePoint.x(), mousePoint.y()))
 
     def setup_legend(self, legend):
 
