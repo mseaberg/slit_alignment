@@ -231,8 +231,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         coords = self.view0.mapSceneToView(evt.scenePos())
 
         if self.current_crosshair_x is not None:
-            self.current_crosshair_x.setText(coords.x())
-            self.current_crosshair_y.setText(coords.y())
+            self.current_crosshair_x.setText('%.1f' % coords.x())
+            self.current_crosshair_y.setText('%.1f' % coords.y())
         # update label
         #self.label_mouse.setText(u'Mouse coordinates: %.2f \u03BCm, %.2f \u03BCm' % (coords.x(), coords.y()))
 
