@@ -9,4 +9,5 @@ if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     thisapp = PPM_Interface()
     thisapp.show()
+    app.processEvents()
     sys.exit(app.exec_())
