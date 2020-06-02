@@ -250,10 +250,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         if crosshair is not None:
             xPos = float(crosshair_x.text())
             yPos = float(crosshair_y.text())
-            crosshair[0].setLine(xPos - self.im0Rect.boundingRect().width()*.01, yPos,
-                                xPos + self.im0Rect.boundingRect().width()*.01, yPos)
-            crosshair[1].setLine(xPos, yPos - self.im0Rect.boundingRect().height()*.01,
-                                xPos, yPos + self.im0Rect.boundingRect().height()*.01)
+            crosshair[0].setLine(xPos - self.im0Rect.boundingRect().width()*.02, yPos,
+                                xPos + self.im0Rect.boundingRect().width()*.02, yPos)
+            crosshair[1].setLine(xPos, yPos - self.im0Rect.boundingRect().height()*.02,
+                                xPos, yPos + self.im0Rect.boundingRect().height()*.02)
 
     def red_crosshair_toggled(self, evt):
         if evt:
@@ -394,6 +394,20 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.redcrossv.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
         self.bluecrossh.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
         self.bluecrossv.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
+
+        xPos = float(self.red_x.text())
+        yPos = float(self.red_y.text())
+        self.redcrossh.setLine(xPos - self.im0Rect.boundingRect().width() * .02, yPos,
+                             xPos + self.im0Rect.boundingRect().width() * .02, yPos)
+        self.redcrossv.setLine(xPos, yPos - self.im0Rect.boundingRect().height() * .02,
+                             xPos, yPos + self.im0Rect.boundingRect().height() * .02)
+
+        xPos = float(self.blue_x.text())
+        yPos = float(self.blue_y.text())
+        self.bluecrossh.setLine(xPos - self.im0Rect.boundingRect().width() * .02, yPos,
+                               xPos + self.im0Rect.boundingRect().width() * .02, yPos)
+        self.bluecrossv.setLine(xPos, yPos - self.im0Rect.boundingRect().height() * .02,
+                               xPos, yPos + self.im0Rect.boundingRect().height() * .02)
 
     def initialize_lineout(self, canvas, view, direction):
         """
