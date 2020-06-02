@@ -389,7 +389,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.bluecrossh.setPen(QtGui.QPen(Qt.blue, 8, Qt.SolidLine))
 
     def update_crosshair_width(self):
-        thickness = self.im0Rect.boundingRect().width()*.001
+        thickness = self.im0Rect.boundingRect().width()*.01
         self.redcrossh.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
         self.redcrossv.setPen(QtGui.QPen(Qt.red, thickness, Qt.SolidLine))
         self.bluecrossh.setPen(QtGui.QPen(Qt.blue, thickness, Qt.SolidLine))
