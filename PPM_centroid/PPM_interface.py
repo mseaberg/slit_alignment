@@ -11,6 +11,7 @@ import time
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 from PyQt5.uic import loadUiType
+from PyQt5.QtCore import Qt
 import warnings
 from processing_module import RunProcessing
 from Image_registration_epics import App
@@ -53,12 +54,38 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.img0 = pg.ImageItem(border='w')
         self.view0.addItem(self.img0)
 
+        # crosshairs
+        self.redcrossh = QtWidgets.QGraphicsLineItem(1024 - 25, 1024, 1024 + 25, 1024)
+        self.redcrossv = QtWidgets.QGraphicsLineItem(1024, 1024 - 25, 1024, 1024 + 25)
+        self.redcrossh.setPen(QtGui.QPen(Qt.red, 8, Qt.SolidLine))
+        self.redcrossv.setPen(QtGui.QPen(Qt.red, 8, Qt.SolidLine))
+
+        self.view0.addItem(self.redcrossh)
+        self.view0.addItem(self.redcrossv)
+
+        self.redCrosshairLine = [self.redcrossh, self.redcrossv]
+
+        # crosshairs
+        self.bluecrossh = QtWidgets.QGraphicsLineItem(1024 - 25, 1024, 1024 + 25, 1024)
+        self.bluecrossv = QtWidgets.QGraphicsLineItem(1024, 1024 - 25, 1024, 1024 + 25)
+        self.bluecrossh.setPen(QtGui.QPen(Qt.blue, 8, Qt.SolidLine))
+        self.bluecrossv.setPen(QtGui.QPen(Qt.blue, 8, Qt.SolidLine))
+
+        self.view0.addItem(self.bluecrossh)
+        self.view0.addItem(self.bluecrossv)
+
+        self.blueCrosshairLine = [self.bluecrossh, self.bluecrossv]
+
         # proxy = pg.SignalProxy(self.img0.scene().sigMouseMoved, rateLimit=60, slot=self.mouseMoved)
-        self.im0Rect.scene().sigMouseClicked.connect(self.mouseMoved)
+        self.im0Rect.scene().sigMouseClicked.connect(self.mouseClicked)
 
         # connect crosshair selection
         self.redCrosshair.toggled.connect(self.red_crosshair_toggled)
         self.blueCrosshair.toggled.connect(self.blue_crosshair_toggled)
+        self.red_x.returnPressed.connect(self.draw_crosshair)
+        self.red_y.returnPressed.connect(self.draw_crosshair)
+        self.blue_x.returnPressed.connect(self.draw_crosshair)
+        self.blue_y.returnPressed.connect(self.draw_crosshair)
 
         # horizontal lineout
         self.horizontalPlot, self.horizontalLineout, self.horizontalFit = (
@@ -205,6 +232,16 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # initialize crosshair selection (None selected)
         self.current_crosshair_x = None
         self.current_crosshair_y = None
+        self.current_crosshair = None
+
+    def draw_crosshair(self):
+        if self.current_crosshair is not None:
+            xPos = float(self.current_crosshair_x.text())
+            yPos = float(self.current_crosshair_y.text())
+            self.current_crosshair[0].setLine(xPos - 25, yPos,
+                                xPos + 25, yPos)
+            self.current_crosshair[1].setLine(xPos, yPos - 25,
+                                xPos, yPos + 25)
 
     def red_crosshair_toggled(self, evt):
         if evt:
@@ -212,9 +249,11 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                 self.blueCrosshair.toggle()
             self.current_crosshair_x = self.red_x
             self.current_crosshair_y = self.red_y
+            self.current_crosshair = self.redCrosshairLine
         else:
             self.current_crosshair_x = None
             self.current_crosshair_y = None
+            self.current_crosshair = None
 
     def blue_crosshair_toggled(self, evt):
         if evt:
@@ -222,17 +261,20 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                 self.redCrosshair.toggle()
             self.current_crosshair_x = self.blue_x
             self.current_crosshair_y = self.blue_y
+            self.current_crosshair = self.blueCrosshairLine
         else:
             self.current_crosshair_x = None
             self.current_crosshair_y = None
+            self.current_crosshair = None
 
-    def mouseMoved(self, evt):
+    def mouseClicked(self, evt):
         # translate scene coordinates to viewbox coordinates
         coords = self.view0.mapSceneToView(evt.scenePos())
 
         if self.current_crosshair_x is not None:
             self.current_crosshair_x.setText('%.1f' % coords.x())
             self.current_crosshair_y.setText('%.1f' % coords.y())
+            self.draw_crosshair()
         # update label
         #self.label_mouse.setText(u'Mouse coordinates: %.2f \u03BCm, %.2f \u03BCm' % (coords.x(), coords.y()))
 
