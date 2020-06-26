@@ -2,6 +2,12 @@ from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
 
+class LineoutImage:
+
+    def __init__(self, groupbox):
+
+
+
 class Crosshair:
 
     def __init__(self, color, xLineEdit, yLineEdit, rect, viewbox):

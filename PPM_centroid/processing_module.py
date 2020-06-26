@@ -122,7 +122,7 @@ class RunProcessing(QtCore.QObject):
 
             # keep running unless the stop button is pressed
             if self.running:
-                QtCore.QTimer.singleShot(100, self._update)
+                QtCore.QTimer.singleShot(500, self._update)
                 self.counter += 1
             else:
                 self.PPM_object.reset_camera()
