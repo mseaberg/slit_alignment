@@ -32,7 +32,7 @@
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QGroupBox" name="groupBox">
+         <widget class="QGroupBox" name="imageGroupBox">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -319,7 +319,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="crosshairGroupBox">
          <property name="maximumSize">
           <size>
            <width>300</width>
@@ -329,99 +329,6 @@
          <property name="title">
           <string>Crosshairs (μm)</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="1" column="0">
-           <widget class="QPushButton" name="blueCrosshair">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>30</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>30</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>icons/blue_cross.svg</normaloff>icons/blue_cross.svg</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>20</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QPushButton" name="redCrosshair">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>30</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>30</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>icons/red_cross.svg</normaloff>icons/red_cross.svg</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>20</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="red_x"/>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLineEdit" name="red_y"/>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLineEdit" name="blue_y"/>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="blue_x"/>
-          </item>
-         </layout>
         </widget>
        </item>
        <item>
@@ -498,12 +405,6 @@
   <tabstop>imagerComboBox</tabstop>
   <tabstop>minValue</tabstop>
   <tabstop>maxValue</tabstop>
-  <tabstop>redCrosshair</tabstop>
-  <tabstop>red_x</tabstop>
-  <tabstop>red_y</tabstop>
-  <tabstop>blueCrosshair</tabstop>
-  <tabstop>blue_x</tabstop>
-  <tabstop>blue_y</tabstop>
   <tabstop>plotCanvas</tabstop>
  </tabstops>
  <resources/>

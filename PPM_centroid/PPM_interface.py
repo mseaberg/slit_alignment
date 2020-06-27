@@ -47,30 +47,23 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.font.setFamily('Arial')
 
         # Full image
-        #self.view0 = self.canvas.addViewBox()
-        #self.im0Rect = self.setup_viewbox(self.view0, 1024)
-        #self.view0.setAspectLocked(True)
-        #self.img0 = pg.ImageItem(border='w')
-        #self.view0.addItem(self.img0)
-        image_and_lineouts = PPM_widgets.LineoutImage(self.groupBox)
-        #image_and_lineouts = PPM_widgets.LineoutImage()
-        
-        self.canvas, self.hLineoutCanvas, self.vLineoutCanvas = image_and_lineouts.get_canvases()
-        # Full image
-        self.view0 = self.canvas.addViewBox()
-        self.im0Rect = self.setup_viewbox(self.view0, 1024)
-        self.view0.setAspectLocked(True)
-        self.img0 = pg.ImageItem(border='w')
-        self.view0.addItem(self.img0)
- 
-        # red crosshair
-        self.red_crosshair_widget = PPM_widgets.Crosshair('red', self.red_x, self.red_y, self.im0Rect, self.view0)
+        self.raw_image = PPM_widgets.LineoutImage(self.imageGroupBox)
+      
+        # crosshairs
+        self.crosshairObject = PPM_widgets.CrosshairWidget(self.crosshairGroupBox, self.raw_image)
 
-        # blue crosshair
-        self.blue_crosshair_widget = PPM_widgets.Crosshair('blue', self.blue_x, self.blue_y, self.im0Rect, self.view0)
+        self.red_crosshair_widget, self.blue_crosshair_widget = self.crosshairObject.get_crosshairs()
+        
 
         # connect to mouse click on image
-        self.im0Rect.scene().sigMouseClicked.connect(self.mouseClicked)
+        self.raw_image.rect.scene().sigMouseClicked.connect(self.mouseClicked)
+
+        self.redCrosshair = self.crosshairObject.redButton
+        self.blueCrosshair = self.crosshairObject.blueButton
+        self.red_x = self.crosshairObject.red_x
+        self.red_y = self.crosshairObject.red_y
+        self.blue_x = self.crosshairObject.blue_x
+        self.blue_y = self.crosshairObject.blue_y
 
         # connect crosshair selection
         self.redCrosshair.toggled.connect(self.red_crosshair_toggled)
@@ -80,17 +73,13 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.blue_x.returnPressed.connect(self.blue_crosshair_widget.update_position)
         self.blue_y.returnPressed.connect(self.blue_crosshair_widget.update_position)
 
-        # horizontal lineout
-        self.horizontalPlot, self.horizontalLineout, self.horizontalFit = (
-            self.initialize_lineout(self.hLineoutCanvas,
-                                    self.view0,
-                                    'horizontal'))
 
-        # vertical lineout
-        self.verticalPlot, self.verticalLineout, self.verticalFit = (
-            self.initialize_lineout(self.vLineoutCanvas,
-                                    self.view0,
-                                    'vertical'))
+        self.horizontalPlot = self.raw_image.horizontalPlot
+        self.horizontalLineout = self.raw_image.horizontalLineout
+        self.horizontalFit = self.raw_image.horizontalFit
+        self.verticalPlot = self.raw_image.verticalPlot
+        self.verticalLineout = self.raw_image.verticalLineout
+        self.verticalFit = self.raw_image.verticalFit
 
         #  centroid plot
         self.centroid_plot = self.plotCanvas.addPlot(row=0,col=0,rowspan=1,colspan=2)
@@ -235,7 +224,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
     def mouseClicked(self, evt):
         # translate scene coordinates to viewbox coordinates
-        coords = self.view0.mapSceneToView(evt.scenePos())
+        coords = self.raw_image.view.mapSceneToView(evt.scenePos())
 
         if self.current_crosshair is not None:
             self.current_crosshair.xLineEdit.setText('%.1f' % coords.x())
@@ -311,82 +300,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['x_prime'] = np.linspace(-1024, 1023, 100)
         self.data_dict['y_prime'] = np.linspace(-1024, 1023, 100)
 
-    def setup_viewbox(self, viewbox, width):
-        """
-        Helper function to set up viewbox with title
-        :param viewbox: pyqtgraph viewbox
-        :param width: image width in pixels (int)
-        """
-        viewbox.setAspectLocked(True)
-        viewbox.setRange(QtCore.QRectF(-width/2., -width/2., width, width))
-        rect1 = QtGui.QGraphicsRectItem(-width/2., -width/2., width, width)
-        rect1.setPen(QtGui.QPen(QtCore.Qt.white, width/50., QtCore.Qt.SolidLine))
-        viewbox.addItem(rect1)
-        return rect1
-
-    def update_viewbox(self, viewbox, width, height, rect):
-        """
-        Helper function to adjust viewbox settings
-        :param viewbox: pyqtgraph viewbox
-        :param width: new width in pixels (int)
-        :param height: new height in pixels (int)
-        :param rect: QtGui.QGraphicsRectItem
-        :return:
-        """
-        viewbox.setRange(QtCore.QRectF(-width/2, -height/2, width, height))
-        rect.setPen(QtGui.QPen(QtCore.Qt.white, width/50., QtCore.Qt.SolidLine))
-        rect.setRect(-width/2, -height/2, width, height)
-
-    def initialize_lineout(self, canvas, view, direction):
-        """
-        Method to set up lineout plots.
-        """
-        names = ['Lineout', 'Fit']
-        colors = ['r', 'c']
-
-        if direction == 'horizontal':
-            lineoutPlot = canvas.addPlot()
-            legend = lineoutPlot.addLegend(offset=(10,0))
-            lineoutData = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100),
-                                           pen=pg.mkPen(colors[0], width=2),name=names[0])
-            lineoutFit = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100),
-                                           pen=pg.mkPen(colors[1], width=2),name=names[1])
-            lineoutPlot.setYRange(0, 1)
-            self.setup_legend(legend)
-            self.label_plot(lineoutPlot, u'x (\u03BCm)', 'Intensity')
-            lineoutPlot.setXLink(view)
-        elif direction == 'vertical':
-            lineoutPlot = canvas.addPlot()
-            lineoutData = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100),
-                                           pen=pg.mkPen(colors[0], width=2),name=names[0])
-            lineoutFit = lineoutPlot.plot(np.zeros(100), np.linspace(-1024, 1023, 100),
-                                           pen=pg.mkPen(colors[1], width=2),name=names[1])
-            lineoutPlot.setXRange(0, 1)
-            self.label_plot(lineoutPlot, 'Intensity', u'y (\u03BCm)')
-            lineoutPlot.setYLink(view)
-        else:
-            lineoutPlot = None
-            lineoutData = None
-            lineoutFit = None
-            pass
-        return lineoutPlot, lineoutData, lineoutFit
-
-    def label_plot(self, plot, xlabel, ylabel):
-        """
-        Helper function to set plot labels
-        :param plot: pyqtgraph plot item
-        :param xlabel: x-axis label (str)
-        :param ylabel: y-axis label (str)
-        """
-        xaxis = plot.getAxis('bottom')
-        xaxis.setLabel(text=xlabel, **self.labelStyle)
-        xaxis.tickFont = self.font
-        xaxis.setPen(pg.mkPen('w', width=1))
-        yaxis = plot.getAxis('left')
-        yaxis.setLabel(text=ylabel, **self.labelStyle)
-        yaxis.tickFont = self.font
-        yaxis.setPen(pg.mkPen('w', width=1))
-
     def change_state(self):
         if self.runButton.text() == 'Run':
 
@@ -398,7 +311,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
             width, height = self.registration.get_FOV()
 
-            self.update_viewbox(self.view0, width, height, self.im0Rect)
+            self.raw_image.update_viewbox(width, height)
 
             # update crosshair sizes
             self.red_crosshair_widget.update_width()
@@ -486,9 +399,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         y_width = np.max(y) - np.min(y)
 
         self.data_dict = data_dict
-        self.img0.setImage(np.flipud(data_dict['im1']).T,
+        self.raw_image.img.setImage(np.flipud(data_dict['im1']).T,
                 levels=(self.minimum, self.maximum))
-        self.img0.setRect(QtCore.QRectF(np.min(x),np.min(y),x_width, y_width))
+        self.raw_image.img.setRect(QtCore.QRectF(np.min(x),np.min(y),x_width, y_width))
 
         N, M = np.shape(data_dict['im1'])
 
