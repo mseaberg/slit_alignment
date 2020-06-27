@@ -1,11 +1,45 @@
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
+import pyqtgraph as pg
+from PyQt5.uic import loadUiType
 
 
-class LineoutImage:
+Ui_LineoutImage, QLineoutImage = loadUiType('LineoutImage.ui')
+
+
+class LineoutImage(QLineoutImage, Ui_LineoutImage):
 
     def __init__(self, groupbox):
+      
+        super(LineoutImage, self).__init__()
+        self.setupUi(self)
 
+        # make canvases
+        #self.image_canvas = pg.GraphicsLayoutWidget()
+        #sp = self.image_canvas.sizePolicy()
+        #sp.setHorizontalPolicy(QtWidgets.QSizePolicy.Expanding)
+        #sp.setHorizontalStretch(0)
+        #self.image_canvas.setSizePolicy(sp)
+        #self.xlineout_canvas = pg.GraphicsLayoutWidget()
+        #self.ylineout_canvas = pg.GraphicsLayoutWidget()
+
+        #self.image_canvas.setMinimumSize(QtCore.QSize(200,200))
+        #self.image_canvas.setMaximumSize(QtCore.QSize(1024,1024))
+        #self.xlineout_canvas.setMaximumSize(QtCore.QSize(16777215, 120))
+        #self.ylineout_canvas.setMaximumSize(QtCore.QSize(120, 16777215))
+
+        # define layout
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(self)
+        #layout.addWidget(self.image_canvas,0,0,4,4)
+        #layout.addWidget(self.xlineout_canvas,4,0,2,4)
+        #layout.addWidget(self.ylineout_canvas,0,4,4,2)
+        groupbox.setLayout(layout)
+
+        #return image_canvas, xlineout_canvas, ylineout_canvas
+    
+    def get_canvases(self):
+        return self.image_canvas, self.xlineout_canvas, self.ylineout_canvas
 
 
 class Crosshair:

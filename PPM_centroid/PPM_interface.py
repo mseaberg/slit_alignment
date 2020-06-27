@@ -47,12 +47,22 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.font.setFamily('Arial')
 
         # Full image
+        #self.view0 = self.canvas.addViewBox()
+        #self.im0Rect = self.setup_viewbox(self.view0, 1024)
+        #self.view0.setAspectLocked(True)
+        #self.img0 = pg.ImageItem(border='w')
+        #self.view0.addItem(self.img0)
+        image_and_lineouts = PPM_widgets.LineoutImage(self.groupBox)
+        #image_and_lineouts = PPM_widgets.LineoutImage()
+        
+        self.canvas, self.hLineoutCanvas, self.vLineoutCanvas = image_and_lineouts.get_canvases()
+        # Full image
         self.view0 = self.canvas.addViewBox()
         self.im0Rect = self.setup_viewbox(self.view0, 1024)
         self.view0.setAspectLocked(True)
         self.img0 = pg.ImageItem(border='w')
         self.view0.addItem(self.img0)
-
+ 
         # red crosshair
         self.red_crosshair_widget = PPM_widgets.Crosshair('red', self.red_x, self.red_y, self.im0Rect, self.view0)
 
