@@ -24,7 +24,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="centroidTab">
        <attribute name="title">
@@ -42,6 +42,11 @@
           <property name="title">
            <string>Imager</string>
           </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="LineoutImage" name="imageWidget" native="true"/>
+           </item>
+          </layout>
          </widget>
         </item>
         <item>
@@ -78,6 +83,11 @@
           <property name="title">
            <string>Imager</string>
           </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <widget class="LineoutImage" name="wavefrontWidget" native="true"/>
+           </item>
+          </layout>
          </widget>
         </item>
         <item>
@@ -275,6 +285,12 @@
    <class>GraphicsLayoutWidget</class>
    <extends>QGraphicsView</extends>
    <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LineoutImage</class>
+   <extends>QWidget</extends>
+   <header location="global">PPM_widgets.py</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

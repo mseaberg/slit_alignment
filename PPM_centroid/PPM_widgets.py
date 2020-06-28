@@ -18,12 +18,12 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         self.setupUi(self)
 
         # define layout
-        layout = QtWidgets.QGridLayout()
-        layout.addWidget(self)
+        #layout = QtWidgets.QGridLayout()
+        #layout.addWidget(self)
         #layout.addWidget(self.image_canvas,0,0,4,4)
         #layout.addWidget(self.xlineout_canvas,4,0,2,4)
         #layout.addWidget(self.ylineout_canvas,0,4,4,2)
-        groupbox.setLayout(layout)
+        #groupbox.setLayout(layout)
 
         # connect levels
         self.levels = levels
