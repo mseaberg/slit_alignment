@@ -26,9 +26,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         self.runButton.clicked.connect(self.change_state)
 
-        self.minValue.returnPressed.connect(self.set_min)
-        self.maxValue.returnPressed.connect(self.set_max)
-
         self.actionSave.triggered.connect(self.save_image)
         self.actionAlignment_Screen.triggered.connect(self.run_alignment_screen)
 
@@ -46,40 +43,17 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.font.setPointSize(10)
         self.font.setFamily('Arial')
 
+        # Levels
+        self.levels_object = PPM_widgets.LevelsWidget(self.levelsGroupBox)
+
         # Full image
-        self.raw_image = PPM_widgets.LineoutImage(self.imageGroupBox)
-      
+        self.raw_image = PPM_widgets.LineoutImage(self.imageGroupBox, self.levels_object)
+        
+        # wavefront retrieval
+        self.wavefront_image = PPM_widgets.LineoutImage(self.wavefrontGroupBox)
+        
         # crosshairs
         self.crosshairObject = PPM_widgets.CrosshairWidget(self.crosshairGroupBox, self.raw_image)
-
-        self.red_crosshair_widget, self.blue_crosshair_widget = self.crosshairObject.get_crosshairs()
-        
-
-        # connect to mouse click on image
-        self.raw_image.rect.scene().sigMouseClicked.connect(self.mouseClicked)
-
-        self.redCrosshair = self.crosshairObject.redButton
-        self.blueCrosshair = self.crosshairObject.blueButton
-        self.red_x = self.crosshairObject.red_x
-        self.red_y = self.crosshairObject.red_y
-        self.blue_x = self.crosshairObject.blue_x
-        self.blue_y = self.crosshairObject.blue_y
-
-        # connect crosshair selection
-        self.redCrosshair.toggled.connect(self.red_crosshair_toggled)
-        self.blueCrosshair.toggled.connect(self.blue_crosshair_toggled)
-        self.red_x.returnPressed.connect(self.red_crosshair_widget.update_position)
-        self.red_y.returnPressed.connect(self.red_crosshair_widget.update_position)
-        self.blue_x.returnPressed.connect(self.blue_crosshair_widget.update_position)
-        self.blue_y.returnPressed.connect(self.blue_crosshair_widget.update_position)
-
-
-        self.horizontalPlot = self.raw_image.horizontalPlot
-        self.horizontalLineout = self.raw_image.horizontalLineout
-        self.horizontalFit = self.raw_image.horizontalFit
-        self.verticalPlot = self.raw_image.verticalPlot
-        self.verticalLineout = self.raw_image.verticalLineout
-        self.verticalFit = self.raw_image.verticalFit
 
         #  centroid plot
         self.centroid_plot = self.plotCanvas.addPlot(row=0,col=0,rowspan=1,colspan=2)
@@ -197,39 +171,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # disable wavefront checkbox by default since IM1L0 doesn't have a WFS
         self.wavefrontCheckBox.setEnabled(False)
 
-        self.set_min()
-        self.set_max()
-
         # initialize registration object
         self.registration = None
-
-        # initialize crosshair selection (None selected)
-        self.current_crosshair = None
-
-    def red_crosshair_toggled(self, evt):
-        if evt:
-            if self.blueCrosshair.isChecked():
-                self.blueCrosshair.toggle()
-            self.current_crosshair = self.red_crosshair_widget
-        else:
-            self.current_crosshair = None
-
-    def blue_crosshair_toggled(self, evt):
-        if evt:
-            if self.redCrosshair.isChecked():
-                self.redCrosshair.toggle()
-            self.current_crosshair = self.blue_crosshair_widget
-        else:
-            self.current_crosshair = None
-
-    def mouseClicked(self, evt):
-        # translate scene coordinates to viewbox coordinates
-        coords = self.raw_image.view.mapSceneToView(evt.scenePos())
-
-        if self.current_crosshair is not None:
-            self.current_crosshair.xLineEdit.setText('%.1f' % coords.x())
-            self.current_crosshair.yLineEdit.setText('%.1f' % coords.y())
-            self.current_crosshair.update_position()
 
     def setup_legend(self, legend):
 
@@ -314,8 +257,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             self.raw_image.update_viewbox(width, height)
 
             # update crosshair sizes
-            self.red_crosshair_widget.update_width()
-            self.blue_crosshair_widget.update_width()
+            self.crosshairObject.update_crosshair_width()
 
             self.thread = QtCore.QThread()
             self.thread.start()
@@ -341,12 +283,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                 self.wavefrontCheckBox.setEnabled(True)
             self.lineComboBox.setEnabled(True)
             self.imagerComboBox.setEnabled(True)
-
-    def set_min(self):
-        self.minimum = float(self.minValue.text())
-
-    def set_max(self):
-        self.maximum = float(self.maxValue.text())
 
     @staticmethod
     def normalize_image(image):
@@ -387,25 +323,17 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
     def update_plots(self,data_dict):
 
-        if self.checkBox.isChecked():
-            self.minimum = np.min(data_dict['im1'])
-            self.maximum = np.max(data_dict['im1'])
-            self.minValue.setText('%d' % self.minimum)
-            self.maxValue.setText('%d' % self.maximum)
-            
         x = data_dict['x']
         y = data_dict['y']
-        x_width = np.max(x) - np.min(x)
-        y_width = np.max(y) - np.min(y)
+        image_data = data_dict['im1']
+        xlineout = data_dict['lineout_x']
+        ylineout = data_dict['lineout_y']
+        fit_x = data_dict['fit_x']
+        fit_y = data_dict['fit_y']
+        
+        self.raw_image.update_plots(image_data, x, y, xlineout, ylineout, fit_x, fit_y)
 
         self.data_dict = data_dict
-        self.raw_image.img.setImage(np.flipud(data_dict['im1']).T,
-                levels=(self.minimum, self.maximum))
-        self.raw_image.img.setRect(QtCore.QRectF(np.min(x),np.min(y),x_width, y_width))
-
-        N, M = np.shape(data_dict['im1'])
-
-        # self.view0.setRange(QtCore.QRectF(0,0, M, N))
 
         now = datetime.now()
         now_stamp = datetime.timestamp(now)
@@ -448,11 +376,5 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.width_plot.setXRange(-10, 0)
         #self.rotation_plot.setYRange(np.mean(cy)-5*cy_range, np.mean(cy)+5*cy_range)
 
-        self.horizontalLineout.setData(data_dict['x'], data_dict['lineout_x'])
-        self.horizontalFit.setData(data_dict['x'], data_dict['fit_x'])
-        self.verticalLineout.setData(data_dict['lineout_y'], data_dict['y'])
-        self.verticalFit.setData(data_dict['fit_y'], data_dict['y'])
-
-        #self.circ0.setRect(full_center[1]-25,full_center[0]-25,50,50)
 
         self.label.setText(data_dict['tx'])

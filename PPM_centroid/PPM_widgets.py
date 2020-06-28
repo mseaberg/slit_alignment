@@ -7,11 +7,12 @@ import numpy as np
 
 Ui_LineoutImage, QLineoutImage = loadUiType('LineoutImage.ui')
 Ui_Crosshair, QCrosshair = loadUiType('Crosshair.ui')
+Ui_LevelsWidget, QLevelsWidget = loadUiType('LevelsWidget.ui')
 
 
 class LineoutImage(QLineoutImage, Ui_LineoutImage):
 
-    def __init__(self, groupbox):
+    def __init__(self, groupbox, levels=None):
       
         super(LineoutImage, self).__init__()
         self.setupUi(self)
@@ -23,6 +24,19 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         #layout.addWidget(self.xlineout_canvas,4,0,2,4)
         #layout.addWidget(self.ylineout_canvas,0,4,4,2)
         groupbox.setLayout(layout)
+
+        # connect levels
+        self.levels = levels
+
+        self.minimum = 0
+        self.maximum = 4096
+
+        if self.levels is not None:
+            self.set_min()
+            self.set_max()
+            self.levels.minLineEdit.returnPressed.connect(self.set_min)
+            self.levels.maxLineEdit.returnPressed.connect(self.set_max)
+
 
         # add viewbox for image
         self.view = self.image_canvas.addViewBox()
@@ -48,6 +62,38 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
 
     def get_canvases(self):
         return self.image_canvas, self.xlineout_canvas, self.ylineout_canvas
+
+    def update_plots(self, image_data, x, y, xlineout_data, ylineout_data, fit_x, fit_y):
+
+        if self.levels is not None:
+            if self.levels.checkBox.isChecked():
+                self.minimum = np.min(image_data)
+                self.maximum = np.max(image_data)
+                self.levels.setText(self.minimum, self.maximum)
+        else:
+            self.minimum = np.min(image_data)
+            self.maximum = np.max(image_data)
+        
+        x_width = np.max(x) - np.min(x)
+        y_width = np.max(y) - np.min(y)
+
+        self.img.setImage(np.flipud(image_data).T,
+                levels=(self.minimum, self.maximum))
+
+        self.img.setRect(QtCore.QRectF(np.min(x),np.min(y),x_width, y_width))
+
+        self.horizontalLineout.setData(x, xlineout_data)
+        self.horizontalFit.setData(x, fit_x)
+        self.verticalLineout.setData(ylineout_data, y)
+        self.verticalFit.setData(fit_y, y)
+
+
+
+    def set_min(self):
+        self.minimum = float(self.levels.minLineEdit.text())
+
+    def set_max(self):
+        self.maximum = float(self.levels.maxLineEdit.text())
 
     def setup_viewbox(self, width):
         """
@@ -157,11 +203,72 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
 
         self.lineout_image = lineout_image
 
-        self.red_crosshair = self.lineout_image.add_crosshair('red', self.red_x, self.red_y)
-        self.blue_crosshair = self.lineout_image.add_crosshair('blue', self.blue_x, self.blue_y)
+        self.red_crosshair = Crosshair('red', self.red_x, self.red_y, self.lineout_image)
+        self.blue_crosshair = Crosshair('blue', self.blue_x, self.blue_y, self.lineout_image)
+
+        self.redButton.toggled.connect(self.red_crosshair_toggled)
+        self.blueButton.toggled.connect(self.blue_crosshair_toggled)
+        self.red_x.returnPressed.connect(self.red_crosshair.update_position)
+        self.red_y.returnPressed.connect(self.red_crosshair.update_position)
+        self.blue_x.returnPressed.connect(self.blue_crosshair.update_position)
+        self.blue_y.returnPressed.connect(self.blue_crosshair.update_position)
+
+        # connect to mouse click on image
+        self.lineout_image.rect.scene().sigMouseClicked.connect(self.mouseClicked)
+
+        self.current_crosshair = None
+
+    def red_crosshair_toggled(self, evt):
+        if evt:
+            if self.blueButton.isChecked():
+                self.blueButton.toggle()
+            self.current_crosshair = self.red_crosshair
+        else:
+            self.current_crosshair = None
+
+    def blue_crosshair_toggled(self, evt):
+        if evt:
+            if self.redButton.isChecked():
+                self.redButton.toggle()
+            self.current_crosshair = self.blue_crosshair
+        else:
+            self.current_crosshair = None
+
+    def mouseClicked(self, evt):
+        # translate scene coordinates to viewbox coordinates
+        coords = self.lineout_image.view.mapSceneToView(evt.scenePos())
+
+        if self.current_crosshair is not None:
+            self.current_crosshair.xLineEdit.setText('%.1f' % coords.x())
+            self.current_crosshair.yLineEdit.setText('%.1f' % coords.y())
+            self.current_crosshair.update_position()
+
+    def update_crosshair_width(self):
+        self.red_crosshair.update_width()
+        self.blue_crosshair.update_width()
 
     def get_crosshairs(self):
         return self.red_crosshair, self.blue_crosshair
+
+
+class LevelsWidget(QLevelsWidget, Ui_LevelsWidget):
+
+    def __init__(self, groupbox):
+        super(LevelsWidget, self).__init__()
+        self.setupUi(self)
+
+        # define layout
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(self)
+        #layout.addWidget(self.image_canvas,0,0,4,4)
+        #layout.addWidget(self.xlineout_canvas,4,0,2,4)
+        #layout.addWidget(self.ylineout_canvas,0,4,4,2)
+        groupbox.setLayout(layout)
+
+    def setText(self, minimum, maximum):
+        self.minLineEdit.setText('%d' % minimum)
+        self.maxLineEdit.setText('%d' % maximum)
+
 
 class Crosshair:
 
