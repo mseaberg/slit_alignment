@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt
 import pyqtgraph as pg
 from PyQt5.uic import loadUiType
 import numpy as np
+from datetime import datetime
 
 
 Ui_LineoutImage, QLineoutImage = loadUiType('LineoutImage.ui')
@@ -12,7 +13,7 @@ Ui_LevelsWidget, QLevelsWidget = loadUiType('LevelsWidget.ui')
 
 class LineoutImage(QLineoutImage, Ui_LineoutImage):
 
-    def __init__(self):
+    def __init__(self, parent=None):
       
         super(LineoutImage, self).__init__()
         self.setupUi(self)
@@ -139,7 +140,7 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
             lineoutFit = lineoutPlot.plot(np.linspace(-1024, 1023, 100), np.zeros(100),
                                            pen=pg.mkPen(colors[1], width=2),name=names[1])
             lineoutPlot.setYRange(0, 1)
-            self.setup_legend(legend)
+            PlotUtil.setup_legend(legend)
             self.label_plot(lineoutPlot, u'x (\u03BCm)', 'Intensity')
             lineoutPlot.setXLink(self.view)
         elif direction == 'vertical':
@@ -174,8 +175,17 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         yaxis.tickFont = self.font
         yaxis.setPen(pg.mkPen('w', width=1))
 
-    
-    def setup_legend(self, legend):
+    def add_crosshair(self, color, xLineEdit, yLineEdit):
+        
+        crosshairObject = Crosshair(color, xLineEdit, yLineEdit, self)
+
+        return crosshairObject
+
+
+class PlotUtil:
+
+    @staticmethod
+    def setup_legend(legend):
 
         legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
         for item in legend.items:
@@ -185,29 +195,97 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
 
 
 
-    def add_crosshair(self, color, xLineEdit, yLineEdit):
-        
-        crosshairObject = Crosshair(color, xLineEdit, yLineEdit, self)
 
-        return crosshairObject
+class StripChart:
+
+    def __init__(self, canvas, ylabel):
+       
+        # font styles
+        self.labelStyle = {'color': '#FFF', 'font-size': '10pt'}
+        self.font = QtGui.QFont()
+        self.font.setPointSize(10)
+        self.font.setFamily('Arial')
+        
+        # generate plot
+        self.canvas = canvas
+        self.plotWidget = self.canvas.addPlot()
+
+        # set x axis label (this class is specifically for time series)
+        xaxis = self.plotWidget.getAxis('bottom')
+        xaxis.setLabel(text='Time (s)',**self.labelStyle)
+        xaxis.tickFont = self.font
+        xaxis.setPen(pg.mkPen('w',width=1))
+        yaxis = self.plotWidget.getAxis('left')
+        yaxis.setLabel(text=ylabel,**self.labelStyle)
+        yaxis.tickFont = self.font
+        yaxis.setPen(pg.mkPen('w',width=1))
+
+        self.plotWidget.showGrid(x=True,y=True,alpha=.8)
+        # initialize dictionary of lines to plot
+        self.lines = {}
+
+        self.color_order = ['r', 'c', 'm', 'g']
+
+        # default time range (seconds)
+        self.time_range = 10
+
+    def addSeries(self, series_keys, series_labels):
+        
+        legend = self.plotWidget.addLegend()
+
+        for num, key in enumerate(series_keys):
+
+            self.lines[key] = self.plotWidget.plot(np.linspace(-99,0,100), np.zeros(100),
+                    pen=pg.mkPen(self.color_order[num], width=5),name=series_labels[num])
+
+        PlotUtil.setup_legend(legend)
+
+    def set_time_range(self, time_range):
+        self.time_range = time_range
+
+    def update_plots(self, time_stamps, **data):
+
+        # filter out any data that doesn't exist yet
+        mask = time_stamps > 0
+
+        # process time stamps
+        now = datetime.now()
+        now_stamp = datetime.timestamp(now)
+
+        time_stamps = time_stamps - now_stamp
+        time_stamps = time_stamps[mask]
+
+        for key, value in data.items():
+            # filter data with mask
+            filtered_value = value[mask]
+            try:
+                self.lines[key].setData(time_stamps, filtered_value)
+            except KeyError:
+                print('Data had the wrong name')
+
+        # reset plot range
+        self.plotWidget.setXrange(-self.time_range, 0)
+
+
 
 
 class CrosshairWidget(QCrosshair, Ui_Crosshair):
 
-    def __init__(self, groupbox, lineout_image):
+    def __init__(self, parent=None):
         super(CrosshairWidget, self).__init__()
         self.setupUi(self)
 
-        # define layout
-        layout = QtWidgets.QGridLayout()
-        layout.addWidget(self)
-        #layout.addWidget(self.image_canvas,0,0,4,4)
-        #layout.addWidget(self.xlineout_canvas,4,0,2,4)
-        #layout.addWidget(self.ylineout_canvas,0,4,4,2)
-        groupbox.setLayout(layout)
+        self.lineout_image = None
 
-        self.lineout_image = lineout_image
+        self.red_crosshair = None
+        self.blue_crosshair = None
 
+        self.current_crosshair = None
+
+    def connect_image(self, image_widget):
+        self.lineout_image = image_widget
+        # connect to mouse click on image
+        self.lineout_image.rect.scene().sigMouseClicked.connect(self.mouseClicked)
         self.red_crosshair = Crosshair('red', self.red_x, self.red_y, self.lineout_image)
         self.blue_crosshair = Crosshair('blue', self.blue_x, self.blue_y, self.lineout_image)
 
@@ -217,11 +295,6 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
         self.red_y.returnPressed.connect(self.red_crosshair.update_position)
         self.blue_x.returnPressed.connect(self.blue_crosshair.update_position)
         self.blue_y.returnPressed.connect(self.blue_crosshair.update_position)
-
-        # connect to mouse click on image
-        self.lineout_image.rect.scene().sigMouseClicked.connect(self.mouseClicked)
-
-        self.current_crosshair = None
 
     def red_crosshair_toggled(self, evt):
         if evt:
@@ -258,17 +331,9 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
 
 class LevelsWidget(QLevelsWidget, Ui_LevelsWidget):
 
-    def __init__(self, groupbox):
+    def __init__(self, parent=None):
         super(LevelsWidget, self).__init__()
         self.setupUi(self)
-
-        # define layout
-        layout = QtWidgets.QGridLayout()
-        layout.addWidget(self)
-        #layout.addWidget(self.image_canvas,0,0,4,4)
-        #layout.addWidget(self.xlineout_canvas,4,0,2,4)
-        #layout.addWidget(self.ylineout_canvas,0,4,4,2)
-        groupbox.setLayout(layout)
 
     def setText(self, minimum, maximum):
         self.minLineEdit.setText('%d' % minimum)

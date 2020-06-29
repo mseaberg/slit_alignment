@@ -44,25 +44,40 @@
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
-            <widget class="LineoutImage" name="imageWidget" native="true"/>
+            <widget class="LineoutImage" name="imageWidget" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>420</width>
+               <height>420</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="frame_2">
+             <property name="minimumSize">
+              <size>
+               <width>300</width>
+               <height>300</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <widget class="GraphicsLayoutWidget" name="centroidCanvas"/>
+              </item>
+              <item>
+               <widget class="GraphicsLayoutWidget" name="fwhmCanvas"/>
+              </item>
+             </layout>
+            </widget>
            </item>
           </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="GraphicsLayoutWidget" name="plotCanvas">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>200</width>
-            <height>200</height>
-           </size>
-          </property>
          </widget>
         </item>
        </layout>
@@ -203,6 +218,12 @@
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QGroupBox" name="levelsGroupBox">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>100</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
            <width>300</width>
@@ -212,10 +233,21 @@
          <property name="title">
           <string>Levels</string>
          </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="LevelsWidget" name="levelsWidget" native="true"/>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
         <widget class="QGroupBox" name="crosshairGroupBox">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>100</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
            <width>300</width>
@@ -225,6 +257,11 @@
          <property name="title">
           <string>Crosshairs (μm)</string>
          </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="CrosshairWidget" name="crosshairsWidget" native="true"/>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
@@ -290,7 +327,19 @@
   <customwidget>
    <class>LineoutImage</class>
    <extends>QWidget</extends>
-   <header>/reg/neh/home/seaberg/Commissioning_Tools/PPM_centroid/PPM_widgets.py</header>
+   <header>PPM_widgets</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LevelsWidget</class>
+   <extends>QWidget</extends>
+   <header>PPM_widgets</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CrosshairWidget</class>
+   <extends>QWidget</extends>
+   <header>PPM_widgets</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -300,7 +349,6 @@
   <tabstop>runButton</tabstop>
   <tabstop>lineComboBox</tabstop>
   <tabstop>imagerComboBox</tabstop>
-  <tabstop>plotCanvas</tabstop>
  </tabstops>
  <resources/>
  <connections/>

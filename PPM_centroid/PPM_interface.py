@@ -43,76 +43,26 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.font.setPointSize(10)
         self.font.setFamily('Arial')
 
-        # Levels
-        self.levels_object = PPM_widgets.LevelsWidget(self.levelsGroupBox)
-
-        # Full image
-        #self.raw_image = PPM_widgets.LineoutImage(self.imageGroupBox, self.levels_object)
-       
-        self.imageWidget.connect_levels(self.levels_object)
+        # connect levels to image
+        self.imageWidget.connect_levels(self.levelsWidget)
 
         # wavefront retrieval
         #self.wavefront_image = PPM_widgets.LineoutImage(self.wavefrontGroupBox)
         
-        # crosshairs
-        self.crosshairObject = PPM_widgets.CrosshairWidget(self.crosshairGroupBox, self.imageWidget)
+        # connect image to crosshairs
+        self.crosshairsWidget.connect_image(self.imageWidget)
 
-        #  centroid plot
-        self.centroid_plot = self.plotCanvas.addPlot(row=0,col=0,rowspan=1,colspan=2)
+        # add centroid plot
+        self.centroid_plot = PPM_widgets.StripChart(self.centroidCanvas, u'Beam Centroid (\u03BCm)')
+      
+        labels = ['X', 'Y', 'X smoothed', 'Y smoothed']
+        keys = ['x', 'y', 'x_smooth', 'y_smooth']
 
-        xaxis = self.centroid_plot.getAxis('bottom')
-        xaxis.setLabel(text='Time (s)',**self.labelStyle)
-        xaxis.tickFont = self.font
-        xaxis.setPen(pg.mkPen('w',width=1))
-        yaxis = self.centroid_plot.getAxis('left')
-        yaxis.setLabel(text=u'Beam Centroid (\u03BCm)',**self.labelStyle)
-        yaxis.tickFont = self.font
-        yaxis.setPen(pg.mkPen('w',width=1))
+        self.centroid_plot.addSeries(keys, labels)
 
-        self.centroid_plot.showGrid(x=True,y=True,alpha=.8)
-        self.centroid_lines = {}
-        names = ['X','Y','X smoothed','Y smoothed']
-        colors = ['r','c','m','g']
-
-        legend = self.centroid_plot.addLegend()
-        for i in range(4):
-
-            self.centroid_lines[i] = self.centroid_plot.plot(np.linspace(-99,0,100), np.zeros(100),
-                    pen=pg.mkPen(colors[i], width=5),name=names[i])
-
-        self.setup_legend(legend)
-
-        # plot FWHM widths
-        self.width_plot = self.plotCanvas.addPlot(row=1,col=0,rowspan=1,colspan=2)
-
-        labelStyle = {'color': '#FFF', 'font-size': '12pt'}
-
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setFamily('Arial')
-
-        xaxis = self.width_plot.getAxis('bottom')
-        xaxis.setLabel(text='Time (s)',**labelStyle)
-        xaxis.tickFont = font
-        xaxis.setPen(pg.mkPen('w',width=1))
-        yaxis = self.width_plot.getAxis('left')
-        yaxis.setLabel(text=u'Beam FWHM (\u03BCm)',**labelStyle)
-        yaxis.tickFont = font
-        yaxis.setPen(pg.mkPen('w',width=1))
-
-        self.width_plot.showGrid(x=True,y=True,alpha=.8)
-        #self.contrast_plot.setYRange(0,1.5)
-        self.width_lines = {}
-        names = ['X', 'Y', 'X smoothed', 'Y smoothed']
-        colors = ['r', 'c','m','g']
-
-        legend = self.width_plot.addLegend()
-        for i in range(4):
-
-            self.width_lines[i] = self.width_plot.plot(np.linspace(-99,0,100), np.zeros(100),
-                    pen=pg.mkPen(colors[i], width=5),name=names[i])
-
-        self.setup_legend(legend)
+        # add FWHM plot
+        self.width_plot = PPM_widgets.StripChart(self.fwhmCanvas, u'Beam FWHM (\u03BCm)')
+        self.width_plot.addSeries(keys, labels)
 
         # initialize data dictionary
         self.data_dict = {}
@@ -259,7 +209,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             self.imageWidget.update_viewbox(width, height)
 
             # update crosshair sizes
-            self.crosshairObject.update_crosshair_width()
+            self.crosshairsWidget.update_crosshair_width()
 
             self.thread = QtCore.QThread()
             self.thread.start()
@@ -337,46 +287,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         self.data_dict = data_dict
 
-        now = datetime.now()
-        now_stamp = datetime.timestamp(now)
+        self.centroid_plot.update_plots(data_dict['timestamps'], x=data_dict['cx'], y=data_dict['cy'], x_smooth=data_dict['cx_smooth'], y_smooth=data_dict['cy_smooth'])
 
-        timestamp = data_dict['timestamps'] - now_stamp
-        cx = data_dict['cx']
-        cy = data_dict['cy']
-        cxs = data_dict['cx_smooth']
-        cys = data_dict['cy_smooth']
-        wx = data_dict['wx']
-        wy = data_dict['wy']
-        wxs = data_dict['wx_smooth']
-        wys = data_dict['wy_smooth']
-
-        mask = data_dict['timestamps']>0
-        cx = cx[mask]
-        cy = cy[mask]
-        cxs = cxs[mask]
-        cys = cys[mask]
-        wx = wx[mask]
-        wy = wy[mask]
-        wxs = wxs[mask]
-        wys = wys[mask]
-        timestamp = timestamp[mask]
-        
-        cx_range = np.max(cx)-np.min(cx)
-        cy_range = np.max(cy)-np.min(cy)
-
-        # lineouts
-        self.centroid_lines[0].setData(timestamp, cx)
-        self.centroid_lines[1].setData(timestamp, cy)
-        self.centroid_lines[2].setData(timestamp, cxs)
-        self.centroid_lines[3].setData(timestamp, cys)
-        self.centroid_plot.setXRange(-10, 0)
-        #self.contrast_plot.setYRange(np.mean(cx)-5*cx_range, np.mean(cx)+5*cx_range)
-        self.width_lines[0].setData(timestamp, wx)
-        self.width_lines[1].setData(timestamp, wy)
-        self.width_lines[2].setData(timestamp, wxs)
-        self.width_lines[3].setData(timestamp, wys)
-        self.width_plot.setXRange(-10, 0)
-        #self.rotation_plot.setYRange(np.mean(cy)-5*cy_range, np.mean(cy)+5*cy_range)
-
+        self.width_plot.update_plots(data_dict['timestamps'], x=data_dict['wx'], y=data_dict['wy'], x_smooth=data_dict['wx_smooth'], y_smooth=data_dict['wy_smooth'])
 
         self.label.setText(data_dict['tx'])
