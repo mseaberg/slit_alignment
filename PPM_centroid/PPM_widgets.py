@@ -264,7 +264,7 @@ class StripChart:
                 print('Data had the wrong name')
 
         # reset plot range
-        self.plotWidget.setXrange(-self.time_range, 0)
+        self.plotWidget.setXRange(-self.time_range, 0)
 
 
 
