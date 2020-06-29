@@ -24,7 +24,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="centroidTab">
        <attribute name="title">
@@ -290,7 +290,7 @@
   <customwidget>
    <class>LineoutImage</class>
    <extends>QWidget</extends>
-   <header location="global">PPM_widgets.py</header>
+   <header>/reg/neh/home/seaberg/Commissioning_Tools/PPM_centroid/PPM_widgets.py</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

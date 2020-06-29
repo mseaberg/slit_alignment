@@ -47,13 +47,15 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.levels_object = PPM_widgets.LevelsWidget(self.levelsGroupBox)
 
         # Full image
-        self.raw_image = PPM_widgets.LineoutImage(self.imageGroupBox, self.levels_object)
-        
+        #self.raw_image = PPM_widgets.LineoutImage(self.imageGroupBox, self.levels_object)
+       
+        self.imageWidget.connect_levels(self.levels_object)
+
         # wavefront retrieval
-        self.wavefront_image = PPM_widgets.LineoutImage(self.wavefrontGroupBox)
+        #self.wavefront_image = PPM_widgets.LineoutImage(self.wavefrontGroupBox)
         
         # crosshairs
-        self.crosshairObject = PPM_widgets.CrosshairWidget(self.crosshairGroupBox, self.raw_image)
+        self.crosshairObject = PPM_widgets.CrosshairWidget(self.crosshairGroupBox, self.imageWidget)
 
         #  centroid plot
         self.centroid_plot = self.plotCanvas.addPlot(row=0,col=0,rowspan=1,colspan=2)
@@ -254,7 +256,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
             width, height = self.registration.get_FOV()
 
-            self.raw_image.update_viewbox(width, height)
+            self.imageWidget.update_viewbox(width, height)
 
             # update crosshair sizes
             self.crosshairObject.update_crosshair_width()
@@ -331,7 +333,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         fit_x = data_dict['fit_x']
         fit_y = data_dict['fit_y']
         
-        self.raw_image.update_plots(image_data, x, y, xlineout, ylineout, fit_x, fit_y)
+        self.imageWidget.update_plots(image_data, x, y, xlineout, ylineout, fit_x, fit_y)
 
         self.data_dict = data_dict
 

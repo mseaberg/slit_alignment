@@ -12,7 +12,7 @@ Ui_LevelsWidget, QLevelsWidget = loadUiType('LevelsWidget.ui')
 
 class LineoutImage(QLineoutImage, Ui_LineoutImage):
 
-    def __init__(self, groupbox, levels=None):
+    def __init__(self):
       
         super(LineoutImage, self).__init__()
         self.setupUi(self)
@@ -26,17 +26,10 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         #groupbox.setLayout(layout)
 
         # connect levels
-        self.levels = levels
+        self.levels = None
 
         self.minimum = 0
         self.maximum = 4096
-
-        if self.levels is not None:
-            self.set_min()
-            self.set_max()
-            self.levels.minLineEdit.returnPressed.connect(self.set_min)
-            self.levels.maxLineEdit.returnPressed.connect(self.set_max)
-
 
         # add viewbox for image
         self.view = self.image_canvas.addViewBox()
@@ -59,6 +52,18 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         # initialize lineouts
         self.horizontalPlot, self.horizontalLineout, self.horizontalFit = self.initialize_lineout(self.xlineout_canvas, 'horizontal')
         self.verticalPlot, self.verticalLineout, self.verticalFit = self.initialize_lineout(self.ylineout_canvas, 'vertical')
+
+    def connect_levels(self, levels):
+        # connect levels
+        self.levels = levels
+
+        
+        self.set_min()
+        self.set_max()
+        self.levels.minLineEdit.returnPressed.connect(self.set_min)
+        self.levels.maxLineEdit.returnPressed.connect(self.set_max)
+
+
 
     def get_canvases(self):
         return self.image_canvas, self.xlineout_canvas, self.ylineout_canvas
