@@ -8,6 +8,7 @@ from pcdsdevices.areadetector.detectors import PCDSAreaDetector
 from lcls_beamline_toolbox.xraybeamline2d import optics
 import sys
 import pandas as pd
+from analysis_tools import YagAlign
 
 
 class RunProcessing(QtCore.QObject):
@@ -264,26 +265,31 @@ class RunRegistration(QtCore.QObject):
             # centering_y = 1024 + np.sum(translation[:,0])/4
             # self.data_dict['centering'] = np.array([centering_x,centering_y])
 
-            rotation1 = (translation[1, 1] - translation[3, 1]) / (translation[3, 0] - translation[1, 0])
-            rotation2 = (translation[3, 0] - translation[2, 0]) / (translation[3, 1] - translation[2, 1])
-            self.data_dict['rotation'][:, -1] = (rotation1 + rotation2) * 180 / np.pi / 2
+            if isinstance(self.yag1, YagAlign):
 
+                rotation1 = (translation[1, 1] - translation[3, 1]) / (translation[3, 0] - translation[1, 0])
+                rotation2 = (translation[3, 0] - translation[2, 0]) / (translation[3, 1] - translation[2, 1])
+                self.data_dict['rotation'][:, -1] = (rotation1 + rotation2) * 180 / np.pi / 2
+            else:
+                self.data_dict['rotation'][:, -1] = 0.0
             # scale
             scale = alignment_output['scale']
             # centering
             center = np.zeros((4, 2))
-            # center[0,:] = translation[0,:]*scale[0] + np.array([1792,256])
-            center[0, 0] = translation[0, 0] * scale[0] + 1792
-            center[0, 1] = -translation[0, 1] * scale[0] + 256
-            # center[1,:] = translation[1,:]*scale[1] + np.array([1792,1792])
-            center[1, 0] = translation[1, 0] * scale[1] + 1792
-            center[1, 1] = -translation[1, 1] * scale[1] + 1792
-            # center[2,:] = translation[2,:]*scale[2] + np.array([256,256])
-            center[2, 0] = translation[2, 0] * scale[2] + 256
-            center[2, 1] = -translation[2, 1] * scale[2] + 256
-            # center[3,:] = translation[3,:]*scale[3] + np.array([256,1792])
-            center[3, 0] = translation[3, 0] * scale[3] + 256
-            center[3, 1] = -translation[3, 1] * scale[3] + 1792
+
+            if isinstance(self.yag1, YagAlign):
+                # center[0,:] = translation[0,:]*scale[0] + np.array([1792,256])
+                center[0, 0] = translation[0, 0] * scale[0] + 1792
+                center[0, 1] = -translation[0, 1] * scale[0] + 256
+                # center[1,:] = translation[1,:]*scale[1] + np.array([1792,1792])
+                center[1, 0] = translation[1, 0] * scale[1] + 1792
+                center[1, 1] = -translation[1, 1] * scale[1] + 1792
+                # center[2,:] = translation[2,:]*scale[2] + np.array([256,256])
+                center[2, 0] = translation[2, 0] * scale[2] + 256
+                center[2, 1] = -translation[2, 1] * scale[2] + 256
+                # center[3,:] = translation[3,:]*scale[3] + np.array([256,1792])
+                center[3, 0] = translation[3, 0] * scale[3] + 256
+                center[3, 1] = -translation[3, 1] * scale[3] + 1792
             self.data_dict['center'] = center
             self.data_dict['scale'] = scale
 

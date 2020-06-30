@@ -223,8 +223,11 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
                 if isinstance(single_item, pg.graphicsItems.LabelItem.LabelItem):
                     single_item.setText(single_item.text, **legendLabelStyle)
 
+        self.imager_type = 'PPM'
+
         if self.imager[-9:] == 'XTES:CAM:':
             self.yag1 = XTESAlign()
+            self.imager_type = 'XTES'
         else:
             self.yag1 = YagAlign()
 

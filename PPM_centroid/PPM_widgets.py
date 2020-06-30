@@ -4,6 +4,7 @@ import pyqtgraph as pg
 from PyQt5.uic import loadUiType
 import numpy as np
 from datetime import datetime
+from matplotlib import cm
 
 
 Ui_LineoutImage, QLineoutImage = loadUiType('LineoutImage.ui')
@@ -25,6 +26,8 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
 
         # initialize levels widget attribute
         self.levels = None
+        # initialize crosshair widget attribute
+        self.crosshairsWidget = None
 
         # set default image levels
         self.minimum = 0
@@ -32,15 +35,37 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
 
         # add viewbox for image
         self.view = self.image_canvas.addViewBox()
+
+        # add colormap to context menu
+        colormapMenu = self.view.menu.addMenu("Colormap")
+        gnuplot = colormapMenu.addAction("gnuplot")
+        grayscale = colormapMenu.addAction("grayscale")
+        viridis = colormapMenu.addAction("viridis")
+        bwr = colormapMenu.addAction("BlueWhiteRed")
+        hsv = colormapMenu.addAction("hsv")
+
+        # connect callbacks
+        gnuplot.triggered.connect(self.set_gnuplot)
+        grayscale.triggered.connect(self.set_grayscale)
+        viridis.triggered.connect(self.set_viridis)
+        bwr.triggered.connect(self.set_bwr)
+        hsv.triggered.connect(self.set_hsv)
+
+        # define colormaps
+        self.colormaps = self.define_colormaps()
+
         # setup viewbox and get corresponding QRect
         self.rect = self.setup_viewbox(1024)
-        
+       
         # lock aspect ratio
         self.view.setAspectLocked(True)
         # add an image
         self.img = pg.ImageItem(border='w')
         self.view.addItem(self.img)
-        
+
+        # set default colormap
+        self.img.setLookupTable(self.colormaps['gnuplot'])
+
         # font styles
         self.labelStyle = {'color': '#FFF', 'font-size': '10pt'}
         self.font = QtGui.QFont()
@@ -54,6 +79,71 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         (self.verticalPlot,
          self.verticalLineout,
          self.verticalFit) = self.initialize_lineout(self.ylineout_canvas, 'vertical')
+
+    def get_lut(self, name):
+        cmap = cm.get_cmap(name)
+        cmap._init()
+        lut = (cmap._lut * 255).view(np.ndarray)
+
+        return lut
+
+    def define_colormaps(self):
+
+        cmap_dict = {}
+
+        cmap_dict['grayscale'] = self.get_lut("gray")
+        cmap_dict['gnuplot'] = self.get_lut("gnuplot")
+        cmap_dict['viridis'] = self.get_lut("viridis")
+        cmap_dict['bwr'] = self.get_lut("bwr")
+        cmap_dict['hsv'] = self.get_lut("hsv")
+
+        return cmap_dict
+        
+    def set_viridis(self, evt):
+        self.img.setLookupTable(self.colormaps['viridis'])
+
+    def set_hsv(self, evt):
+        self.img.setLookupTable(self.colormaps['hsv'])
+
+    def set_bwr(self, evt):
+        self.img.setLookupTable(self.colormaps['bwr'])
+    
+    def set_grayscale(self, evt):
+
+        self.img.setLookupTable(self.colormaps['grayscale'])
+
+    def set_gnuplot(self, evt):
+        
+        self.img.setLookupTable(self.colormaps['gnuplot'])
+
+    def connect_crosshairs(self, crosshairs):
+        """
+        Method to connect a CrosshairWidget.
+        :param crosshairs: CrosshairWidget
+        :return:
+        """
+        # set attribute
+        self.crosshairsWidget = crosshairs
+
+        # setup crosshairs
+        self.crosshairsWidget.connect_image(self)
+
+        self.rect.scene().sigMouseClicked.connect(self.mouseClicked)
+
+
+    def mouseClicked(self, evt):
+        """
+        Method to define new crosshair location based on mouseclick.
+        :param evt: mouse click event
+            Contains scene position
+        :return:
+        """
+
+        # translate scene coordinates to viewbox coordinates
+        coords = self.view.mapSceneToView(evt.scenePos())
+
+        # update crosshair
+        self.crosshairsWidget.update_crosshair_coords(coords)
 
     def connect_levels(self, levels):
         """
@@ -459,7 +549,6 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
         self.setupUi(self)
 
         # initialize attributes
-        self.lineout_image = None
         self.red_crosshair = None
         self.blue_crosshair = None
         self.current_crosshair = None
@@ -471,13 +560,9 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
             The image to connect to
         :return:
         """
-        # set attribute
-        self.lineout_image = image_widget
-        # connect to mouse click on image
-        self.lineout_image.rect.scene().sigMouseClicked.connect(self.mouseClicked)
         # create Crosshair objects
-        self.red_crosshair = Crosshair('red', self.red_x, self.red_y, self.lineout_image)
-        self.blue_crosshair = Crosshair('blue', self.blue_x, self.blue_y, self.lineout_image)
+        self.red_crosshair = Crosshair('red', self.red_x, self.red_y, image_widget)
+        self.blue_crosshair = Crosshair('blue', self.blue_x, self.blue_y, image_widget)
 
         # connect callbacks
         # crosshair selection
@@ -529,16 +614,13 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
             # if red button is now unchecked, set current crosshair to None
             self.current_crosshair = None
 
-    def mouseClicked(self, evt):
+    def update_crosshair_coords(self, coords):
         """
         Method to define new crosshair location based on mouseclick.
         :param evt: mouse click event
             Contains scene position
         :return:
         """
-        # translate scene coordinates to viewbox coordinates
-        coords = self.lineout_image.view.mapSceneToView(evt.scenePos())
-
         # update current crosshair coordinates based on mouse click location
         if self.current_crosshair is not None:
             # update text to display crosshair location (in whatever units the viewbox coordinates are in)

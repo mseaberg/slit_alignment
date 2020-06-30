@@ -45,8 +45,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         # connect levels to image
         self.imageWidget.connect_levels(self.levelsWidget)
-        # connect image to crosshairs
-        self.crosshairsWidget.connect_image(self.imageWidget)
+        # connect crosshairs to image
+        self.imageWidget.connect_crosshairs(self.crosshairsWidget)
 
         # wavefront retrieval
         self.wavefrontWidget.change_lineout_label('Phase (rad)')
