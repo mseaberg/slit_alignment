@@ -348,7 +348,7 @@ class StripChart:
         self.lines = {}
 
         # set color order
-        self.color_order = ['red', 'cyan', 'magenta', 'green', 'blue', 'yellow']
+        self.color_order = ['r', 'c', 'm', 'g', 'b', 'y']
 
         # default time range (seconds)
         self.time_range = 10

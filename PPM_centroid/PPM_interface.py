@@ -45,12 +45,16 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         # connect levels to image
         self.imageWidget.connect_levels(self.levelsWidget)
+        # connect image to crosshairs
+        self.crosshairsWidget.connect_image(self.imageWidget)
 
         # wavefront retrieval
         self.wavefrontWidget.change_lineout_label('Phase (rad)')
-        
-        # connect image to crosshairs
-        self.crosshairsWidget.connect_image(self.imageWidget)
+
+        # connect levels to wavefront image
+        self.wavefrontWidget.connect_levels(self.wavefrontLevelsWidget)
+        # connect wavefront image to crosshairs
+        self.wavefrontCrosshairsWidget.connect_image(self.wavefrontWidget)
 
         # add centroid plot
         self.centroid_plot = PPM_widgets.StripChart(self.centroidCanvas, u'Beam Centroid (\u03BCm)')
@@ -63,6 +67,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # add FWHM plot
         self.width_plot = PPM_widgets.StripChart(self.fwhmCanvas, u'Beam FWHM (\u03BCm)')
         self.width_plot.addSeries(keys, labels)
+
+        # add focus distance plot
+        self.focus_plot = PPM_widgets.StripChart(self.focusCanvas, 'Focus position (mm)')
+        self.focus_plot.addSeries(keys, labels)
+
+        # add rms error plot
+        self.rms_plot = PPM_widgets.StripChart(self.rmsErrorCanvas, 'RMS wavefront error (rad)')
+        self.rms_plot.addSeries(keys, labels)
 
         # initialize data dictionary
         self.data_dict = {}
@@ -190,6 +202,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # wavefront sensor data
         self.data_dict['z_x'] = -np.ones(100)
         self.data_dict['z_y'] = -np.ones(100)
+        self.data_dict['rms_x'] = -np.ones(100)
+        self.data_dict['rms_y'] = -np.ones(100)
         self.data_dict['x_res'] = np.zeros(100)
         self.data_dict['y_res'] = np.zeros(100)
         self.data_dict['x_prime'] = np.linspace(-1024, 1023, 100)
@@ -282,13 +296,27 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         ylineout = data_dict['lineout_y']
         fit_x = data_dict['fit_x']
         fit_y = data_dict['fit_y']
+
+        # wfs widget plots
+        dummy_image = data_dict['imDummy']
+        x_prime = data_dict['x_prime']
+        y_prime = data_dict['y_prime']
+        x_res = data_dict['x_res']
+        y_res = data_dict['y_res']
+        x_res_fit = np.zeros_like(x_res)
+        y_res_fit = np.zeros_like(y_res)
         
         self.imageWidget.update_plots(image_data, x, y, xlineout, ylineout, fit_x, fit_y)
+
+        self.wavefrontWidget.update_plots(dummy_image, x_prime, y_prime, x_res, y_res, x_res_fit, y_res_fit)
 
         self.data_dict = data_dict
 
         self.centroid_plot.update_plots(data_dict['timestamps'], x=data_dict['cx'], y=data_dict['cy'], x_smooth=data_dict['cx_smooth'], y_smooth=data_dict['cy_smooth'])
 
         self.width_plot.update_plots(data_dict['timestamps'], x=data_dict['wx'], y=data_dict['wy'], x_smooth=data_dict['wx_smooth'], y_smooth=data_dict['wy_smooth'])
+
+        self.focus_plot.update_plots(data_dict['timestamps'], x=data_dict['z_x'], y=data_dict['z_y'])
+        self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['rms_x'], y=data_dict['rms_y'])
 
         self.label.setText(data_dict['tx'])

@@ -26,7 +26,7 @@ class RunProcessing(QtCore.QObject):
 
         # PPM object for image acquisition and processing
         self.PPM_object = optics.PPM_Device(imager_prefix, threshold=0.1)
-
+        
         self.running = True
 
         # frame rate initialization
@@ -86,6 +86,7 @@ class RunProcessing(QtCore.QObject):
 
             # update dictionary
             self.data_dict['im1'] = self.PPM_object.profile
+            self.data_dict['imDummy'] = self.PPM_object.get_dummy_image()
             self.data_dict['lineout_x'] = lineout_x/np.max(lineout_x)
             self.data_dict['lineout_y'] = lineout_y/np.max(lineout_y)
             self.data_dict['fit_x'] = fit_x
@@ -100,6 +101,8 @@ class RunProcessing(QtCore.QObject):
 
                 self.update_1d_data('z_x', wfs_data['z2x'])
                 self.update_1d_data('z_y', wfs_data['z2y'])
+                self.update_1d_data('rms_x', np.std(wfs_data['x_res']))
+                self.update_1d_data('rms_y', np.std(wfs_data['y_res']))
                 self.data_dict['x_res'] = wfs_data['x_res']
                 self.data_dict['y_res'] = wfs_data['y_res']
                 self.data_dict['x_prime'] = wfs_data['x_prime']
