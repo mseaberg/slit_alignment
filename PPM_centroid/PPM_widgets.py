@@ -405,6 +405,187 @@ class PlotUtil:
         axis.setPen(pg.mkPen(color, width=width))
 
 
+class ImageZoom:
+    """
+    Class for displaying a zoomed-in image
+    """
+
+    def __init__(self, canvas, color):
+
+        self.view = self.canvas.addViewBox()
+        self.view.setAspectLocked(True)
+        self.view.setRange(QtCore.QRectF(0,0, 90, 90))
+        self.img = pg.ImageItem(border='w',title='Top Left')
+        self.view.addItem(self.img1)
+        rect = QtWidgets.QGraphicsRectItem(0, 0, 90, 90)
+        #rect.setPen(QPen(Qt.red, 2, Qt.SolidLine))
+        rect.setPen(pg.mkPen(color, width=2))
+        self.view.addItem(rect)
+
+    def update_image(self, image_data):
+
+        self.img.setImage(np.flipud(image_data).T, levels=(self.minimum, self.maximum))
+
+
+class ImageRegister:
+    """
+    Class for displaying image registration screen
+    """
+
+    def __init__(self, canvas):
+        
+        # Full image
+        self.view = self.canvas.addViewBox()
+
+        width = 1024
+
+        self.rect = self.setup_viewbox(1024) 
+
+        self.view.setAspectLocked(True)
+        
+        self.img = pg.ImageItem(border='w')
+        self.view.addItem(self.img)
+
+        rect1 = QtWidgets.QGraphicsRectItem(0,0,160,160)
+        rect1.setPen(QPen(Qt.cyan, 8, Qt.SolidLine))
+        rect2 = QtWidgets.QGraphicsRectItem(1888,0,160,160)
+        rect2.setPen(QPen(Qt.darkMagenta, 8, Qt.SolidLine))
+        rect3 = QtWidgets.QGraphicsRectItem(0,1888,160,160)
+        rect3.setPen(QPen(Qt.red, 8, Qt.SolidLine))
+        rect4 = QtWidgets.QGraphicsRectItem(1888,1888,160,160)
+        rect4.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+
+
+        #circ1 = QtWidgets.QGraphicsEllipseItem(1024-25,1024-25,50,50)
+        #circ1.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+        crossx = QtWidgets.QGraphicsLineItem(1024-25,1024,1024+25,1024)
+        crossy = QtWidgets.QGraphicsLineItem(1024,1024-25,1024,1024+25)
+        crossx.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+        crossy.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+
+        
+        #self.circ0 = QtWidgets.QGraphicsEllipseItem(1024-25,1024-25,50,50)
+        #self.circ0.setPen(QPen(Qt.red, 8, Qt.SolidLine))
+        self.crossx = QtWidgets.QGraphicsLineItem(1024-25,1024,1024+25,1024)
+        self.crossy = QtWidgets.QGraphicsLineItem(1024,1024-25,1024,1024+25)
+        self.crossx.setPen(QPen(Qt.red, 8, Qt.SolidLine))
+        self.crossy.setPen(QPen(Qt.red, 8, Qt.SolidLine))
+
+        
+        self.circ1 = QtWidgets.QGraphicsRectItem(256-25,1792-25,50,50)
+        self.circ1.setPen(QPen(Qt.red, 8, Qt.SolidLine))
+        self.circ2 = QtWidgets.QGraphicsRectItem(1792-25,1792-25,50,50)
+        self.circ2.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+        self.circ3 = QtWidgets.QGraphicsRectItem(256-25,256-25,50,50)
+        self.circ3.setPen(QPen(Qt.cyan, 8, Qt.SolidLine))
+        self.circ4 = QtWidgets.QGraphicsRectItem(1792-25,256-25,50,50)
+        self.circ4.setPen(QPen(Qt.darkMagenta, 8, Qt.SolidLine))
+        self.view0.addItem(rect1)
+        self.view0.addItem(rect2)
+        self.view0.addItem(rect3)
+        self.view0.addItem(rect4)
+        #self.view0.addItem(circ1)
+        self.view0.addItem(crossx)
+        self.view0.addItem(crossy)
+        self.view0.addItem(self.crossx)
+        self.view0.addItem(self.crossy)
+        #self.view0.addItem(self.circ0)
+        self.view0.addItem(self.circ1)
+        self.view0.addItem(self.circ2)
+        self.view0.addItem(self.circ3)
+        self.view0.addItem(self.circ4)
+        self.pix_size_text = pg.TextItem('Pixel size: %.2f microns' % 0.0,
+                color=(200,200,200), border='c', fill='b',anchor=(0,1))
+        self.pix_size_text.setFont(QtGui.QFont("", 10, QtGui.QFont.Bold))
+        self.pix_size_text.setPos(width/7,width/2048)
+        self.view0.addItem(self.pix_size_text)
+
+
+
+    def update_image(self, image_data):
+
+
+
+    def setup_viewbox(self, width):
+        """
+        Helper function to set up viewbox with title
+        :param width: image width in pixels (int)
+        """
+        # lock aspect ratio
+        self.view.setAspectLocked(True)
+        # update viewbox range
+        self.view.setRange(QtCore.QRectF(-width/2., -width/2., width, width))
+        # draw a white rectangle that is the same size as the image to show the image boundary
+        rect1 = QtGui.QGraphicsRectItem(-width/2., -width/2., width, width)
+        rect1.setPen(QtGui.QPen(QtCore.Qt.white, width/50., QtCore.Qt.SolidLine))
+        # add the rectangle to the viewbox
+        self.view.addItem(rect1)
+        # return the rectangle
+        return rect1
+        
+    def update_viewbox(self, width, height):
+        """
+        Helper function to adjust viewbox settings
+        :param width: new width in pixels (int)
+        :param height: new height in pixels (int)
+        :return:
+        """
+        # set range to new size
+        self.view.setRange(QtCore.QRectF(-width/2, -height/2, width, height))
+        # update the bounding rectangle
+        self.rect.setPen(QtGui.QPen(QtCore.Qt.white, width/50., QtCore.Qt.SolidLine))
+        self.rect.setRect(-width/2, -height/2, width, height)
+        rect1 = QtWidgets.QGraphicsRectItem(-width/2,-width/2,width/12, width/12)
+        rect1.setPen(QPen(Qt.cyan, width/256, Qt.SolidLine))
+        rect2 = QtWidgets.QGraphicsRectItem(width/2-width/12,-width/2,width/12,width/12)
+        rect2.setPen(QPen(Qt.darkMagenta, width/256, Qt.SolidLine))
+        rect3 = QtWidgets.QGraphicsRectItem(-width/2,width/2-width/12,width/12,width/12)
+        rect3.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
+        rect4 = QtWidgets.QGraphicsRectItem(width/2-width/12,width/2-width/12,width/12,width/12)
+        rect4.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
+
+
+        
+        #circ1 = QtWidgets.QGraphicsEllipseItem(1024-25,1024-25,50,50)
+        #circ1.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+        crossx = QtWidgets.QGraphicsLineItem(-width/80,0,width/80,0)
+        crossy = QtWidgets.QGraphicsLineItem(0,-width/80,0,width/80)
+        crossx.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
+        crossy.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
+
+        
+        #self.circ0 = QtWidgets.QGraphicsEllipseItem(1024-25,1024-25,50,50)
+        #self.circ0.setPen(QPen(Qt.red, 8, Qt.SolidLine))
+        self.crossx = QtWidgets.QGraphicsLineItem(-width/80,0,width/80,0)
+        self.crossy = QtWidgets.QGraphicsLineItem(0,-width/80,0,width/80)
+        self.crossx.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
+        self.crossy.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
+
+        
+        self.circ1 = QtWidgets.QGraphicsRectItem(-width/2,width/2,width/40,width/40)
+        self.circ1.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
+        self.circ2 = QtWidgets.QGraphicsRectItem(width/2,width/2,width/40,width/40)
+        self.circ2.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
+        self.circ3 = QtWidgets.QGraphicsRectItem(0,0,width/40,width/40)
+        self.circ3.setPen(QPen(Qt.cyan, width/256, Qt.SolidLine))
+        self.circ4 = QtWidgets.QGraphicsRectItem(width/2,0,width/40,width/40)
+        self.circ4.setPen(QPen(Qt.darkMagenta, width/256, Qt.SolidLine))
+        self.view.addItem(rect1)
+        self.view.addItem(rect2)
+        self.view.addItem(rect3)
+        self.view.addItem(rect4)
+        #self.view0.addItem(circ1)
+        self.view.addItem(crossx)
+        self.view.addItem(crossy)
+        self.view.addItem(self.crossx)
+        self.view.addItem(self.crossy)
+        #self.view0.addItem(self.circ0)
+        self.view.addItem(self.circ1)
+        self.view.addItem(self.circ2)
+        self.view.addItem(self.circ3)
+        self.view.addItem(self.circ4)
+
+
 class StripChart:
     """
     Class for displaying time series data
