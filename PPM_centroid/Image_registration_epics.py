@@ -33,6 +33,12 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.runButton.clicked.connect(self.change_state)
 
         self.actionSave.triggered.connect(self.save_image)
+        self.demoCheckBox.stateChanged.connect(self.toggle_demo)
+        
+        # initialize demo state
+        self.run_demo = True
+        # check current state
+        self.toggle_demo() 
 
         self.main_image = PPM_widgets.ImageRegister(self.canvas)
 
@@ -88,7 +94,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
 
         else:
             im1 = np.array(imageio.imread("PPM_alignment/im4l0_001.tiff"))
-            im1 = im1 - np.min(im1)
+            #im1 = im1 - np.min(im1)
 
             N, M = np.shape(im1)
             scale = 1024.0 / N
@@ -107,10 +113,16 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['timestamps'] = np.zeros(100)
         #self.data_dict['centering'] = np.zeros(2)
 
+    def toggle_demo(self):
+        if self.demoCheckBox.isChecked():
+            self.run_demo = True
+        else:
+            self.run_demo = False
+
     def change_state(self):
         if self.runButton.text() == 'Run':
 
-            self.registration = RunRegistration(self.yag1, self.data_dict, imager=self.imager)
+            self.registration = RunRegistration(self.yag1, self.data_dict, self.run_demo, imager=self.imager)
 
             width, height = self.registration.get_FOV()
             self.main_image.update_viewbox(width, height)

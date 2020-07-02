@@ -332,7 +332,9 @@ class XTESAlign:
         Nd = 1024
 
         bgval = self.get_borderval(data)
-        dataEmbed = np.zeros((Nd, Nd))+bgval
+
+        data = data - bgval
+        dataEmbed = np.zeros((Nd, Nd))
 
         data = self.embed_to(dataEmbed, data)
 

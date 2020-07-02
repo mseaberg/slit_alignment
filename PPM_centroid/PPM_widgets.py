@@ -590,7 +590,18 @@ class ImageRegister:
 
 
     def update_image(self, image_data, pixSize, center=None, scale=None):
-        
+        if self.levels is not None:
+            # check if we're autoscaling
+            if self.levels.checkBox.isChecked():
+                self.minimum = np.min(image_data)
+                self.maximum = np.max(image_data)
+                # set text on levels widget
+                self.levels.setText(self.minimum, self.maximum)
+        else:
+            # autoscale if there is no levels widget
+            self.minimum = np.min(image_data)
+            self.maximum = np.max(image_data)
+    
         width = self.rect.rect().width()
         height = self.rect.rect().height()
         self.img.setImage(np.flipud(image_data).T,
