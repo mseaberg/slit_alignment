@@ -3,6 +3,7 @@
 
 import numpy as np
 import imageio
+import json
 import scipy.ndimage.interpolation as interpolate
 import scipy.ndimage as ndimage
 import sys
@@ -31,6 +32,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.imager = imager
 
         self.runButton.clicked.connect(self.change_state)
+        self.pixelWriteButton.clicked.connect(self.write_pixel_size)
 
         self.actionSave.triggered.connect(self.save_image)
         self.demoCheckBox.stateChanged.connect(self.toggle_demo)
@@ -75,6 +77,8 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
 
         self.imager_type = 'PPM'
 
+        self.imager_name = self.imager[:5]
+
         if self.imager[-5:] == 'XTES:':
             self.yag1 = XTESAlign()
             self.imager_type = 'XTES'
@@ -113,11 +117,36 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['timestamps'] = np.zeros(100)
         #self.data_dict['centering'] = np.zeros(2)
 
+        self.pixSize = 0
+
     def toggle_demo(self):
         if self.demoCheckBox.isChecked():
             self.run_demo = True
         else:
             self.run_demo = False
+
+    def write_pixel_size(self):
+        # grab current pixel size
+        pixSize = np.copy(self.pixSize)
+
+        # get current file contents
+        try:
+            with open('imagers.db') as json_file:
+                data = json.load(json_file)
+
+        except json.decoder.JSONDecodeError:
+            data = {}
+
+        if self.imager_name in data:
+
+            data[self.imager_name]['pixel'] = float(pixSize)
+        else:
+            data[self.imager_name] = {}
+            data[self.imager_name]['pixel'] = float(pixSize)
+
+        # write to the file under the corresponding imager field
+        with open('imagers.db', 'w') as outfile:
+            json.dump(data, outfile)
 
     def change_state(self):
         if self.runButton.text() == 'Run':
@@ -183,14 +212,14 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
     def update_plots(self,data_dict):
 
             
-        pixSize = data_dict['pixSize']
+        self.pixSize = data_dict['pixSize']
 
         full_center = np.mean(data_dict['center'],axis=0)
 
         self.label_pixSize.setText('Pixel size: %.2f \u03BCm'
                 % data_dict['pixSize'])
         centerText = ('YAG center (x,y): %.2f \u03BCm, %.2f \u03BCm'
-                % ((full_center[1]-1024)*pixSize, (full_center[0]-1024)*pixSize))
+                % ((full_center[1]-1024)*self.pixSize, (full_center[0]-1024)*self.pixSize))
         self.label_center.setText(centerText)
         self.data_dict = data_dict
 
@@ -202,14 +231,14 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
 
         if self.imager_type == 'PPM':
 
-            self.main_image.update_image(data_dict['im1'], pixSize, center=center, scale=scale)
+            self.main_image.update_image(data_dict['im1'], self.pixSize, center=center, scale=scale)
             self.top_left.update_image(data_dict['shifts'][0][210:300, 210:300])
             self.top_right.update_image(data_dict['shifts'][1][210:300, 210:300])
             self.bottom_left.update_image(data_dict['shifts'][2][210:300, 210:300])
             self.bottom_right.update_image(data_dict['shifts'][3][210:300, 210:300])
 
         else:
-            self.main_image.update_image(data_dict['im1'], pixSize)
+            self.main_image.update_image(data_dict['im1'], self.pixSize)
 
         iteration = data_dict['iteration']
         contrast = data_dict['contrast']

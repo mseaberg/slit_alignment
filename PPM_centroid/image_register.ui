@@ -208,6 +208,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pixelWriteButton">
+         <property name="text">
+          <string>Write pixel size</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -288,7 +295,9 @@
      </widget>
     </item>
    </layout>
-   <zorder></zorder>
+   <zorder>label</zorder>
+   <zorder>label_pixSize</zorder>
+   <zorder>label_center</zorder>
    <zorder>frame</zorder>
    <zorder>groupBox</zorder>
    <zorder>frame_4</zorder>
