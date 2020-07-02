@@ -250,7 +250,7 @@ class RunRegistration(QtCore.QObject):
 
         if self.running:
 
-            
+            # set up for testing at the moment
             if False:
             #if self.epics_name != '':
 
@@ -258,8 +258,6 @@ class RunRegistration(QtCore.QObject):
                 self.PPM_object.get_image()
                 self.im1 = self.PPM_object.profile
                 self.update_1d_data('timestamps', self.PPM_object.time_stamp)
-
-
 
             else:
                 if self.counter <= 10:

@@ -406,6 +406,13 @@ class PlotUtil:
         axis.setPen(pg.mkPen(color, width=width))
 
 
+class ImageBase:
+
+    def __init__(self, canvas):
+        self.view = canvas.addViewBox()
+        self.view.setAspectLocked(True)
+
+
 class ImageZoom:
     """
     Class for displaying a zoomed-in image
@@ -416,7 +423,7 @@ class ImageZoom:
         self.view = canvas.addViewBox()
         self.view.setAspectLocked(True)
         self.view.setRange(QtCore.QRectF(0,0, 90, 90))
-        self.img = pg.ImageItem(border='w',title='Top Left')
+        self.img = pg.ImageItem(border='w')
         self.view.addItem(self.img)
         rect = QtWidgets.QGraphicsRectItem(0, 0, 90, 90)
         #rect.setPen(QPen(Qt.red, 2, Qt.SolidLine))
