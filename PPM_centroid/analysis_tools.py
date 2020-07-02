@@ -2,7 +2,7 @@ import numpy as np
 import imageio
 import scipy.ndimage.interpolation as interpolate
 import scipy.ndimage as ndimage
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 
 class YagAlign:
@@ -330,10 +330,16 @@ class XTESAlign:
 
         Nt, Mt = np.shape(data)
         Nd = 1024
-        data = np.pad(data,
-                     ((int((Nd - Nt) / 2 + 1), int((Nd - Nt) / 2)),
-                      (int((Nd - Mt) / 2 + 1), int((Nd - Mt) / 2))),
-                     mode='constant', constant_values=self.get_borderval(data))
+
+        bgval = self.get_borderval(data)
+        dataEmbed = np.zeros((Nd, Nd))+bgval
+
+        data = self.embed_to(dataEmbed, data)
+
+        #data = np.pad(data,
+        #             ((int((Nd - Nt) / 2 + 1), int((Nd - Nt) / 2)),
+        #              (int((Nd - Mt) / 2 + 1), int((Nd - Mt) / 2))),
+        #             mode='constant', constant_values=self.get_borderval(data))
 
         # assume that the data coming in is already pretty well-centered
         shifts, transforms = self.get_transform(data)
@@ -379,14 +385,14 @@ class XTESAlign:
         F1abs_out = np.empty_like(y)
         ndimage.map_coordinates(np.log(np.abs(F1) + 1), [y, x], output=F1abs_out, order=3)
 
-        plt.figure()
-        plt.imshow(F1abs_out)
+        #plt.figure()
+        #plt.imshow(F1abs_out)
 
         F2abs_out = np.empty_like(y)
         ndimage.map_coordinates(np.log(np.abs(F2) + 1), [y, x], output=F2abs_out, order=3)
 
-        plt.figure()
-        plt.imshow(F2abs_out)
+        #plt.figure()
+        #plt.imshow(F2abs_out)
 
         # Fourier transforms of log-polar FFTs
         M1 = np.fft.fft2(F1abs_out)
@@ -396,16 +402,16 @@ class XTESAlign:
         cps = self.x_corr(M1, M2)
         cps_real = np.abs(np.fft.ifft2(cps))
 
-        plt.figure()
-        plt.imshow(cps_real)
+        #plt.figure()
+        #plt.imshow(cps_real)
 
         # set first column of x-corr to zero (by design we don't expect that zoom = 1)
         cps_real[:, 0] = 0
         # restrict zoom to be within a certain range
         # cps_real[:, 32:] = 0
 
-        plt.figure()
-        plt.imshow(cps_real)
+        #plt.figure()
+        #plt.imshow(cps_real)
 
         # find correlation peak
         peak = np.unravel_index(np.argmax(cps_real), cps_real.shape)
@@ -418,14 +424,14 @@ class XTESAlign:
             scale = self.logbase**r1p[peak[1]]
 
         # determine rotation from peak location
-        print(theta1[peak[0], 0] * 180 / np.pi)
+        #print(theta1[peak[0], 0] * 180 / np.pi)
         # theta_offset = theta1[peak[0], 0] * 180 / np.pi + 18
         theta_offset = theta1[peak[0], 0] * 180 / np.pi + 90
 
         # get theta nearest to zero
         if theta_offset > 45:
             theta_offset = 90 - theta_offset
-            print(theta_offset)
+            #print(theta_offset)
         if theta_offset < -45:
             theta_offset = theta_offset + 90
 
@@ -443,8 +449,8 @@ class XTESAlign:
 
         zoom_embed = self.embed_to(zoom_embed, zoom_out)
 
-        plt.figure()
-        plt.imshow(zoom_embed)
+        #plt.figure()
+        #plt.imshow(zoom_embed)
 
         ## figure out translation
         # we already have F1
@@ -454,8 +460,8 @@ class XTESAlign:
         cps = self.x_corr(F1, F2p)
         cps_real = np.fft.fftshift(np.abs(np.fft.ifft2(np.fft.fftshift(cps))))
 
-        plt.figure()
-        plt.imshow(cps_real)
+        #plt.figure()
+        #plt.imshow(cps_real)
 
         # find peak (relative to center)
         peak = np.unravel_index(np.argmax(cps_real), cps_real.shape)

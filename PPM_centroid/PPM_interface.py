@@ -148,7 +148,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
     def run_alignment_screen(self):
 
-        cam_name = self.imagerpv + 'CAM:'
+        cam_name = self.imagerpv
 
         alignment_app = App(parent=self, imager=cam_name)
         alignment_app.show()

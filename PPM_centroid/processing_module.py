@@ -9,6 +9,7 @@ from lcls_beamline_toolbox.xraybeamline2d import optics
 import sys
 import pandas as pd
 from analysis_tools import YagAlign
+from datetime import datetime
 
 
 class RunProcessing(QtCore.QObject):
@@ -151,6 +152,17 @@ class RunRegistration(QtCore.QObject):
         #if len(sys.argv) > 1:
         if imager is not None:
             self.epics_name = imager
+        
+        if isinstance(self.yag1, YagAlign):
+            self.imager_type = 'PPM'
+        else:
+            self.imager_type = 'XTES'
+
+        imager_prefix = imager
+
+        # PPM object for image acquisition and processing
+        self.PPM_object = optics.PPM_Device(imager_prefix, threshold=0.1)
+
 
         FOV_dict = {
             'IM2K4': 8.5,
@@ -182,14 +194,6 @@ class RunRegistration(QtCore.QObject):
         except:
             self.distance = 8500.0
 
-        try:
-            self.gige = PCDSAreaDetector(self.epics_name, name='gige')
-            self.reset_camera()
-        except Exception:
-            print('\nSomething wrong with camera server')
-            self.gige = None
-
-        # self.connect(self.gui, QtCore.SIGNAL('stop()'), self.stop)
 
         self.running = True
 
@@ -213,6 +217,12 @@ class RunRegistration(QtCore.QObject):
         #### Start  #####################
         self._update()
 
+    def get_FOV(self):
+        #width = self.PPM_object.FOV
+        #height = np.copy(width)
+        height, width = np.shape(self.im0)
+        return width, height
+
     def stop(self):
         self.running = False
 
@@ -231,15 +241,25 @@ class RunRegistration(QtCore.QObject):
         except:
             print('no image')
             return np.zeros((2048, 2048))
+    def update_1d_data(self, dict_key, new_value):
+        self.data_dict[dict_key] = np.roll(self.data_dict[dict_key], -1)
+        self.data_dict[dict_key][-1] = new_value
+
 
     def _update(self):
 
         if self.running:
 
-            if self.epics_name != '':
+            
+            if False:
+            #if self.epics_name != '':
 
                 # self.im1 = np.ones((2048,2048))*255
-                self.im1 = self.get_image()
+                self.PPM_object.get_image()
+                self.im1 = self.PPM_object.profile
+                self.update_1d_data('timestamps', self.PPM_object.time_stamp)
+
+
 
             else:
                 if self.counter <= 10:
@@ -247,6 +267,11 @@ class RunRegistration(QtCore.QObject):
                     self.im1 = ndimage.filters.gaussian_filter(self.im1, 3 - self.counter * .3)
                 else:
                     self.im1 = self.im0
+
+                now = datetime.now()
+                now_stamp = datetime.timestamp(now)
+
+                self.update_1d_data('timestamps', now_stamp)
 
             # self.gui.img0.setImage(np.flipud(self.im1).T,levels=(0,300))
 
@@ -299,7 +324,11 @@ class RunRegistration(QtCore.QObject):
             pix_dist[2] = np.sqrt(np.sum(np.abs(center[1, :] - center[3, :]) ** 2))
             pix_dist[3] = np.sqrt(np.sum(np.abs(center[2, :] - center[3, :]) ** 2))
 
-            self.data_dict['pixSize'] = self.distance / np.mean(pix_dist)
+            if self.imager_type == 'PPM':
+
+                self.data_dict['pixSize'] = self.distance / np.mean(pix_dist)
+            else:
+                self.data_dict['pixSize'] = 2e-3/500/scale*1e6
 
             # self.data_dict['rotation'][:,-1] = alignment_output['rotation']
 

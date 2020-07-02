@@ -5,6 +5,7 @@ from PyQt5.uic import loadUiType
 import numpy as np
 from datetime import datetime
 from matplotlib import cm
+from PyQt5.QtGui import QPen
 
 
 Ui_LineoutImage, QLineoutImage = loadUiType('LineoutImage.ui')
@@ -412,19 +413,55 @@ class ImageZoom:
 
     def __init__(self, canvas, color):
 
-        self.view = self.canvas.addViewBox()
+        self.view = canvas.addViewBox()
         self.view.setAspectLocked(True)
         self.view.setRange(QtCore.QRectF(0,0, 90, 90))
         self.img = pg.ImageItem(border='w',title='Top Left')
-        self.view.addItem(self.img1)
+        self.view.addItem(self.img)
         rect = QtWidgets.QGraphicsRectItem(0, 0, 90, 90)
         #rect.setPen(QPen(Qt.red, 2, Qt.SolidLine))
         rect.setPen(pg.mkPen(color, width=2))
         self.view.addItem(rect)
 
+        self.levels = None
+        self.minimum = 0
+        self.maximum = 4096
+
     def update_image(self, image_data):
 
         self.img.setImage(np.flipud(image_data).T, levels=(self.minimum, self.maximum))
+   
+    def connect_levels(self, levels):
+        """
+        Method to connect a Levels widget for scaling the image.
+        :param levels: LevelsWidget
+        :return:
+        """
+        # set attribute
+        self.levels = levels
+
+        # set levels based on current entries
+        self.set_min()
+        self.set_max()
+        # connect line edit return to set_min, set_max methods
+        self.levels.minLineEdit.returnPressed.connect(self.set_min)
+        self.levels.maxLineEdit.returnPressed.connect(self.set_max)
+   
+    def set_min(self):
+        """
+        Method called when return is pressed on levels.minLineEdit.
+        :return:
+        """
+        # update the minimum to the new value
+        self.minimum = float(self.levels.minLineEdit.text())
+
+    def set_max(self):
+        """
+        Method called when return is pressed on levels.maxLineEdit.
+        :return:
+        """
+        # update the maximum to the new value
+        self.maximum = float(self.levels.maxLineEdit.text())
 
 
 class ImageRegister:
@@ -433,11 +470,15 @@ class ImageRegister:
     """
 
     def __init__(self, canvas):
-        
+
+        self.canvas = canvas
+
         # Full image
         self.view = self.canvas.addViewBox()
 
         width = 1024
+
+        self.levels = None
 
         self.rect = self.setup_viewbox(1024) 
 
@@ -446,22 +487,22 @@ class ImageRegister:
         self.img = pg.ImageItem(border='w')
         self.view.addItem(self.img)
 
-        rect1 = QtWidgets.QGraphicsRectItem(0,0,160,160)
-        rect1.setPen(QPen(Qt.cyan, 8, Qt.SolidLine))
-        rect2 = QtWidgets.QGraphicsRectItem(1888,0,160,160)
-        rect2.setPen(QPen(Qt.darkMagenta, 8, Qt.SolidLine))
-        rect3 = QtWidgets.QGraphicsRectItem(0,1888,160,160)
-        rect3.setPen(QPen(Qt.red, 8, Qt.SolidLine))
-        rect4 = QtWidgets.QGraphicsRectItem(1888,1888,160,160)
-        rect4.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+        self.rect1 = QtWidgets.QGraphicsRectItem(0,0,160,160)
+        self.rect1.setPen(QPen(Qt.cyan, 8, Qt.SolidLine))
+        self.rect2 = QtWidgets.QGraphicsRectItem(1888,0,160,160)
+        self.rect2.setPen(QPen(Qt.darkMagenta, 8, Qt.SolidLine))
+        self.rect3 = QtWidgets.QGraphicsRectItem(0,1888,160,160)
+        self.rect3.setPen(QPen(Qt.red, 8, Qt.SolidLine))
+        self.rect4 = QtWidgets.QGraphicsRectItem(1888,1888,160,160)
+        self.rect4.setPen(QPen(Qt.green, 8, Qt.SolidLine))
 
 
         #circ1 = QtWidgets.QGraphicsEllipseItem(1024-25,1024-25,50,50)
         #circ1.setPen(QPen(Qt.green, 8, Qt.SolidLine))
-        crossx = QtWidgets.QGraphicsLineItem(1024-25,1024,1024+25,1024)
-        crossy = QtWidgets.QGraphicsLineItem(1024,1024-25,1024,1024+25)
-        crossx.setPen(QPen(Qt.green, 8, Qt.SolidLine))
-        crossy.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+        self.crossx0 = QtWidgets.QGraphicsLineItem(1024-25,1024,1024+25,1024)
+        self.crossy0 = QtWidgets.QGraphicsLineItem(1024,1024-25,1024,1024+25)
+        self.crossx0.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+        self.crossy0.setPen(QPen(Qt.green, 8, Qt.SolidLine))
 
         
         #self.circ0 = QtWidgets.QGraphicsEllipseItem(1024-25,1024-25,50,50)
@@ -480,29 +521,103 @@ class ImageRegister:
         self.circ3.setPen(QPen(Qt.cyan, 8, Qt.SolidLine))
         self.circ4 = QtWidgets.QGraphicsRectItem(1792-25,256-25,50,50)
         self.circ4.setPen(QPen(Qt.darkMagenta, 8, Qt.SolidLine))
-        self.view0.addItem(rect1)
-        self.view0.addItem(rect2)
-        self.view0.addItem(rect3)
-        self.view0.addItem(rect4)
+        self.view.addItem(self.rect1)
+        self.view.addItem(self.rect2)
+        self.view.addItem(self.rect3)
+        self.view.addItem(self.rect4)
         #self.view0.addItem(circ1)
-        self.view0.addItem(crossx)
-        self.view0.addItem(crossy)
-        self.view0.addItem(self.crossx)
-        self.view0.addItem(self.crossy)
+        self.view.addItem(self.crossx0)
+        self.view.addItem(self.crossy0)
+        self.view.addItem(self.crossx)
+        self.view.addItem(self.crossy)
         #self.view0.addItem(self.circ0)
-        self.view0.addItem(self.circ1)
-        self.view0.addItem(self.circ2)
-        self.view0.addItem(self.circ3)
-        self.view0.addItem(self.circ4)
+        self.view.addItem(self.circ1)
+        self.view.addItem(self.circ2)
+        self.view.addItem(self.circ3)
+        self.view.addItem(self.circ4)
+
+
+
         self.pix_size_text = pg.TextItem('Pixel size: %.2f microns' % 0.0,
                 color=(200,200,200), border='c', fill='b',anchor=(0,1))
         self.pix_size_text.setFont(QtGui.QFont("", 10, QtGui.QFont.Bold))
-        self.pix_size_text.setPos(width/7,width/2048)
-        self.view0.addItem(self.pix_size_text)
+        self.pix_size_text.setPos(-width/2+width/7,-width/2+width/2048)
+        self.view.addItem(self.pix_size_text)
+
+        self.update_viewbox(1024,1024)
+
+        self.minimum = 0
+        self.maximum = 4096
+
+    def connect_levels(self, levels):
+        """
+        Method to connect a Levels widget for scaling the image.
+        :param levels: LevelsWidget
+        :return:
+        """
+        # set attribute
+        self.levels = levels
+
+        # set levels based on current entries
+        self.set_min()
+        self.set_max()
+        # connect line edit return to set_min, set_max methods
+        self.levels.minLineEdit.returnPressed.connect(self.set_min)
+        self.levels.maxLineEdit.returnPressed.connect(self.set_max)
+   
+    def set_min(self):
+        """
+        Method called when return is pressed on levels.minLineEdit.
+        :return:
+        """
+        # update the minimum to the new value
+        self.minimum = float(self.levels.minLineEdit.text())
+
+    def set_max(self):
+        """
+        Method called when return is pressed on levels.maxLineEdit.
+        :return:
+        """
+        # update the maximum to the new value
+        self.maximum = float(self.levels.maxLineEdit.text())
 
 
+    def update_image(self, image_data, pixSize, center=None, scale=None):
+        
+        width = self.rect.rect().width()
+        height = self.rect.rect().height()
+        self.img.setImage(np.flipud(image_data).T,
+                levels=(self.minimum, self.maximum))
 
-    def update_image(self, image_data):
+        self.img.setRect(QtCore.QRectF(-width/2, -height/2, width, height))
+       
+       
+
+        if center is not None:
+
+            center = center - width/2
+            rwidth = width/45
+            self.circ1.setRect(center[0,1]-scale[0]*rwidth,center[0,0]-scale[0]*rwidth,
+                2*rwidth*scale[0],2*rwidth*scale[0])
+            self.circ2.setRect(center[1,1]-scale[1]*rwidth,center[1,0]-scale[1]*rwidth,
+                2*rwidth*scale[1],2*rwidth*scale[1])
+            self.circ3.setRect(center[2,1]-scale[2]*rwidth,center[2,0]-scale[2]*rwidth,
+                2*rwidth*scale[2],2*rwidth*scale[2])
+            self.circ4.setRect(center[3,1]-scale[3]*rwidth,center[3,0]-scale[3]*rwidth,
+                2*rwidth*scale[3],2*rwidth*scale[3])
+
+
+            full_center = np.mean(center,axis=0)
+
+            self.crossx.setLine(full_center[1]-width/80,full_center[0],
+                full_center[1]+width/80,full_center[0])
+            self.crossy.setLine(full_center[1],full_center[0]-width/80,
+                full_center[1],full_center[0]+width/80)
+
+
+        self.pix_size_text.setText('Pixel size: %.2f microns' 
+                % pixSize)
+
 
 
 
@@ -530,61 +645,47 @@ class ImageRegister:
         :param height: new height in pixels (int)
         :return:
         """
+        # lock aspect ratio
+        self.view.setAspectLocked(True)
+        
         # set range to new size
         self.view.setRange(QtCore.QRectF(-width/2, -height/2, width, height))
         # update the bounding rectangle
-        self.rect.setPen(QtGui.QPen(QtCore.Qt.white, width/50., QtCore.Qt.SolidLine))
+        self.rect.setPen(QtGui.QPen(QtCore.Qt.white, width/256., QtCore.Qt.SolidLine))
         self.rect.setRect(-width/2, -height/2, width, height)
-        rect1 = QtWidgets.QGraphicsRectItem(-width/2,-width/2,width/12, width/12)
-        rect1.setPen(QPen(Qt.cyan, width/256, Qt.SolidLine))
-        rect2 = QtWidgets.QGraphicsRectItem(width/2-width/12,-width/2,width/12,width/12)
-        rect2.setPen(QPen(Qt.darkMagenta, width/256, Qt.SolidLine))
-        rect3 = QtWidgets.QGraphicsRectItem(-width/2,width/2-width/12,width/12,width/12)
-        rect3.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
-        rect4 = QtWidgets.QGraphicsRectItem(width/2-width/12,width/2-width/12,width/12,width/12)
-        rect4.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
+        
+        self.rect1.setRect(-width/2,-width/2,width/12, width/12)
+        self.rect1.setPen(QPen(Qt.cyan, width/256, Qt.SolidLine))
+        self.rect2.setRect(width/2-width/12,-width/2,width/12,width/12)
+        self.rect2.setPen(QPen(Qt.darkMagenta, width/256, Qt.SolidLine))
+        self.rect3.setRect(-width/2,width/2-width/12,width/12,width/12)
+        self.rect3.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
+        self.rect4.setRect(width/2-width/12,width/2-width/12,width/12,width/12)
+        self.rect4.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
 
 
         
-        #circ1 = QtWidgets.QGraphicsEllipseItem(1024-25,1024-25,50,50)
-        #circ1.setPen(QPen(Qt.green, 8, Qt.SolidLine))
-        crossx = QtWidgets.QGraphicsLineItem(-width/80,0,width/80,0)
-        crossy = QtWidgets.QGraphicsLineItem(0,-width/80,0,width/80)
-        crossx.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
-        crossy.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
+        self.crossx0.setLine(-width/80,0,width/80,0)
+        self.crossy0.setLine(0,-width/80,0,width/80)
+        self.crossx0.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
+        self.crossy0.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
 
         
-        #self.circ0 = QtWidgets.QGraphicsEllipseItem(1024-25,1024-25,50,50)
-        #self.circ0.setPen(QPen(Qt.red, 8, Qt.SolidLine))
-        self.crossx = QtWidgets.QGraphicsLineItem(-width/80,0,width/80,0)
-        self.crossy = QtWidgets.QGraphicsLineItem(0,-width/80,0,width/80)
+        self.crossx.setLine(-width/80,0,width/80,0)
+        self.crossy.setLine(0,-width/80,0,width/80)
         self.crossx.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
         self.crossy.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
 
         
-        self.circ1 = QtWidgets.QGraphicsRectItem(-width/2,width/2,width/40,width/40)
+        self.circ1.setRect(-width/2,width/2-width/40,width/40,width/40)
         self.circ1.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
-        self.circ2 = QtWidgets.QGraphicsRectItem(width/2,width/2,width/40,width/40)
+        self.circ2.setRect(width/2-width/40,width/2-width/40,width/40,width/40)
         self.circ2.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
-        self.circ3 = QtWidgets.QGraphicsRectItem(0,0,width/40,width/40)
+        self.circ3.setRect(-width/2,-width/2,width/40,width/40)
         self.circ3.setPen(QPen(Qt.cyan, width/256, Qt.SolidLine))
-        self.circ4 = QtWidgets.QGraphicsRectItem(width/2,0,width/40,width/40)
+        self.circ4.setRect(width/2-width/40,-width/2,width/40,width/40)
         self.circ4.setPen(QPen(Qt.darkMagenta, width/256, Qt.SolidLine))
-        self.view.addItem(rect1)
-        self.view.addItem(rect2)
-        self.view.addItem(rect3)
-        self.view.addItem(rect4)
-        #self.view0.addItem(circ1)
-        self.view.addItem(crossx)
-        self.view.addItem(crossy)
-        self.view.addItem(self.crossx)
-        self.view.addItem(self.crossy)
-        #self.view0.addItem(self.circ0)
-        self.view.addItem(self.circ1)
-        self.view.addItem(self.circ2)
-        self.view.addItem(self.circ3)
-        self.view.addItem(self.circ4)
-
+        self.pix_size_text.setPos(-width/2+width/7,-width/2+width/2048)
 
 class StripChart:
     """
