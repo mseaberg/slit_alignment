@@ -140,12 +140,15 @@ class RunProcessing(QtCore.QObject):
 class RunRegistration(QtCore.QObject):
     sig = QtCore.pyqtSignal(dict)
 
-    def __init__(self, yag, data_dict, imager=None):
+    def __init__(self, yag, data_dict, demo, imager=None):
         super(RunRegistration, self).__init__()
 
         # self.my_signal = QtCore.Signal()
 
         # self.gui = gui
+
+        # demo state
+        self.demo = demo
 
         self.yag1 = yag
         self.epics_name = ''
@@ -251,7 +254,7 @@ class RunRegistration(QtCore.QObject):
         if self.running:
 
             # set up for testing at the moment
-            if False:
+            if not self.demo:
             #if self.epics_name != '':
 
                 # self.im1 = np.ones((2048,2048))*255
@@ -324,9 +327,9 @@ class RunRegistration(QtCore.QObject):
 
             if self.imager_type == 'PPM':
 
-                self.data_dict['pixSize'] = self.distance / np.mean(pix_dist)
+                self.data_dict['pixSize'] = self.distance / np.mean(pix_dist) / self.PPM_object.xbin
             else:
-                self.data_dict['pixSize'] = 2e-3/500/scale*1e6
+                self.data_dict['pixSize'] = 2e-3/500/scale*1e6 / self.PPM_object.xbin
 
             # self.data_dict['rotation'][:,-1] = alignment_output['rotation']
 

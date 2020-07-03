@@ -590,7 +590,18 @@ class ImageRegister:
 
 
     def update_image(self, image_data, pixSize, center=None, scale=None):
-        
+        if self.levels is not None:
+            # check if we're autoscaling
+            if self.levels.checkBox.isChecked():
+                self.minimum = np.min(image_data)
+                self.maximum = np.max(image_data)
+                # set text on levels widget
+                self.levels.setText(self.minimum, self.maximum)
+        else:
+            # autoscale if there is no levels widget
+            self.minimum = np.min(image_data)
+            self.maximum = np.max(image_data)
+    
         width = self.rect.rect().width()
         height = self.rect.rect().height()
         self.img.setImage(np.flipud(image_data).T,
@@ -858,11 +869,48 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
         self.redButton.toggled.connect(self.red_crosshair_toggled)
         self.blueButton.toggled.connect(self.blue_crosshair_toggled)
         # red crosshair position
-        self.red_x.returnPressed.connect(self.red_crosshair.update_position)
-        self.red_y.returnPressed.connect(self.red_crosshair.update_position)
+        self.red_x.returnPressed.connect(self.update_red_crosshair)
+        self.red_y.returnPressed.connect(self.update_red_crosshair)
         # blue crosshair position
-        self.blue_x.returnPressed.connect(self.blue_crosshair.update_position)
-        self.blue_y.returnPressed.connect(self.blue_crosshair.update_position)
+        self.blue_x.returnPressed.connect(self.update_blue_crosshair)
+        self.blue_y.returnPressed.connect(self.update_blue_crosshair)
+        #self.red_x.returnPressed.connect(self.update_crosshair(self.red_crosshair))
+        #self.red_y.returnPressed.connect(self.update_crosshair(self.red_crosshair))
+        #self.blue_x.returnPressed.connect(self.update_crosshair(self.blue_crosshair))
+        #self.blue_y.returnPressed.connect(self.update_crosshair(self.blue_crosshair))
+
+    def calculate_distance(self):
+
+        try:
+            red_x = float(self.red_x.text())
+        except ValueError:
+            red_x = 0
+        try:
+            red_y = float(self.red_y.text())
+        except ValueError:
+            red_y = 0
+        try:
+            blue_x = float(self.blue_x.text())
+        except ValueError:
+            blue_x = 0
+        try:
+            blue_y = float(self.blue_y.text())
+        except ValueError:
+            blue_y = 0
+
+        distance = np.sqrt((red_x-blue_x)**2 + (red_y-blue_y)**2)*1e-3
+
+        #self.distanceLineEdit.setText('%.2f' % distance)
+        self.distanceLabel.setText('Distance between crosshairs: %.2f mm' % distance)
+        #pass
+
+    def update_red_crosshair(self):
+        self.calculate_distance()
+        self.red_crosshair.update_position()
+
+    def update_blue_crosshair(self):
+        self.calculate_distance()
+        self.blue_crosshair.update_position()
 
     def red_crosshair_toggled(self, evt):
         """
@@ -917,6 +965,9 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
             self.current_crosshair.yLineEdit.setText('%.1f' % coords.y())
             # draw crosshair at new location
             self.current_crosshair.update_position()
+
+            # re-calculate crosshair distance
+            self.calculate_distance()
 
     def update_crosshair_width(self):
         """
