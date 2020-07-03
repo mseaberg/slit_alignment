@@ -327,9 +327,9 @@ class RunRegistration(QtCore.QObject):
 
             if self.imager_type == 'PPM':
 
-                self.data_dict['pixSize'] = self.distance / np.mean(pix_dist)
+                self.data_dict['pixSize'] = self.distance / np.mean(pix_dist) / self.PPM_object.xbin
             else:
-                self.data_dict['pixSize'] = 2e-3/500/scale*1e6
+                self.data_dict['pixSize'] = 2e-3/500/scale*1e6 / self.PPM_object.xbin
 
             # self.data_dict['rotation'][:,-1] = alignment_output['rotation']
 
