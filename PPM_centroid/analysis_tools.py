@@ -298,7 +298,8 @@ class XTESAlign:
     def __init__(self):
 
         # the TEMPLATE
-        im0 = imageio.imread("XTES_pattern.png")[:, :, 3]
+        # im0 = imageio.imread("XTES_pattern.png")[:, :, 3]
+        im0 = imageio.imread("XTES_pattern_zoom_out.png")[:, :, 3]
 
         Nt, Mt = np.shape(im0)
         Nd = 1024
