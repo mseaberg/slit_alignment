@@ -135,6 +135,18 @@
                </widget>
               </item>
               <item>
+               <widget class="QGroupBox" name="groupBox">
+                <property name="title">
+                 <string>Averaging</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                 <item>
+                  <widget class="AverageWidget" name="averageWidget" native="true"/>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
                <spacer name="horizontalSpacer_2">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -426,6 +438,12 @@
   </customwidget>
   <customwidget>
    <class>CrosshairWidget</class>
+   <extends>QWidget</extends>
+   <header>PPM_widgets</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AverageWidget</class>
    <extends>QWidget</extends>
    <header>PPM_widgets</header>
    <container>1</container>

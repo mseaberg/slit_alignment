@@ -11,6 +11,7 @@ from PyQt5.QtGui import QPen
 Ui_LineoutImage, QLineoutImage = loadUiType('LineoutImage.ui')
 Ui_Crosshair, QCrosshair = loadUiType('Crosshair.ui')
 Ui_LevelsWidget, QLevelsWidget = loadUiType('LevelsWidget.ui')
+Ui_AverageWidget, QAverageWidget = loadUiType('AverageWidget.ui')
 
 
 class LineoutImage(QLineoutImage, Ui_LineoutImage):
@@ -977,6 +978,40 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
         # call update width for both crosshairs
         self.red_crosshair.update_width()
         self.blue_crosshair.update_width()
+
+
+class AverageWidget(QAverageWidget, Ui_AverageWidget):
+    """
+    Class to define a widget for averaging images.
+    """
+    def __init__(self, parent=None):
+        super(AverageWidget, self).__init__()
+        self.setupUi(self)
+        
+        # connect callbacks
+        self.averagingCheckBox.toggled.connect(self.set_averaging)
+        self.numImagesLineEdit.returnPressed.connect(self.update_average)
+
+        # set attributes
+        self.averaging = self.averagingCheckBox.isChecked()
+        # default number of images (for no averaging)
+        self.numImages = 1
+        self.set_averaging()
+
+    def update_average(self):
+        if self.averaging:
+            self.numImages = int(self.numImagesLineEdit.text())
+
+    def set_averaging(self):
+        self.averaging = self.averagingCheckBox.isChecked()
+       
+        if self.averaging:
+            self.update_average()
+        else:
+            self.numImages = 1
+
+    def get_numImages(self):
+        return self.numImages
 
 
 class LevelsWidget(QLevelsWidget, Ui_LevelsWidget):

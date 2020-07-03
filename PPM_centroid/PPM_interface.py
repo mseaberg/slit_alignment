@@ -214,9 +214,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
             if self.wavefrontCheckBox.isChecked():
                 wfs_name = self.WFS_dict[self.imager]
-                self.registration = RunProcessing(self.imagerpv, self.data_dict, wfs_name=wfs_name)
+                self.registration = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name)
             else:
-                self.registration = RunProcessing(self.imagerpv, self.data_dict)
+                self.registration = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget)
 
             width, height = self.registration.get_FOV()
 
