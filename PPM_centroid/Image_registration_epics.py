@@ -151,7 +151,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
     def change_state(self):
         if self.runButton.text() == 'Run':
 
-            self.registration = RunRegistration(self.yag1, self.data_dict, self.run_demo, imager=self.imager)
+            self.registration = RunRegistration(self.yag1, self.data_dict, self.averageWidget, self.run_demo, imager=self.imager)
 
             width, height = self.registration.get_FOV()
             self.main_image.update_viewbox(width, height)

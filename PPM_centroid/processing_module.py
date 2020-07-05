@@ -141,7 +141,7 @@ class RunProcessing(QtCore.QObject):
 class RunRegistration(QtCore.QObject):
     sig = QtCore.pyqtSignal(dict)
 
-    def __init__(self, yag, data_dict, demo, imager=None):
+    def __init__(self, yag, data_dict, averageWidget, demo, imager=None):
         super(RunRegistration, self).__init__()
 
         # self.my_signal = QtCore.Signal()
@@ -165,7 +165,7 @@ class RunRegistration(QtCore.QObject):
         imager_prefix = imager
 
         # PPM object for image acquisition and processing
-        self.PPM_object = optics.PPM_Device(imager_prefix, threshold=0.1)
+        self.PPM_object = optics.PPM_Device(imager_prefix, average=averageWidget, threshold=0.1)
 
 
         FOV_dict = {
