@@ -127,6 +127,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         self.imager_list = self.imager_dict['L0']
         self.imager = self.imager_list[0]
+        # make sure this initializes properly
+        self.change_imager(0)
         self.imagerpv_list = self.imagerpv_dict['L0']
         self.imagerpv = self.imagerpv_list[0]
         self.imagerComboBox.clear()
@@ -165,6 +167,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
     def change_imager(self, index):
         # update imager
         self.imager = self.imager_list[index]
+        self.imageGroupBox.setTitle(self.imager)
         # check if this imager has a wavefront sensor
         if self.imager in self.WFS_list:
             self.wavefrontCheckBox.setEnabled(True)
