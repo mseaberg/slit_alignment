@@ -12,6 +12,8 @@ Ui_LineoutImage, QLineoutImage = loadUiType('LineoutImage.ui')
 Ui_Crosshair, QCrosshair = loadUiType('Crosshair.ui')
 Ui_LevelsWidget, QLevelsWidget = loadUiType('LevelsWidget.ui')
 Ui_AverageWidget, QAverageWidget = loadUiType('AverageWidget.ui')
+Ui_Plot, QPlot = loadUiType('Epics_plot.ui')
+Ui_Config, QConfig = loadUiType('Config.ui')
 
 
 class LineoutImage(QLineoutImage, Ui_LineoutImage):
@@ -810,6 +812,311 @@ class StripChart:
 
         # reset plot range
         self.plotWidget.setXRange(-self.time_range, 0)
+
+
+class NewPlot(QPlot, Ui_Plot):
+    """
+    Class for making AMI-style plots in a separate window
+    """
+
+    def __init__(self, parent):
+        """
+        Create NewPlot object
+        :param parent: parent is the App object
+        """
+        super(NewPlot, self).__init__(parent)
+        self.setupUi(self)
+
+        # add parent attribute
+        self.parent = parent
+
+        # make a new pyqtgraph plot
+        self.plot_item = self.canvas.addPlot(row=0, col=0)
+        # self.legend = self.plot_item.addLegend()
+        self.plot_item.showGrid(x=True, y=True, alpha=.7)
+        # self.plot_ref = self.plot_item.plot(np.array([0]),np.array([0]),
+        #        pen=pg.mkPen('b',width=5),symbol='o',symbolBrush='b',
+        #        name='reference')
+        self.plot_data = self.plot_item.plot(np.linspace(0, 99, 100), np.zeros(100),
+                                             pen=pg.mkPen('r', width=5), symbol='o', symbolBrush='r',
+                                             name='current data')
+
+        PlotUtil.label_plot(self.plot_item, '', '')
+
+        # placeholder for reference plot
+        # self.plot_ref = None
+
+        # get information from the plot window
+        self.minimum = float(self.min_lineEdit.text())
+        self.maximum = float(self.max_lineEdit.text())
+        self.points = float(self.points_lineEdit.text())
+        self.update_bins()
+
+        # connect plot window buttons
+        self.min_lineEdit.returnPressed.connect(self.update_min)
+        self.max_lineEdit.returnPressed.connect(self.update_max)
+        self.points_lineEdit.returnPressed.connect(self.update_points)
+        self.xaxis_comboBox.activated.connect(self.update_axes)
+        self.yaxis_comboBox.activated.connect(self.update_axes)
+        self.actionChange_title.triggered.connect(self.change_title)
+        # self.actionReference.triggered.connect(self.add_reference)
+
+        # flag to keep track of if a selection has been made yet in a combo box
+        self.flag = 1
+
+        # populate combo boxes
+        self.populate_combobox(parent.data_dict['key_list'])
+
+        # initialize plot data
+        self.xplotdata = None
+        self.yplotdata = None
+
+    def populate_combobox(self, axis_list):
+        """
+        Method to populate x and y data combo boxes
+        :param axis_dict: dictionary of data
+        """
+
+        # check if a selection has been made yet. If not, do nothing
+        if self.flag:
+            # get all the keys from the dictionary and populate the combo boxes
+            # axis_list = []
+            # for key in axis_dict.keys():
+            #    axis_list.append(key)
+            self.xaxis_comboBox.clear()
+            self.xaxis_comboBox.addItems(sorted(axis_list))
+            self.yaxis_comboBox.clear()
+            self.yaxis_comboBox.addItems(sorted(axis_list))
+
+    def change_title(self):
+        """
+        Method to change the plot title. Called from the file menu.
+        :return:
+        """
+
+        # get input from a dialog
+        text, ok = QtGui.QInputDialog.getText(self, 'Change Title', 'Enter title:')
+
+        # set the title if something was entered
+        if ok:
+            self.setWindowTitle(text)
+
+    def update_min(self):
+        """
+        Update the x-axis minimum. Called when enter is pressed.
+        """
+        self.minimum = float(self.min_lineEdit.text())
+        self.update_bins()
+
+    def update_max(self):
+        """
+        Update the x-axis maximum. Called when enter is pressed.
+        """
+        self.maximum = float(self.max_lineEdit.text())
+        self.update_bins()
+
+    def update_points(self):
+        """
+        Update the number of bins. Called when enter is pressed.
+        """
+        self.points = float(self.points_lineEdit.text())
+        self.update_bins()
+
+    def update_bins(self):
+        # calculate bin parameters
+        bin_width = (self.maximum - self.minimum) / (self.points - 1)
+        dx = bin_width / 2.
+        self.bins = np.linspace(self.minimum - dx, self.maximum + dx, self.points + 1)
+        self.binPlot = (self.bins[:-1] + self.bins[1:]) / 2.
+
+    def update_axes(self):
+        """
+        Called when a selection is made in the combo boxes. Updates plot labels and sets keys for data access.
+        """
+        self.xaxis = str(self.xaxis_comboBox.currentText())
+        self.yaxis = str(self.yaxis_comboBox.currentText())
+        self.parent.label_plot(self.plot_item, self.xaxis, self.yaxis)
+        # disable re-population of combo boxes by setting the flag to 0.
+        self.flag = 0
+
+    def update_plot(self, data_dict):
+        """
+        Called from the main GUI when new data comes in.
+        :param data_dict: dictionary containing the data to plot
+        """
+
+        try:
+            # if we're starting a new data analysis process, see if we should update combo box
+            if data_dict['iteration'] == 0:
+                self.populate_combobox(data_dict['key_list'])
+            # get data based on x and y-axis keys
+            xdata = data_dict[self.xaxis]
+            ydata = data_dict[self.yaxis]
+
+            # bin_width = (self.maximum - self.minimum)/(self.points-1)
+            # dx = bin_width/2.
+            # bins = np.linspace(self.minimum-dx,self.maximum+dx,self.points+1)
+            # binPlot = (bins[:-1]+bins[1:])/2.
+
+            # figure out which bin each xdata belongs to
+            digitized = np.digitize(xdata, self.bins)
+
+            # ignore any warnings about nan's
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+
+                # calculate y-values for each bin
+                bin_means = [ydata[digitized == i].mean() for i in range(1, len(self.bins))]
+
+            # create a mask to avoid nan's
+            mask = np.logical_not(np.isnan(bin_means))
+
+            self.xplotdata = np.array(self.binPlot)[mask]
+            self.yplotdata = np.array(bin_means)[mask]
+            # update the plot
+            self.plot_data.setData(self.xplotdata, self.yplotdata)
+
+        except:
+            # print that there was an error if something didn't work.
+            print('error')
+
+    def closeEvent(self, event):
+        """
+        Called when the window is closed
+        :param event: close event
+        """
+
+        # remove plot from App's plot list
+        self.parent.plots.remove(self)
+
+
+class Config(QConfig, Ui_Config):
+    """
+    Class for creating config files
+    """
+
+    def __init__(self, parent, filename=None):
+        """
+        Create Config object
+        :param parent: parent is the App object
+        """
+        super(Config, self).__init__(parent)
+        self.setupUi(self)
+
+        self.parent = parent
+
+        self.buttonBox.accepted.connect(self.save_config)
+
+        self.filename = filename
+        if filename is not None:
+            self.load_config()
+
+    def load_config(self):
+        """
+        Method that populates dialog with entries from a previously
+        created config file.
+        """
+        # get information from file
+        pars = wfs_utils.parse_wfs_config_gui(self.filename)
+
+        # get only the name of the file
+        name = self.filename.split('/')[-1][:-4]
+        self.lineEdit_filename.setText(name)
+
+        # set lineEdits based on what's in file
+        self.lineEdit_energy.setText(str(pars['energy']))
+        self.lineEdit_ROI.setText(', '.join(map(str, pars['roi'])))
+        self.lineEdit_lineout.setText(str(int(pars['lineout_width'])))
+        self.lineEdit_fraction.setText(str(pars['fraction']))
+        self.lineEdit_threshold.setText(str(pars['thresh']))
+        self.lineEdit_downsampling.setText(str(pars['downsample']))
+        self.lineEdit_order.setText(str(pars['order']))
+        self.lineEdit_z0.setText(str(pars['z0']))
+        self.lineEdit_zf.setText(str(pars['zf']))
+        pix = str(pars['pixel'] * 1e6)
+        self.lineEdit_pix.setText(pix)
+        self.lineEdit_grating_motor.setText(pars['grating_z'])
+        self.lineEdit_det_motor.setText(pars['det_z'])
+        pitch = str(pars['pitch'] * 1e6)
+        self.lineEdit_pitch.setText(pitch)
+        self.lineEdit_detName.setText(pars['detName'])
+        self.lineEdit_rotation.setText(str(pars['angle']))
+        self.lineEdit_update.setText(str(pars['update_events']))
+
+        epics_list = pars['epics_keys']
+        epics_text = '\n'.join(epics_list)
+        self.epics_TextEdit.setPlainText(epics_text)
+
+    def save_config(self):
+        """
+        Method that runs when the "Ok" button is clicked. Saves config file
+        """
+        # make a config parser
+        config_parser = ConfigParser.ConfigParser()
+
+        # set all the parameters based on what has been entered
+        config_parser.add_section('Main')
+        config_parser.set('Main', 'hutch', self.parent.hutch)
+        config_parser.set('Main', 'exp_name', self.parent.experiment)
+        config_parser.set('Main', 'energy', str(self.lineEdit_energy.text()))
+        config_parser.set('Main', 'live', str(self.parent.liveCheckBox.isChecked()))
+        config_parser.add_section('Processing')
+        roi = [x.strip() for x in str(self.lineEdit_ROI.text()).split(',')]
+        config_parser.set('Processing', 'xmin', roi[0])
+        config_parser.set('Processing', 'xmax', roi[1])
+        config_parser.set('Processing', 'ymin', roi[2])
+        config_parser.set('Processing', 'ymax', roi[3])
+        config_parser.set('Processing', 'pad', '1')
+        config_parser.set('Processing', 'lineout_width',
+                          str(self.lineEdit_lineout.text()))
+        config_parser.set('Processing', 'fraction',
+                          str(self.lineEdit_fraction.text()))
+        config_parser.set('Processing', 'padding', '0')
+        config_parser.set('Processing', 'thresh',
+                          str(self.lineEdit_threshold.text()))
+        config_parser.set('Processing', 'downsample',
+                          str(self.lineEdit_downsampling.text()))
+        config_parser.set('Processing', 'order',
+                          str(self.lineEdit_order.text()))
+        config_parser.add_section('Setup')
+        config_parser.set('Setup', 'z0', str(self.lineEdit_z0.text()))
+        config_parser.set('Setup', 'zf', str(self.lineEdit_zf.text()))
+        config_parser.set('Setup', 'pixel',
+                          str(self.lineEdit_pix.text()) + 'e-6')
+        config_parser.set('Setup', 'grating_z',
+                          str(self.lineEdit_grating_motor.text()))
+        config_parser.set('Setup', 'det_z',
+                          str(self.lineEdit_det_motor.text()))
+        config_parser.set('Setup', 'pitch',
+                          str(self.lineEdit_pitch.text()) + 'e-6')
+        config_parser.set('Setup', 'detName',
+                          str(self.lineEdit_detName.text()))
+        config_parser.set('Setup', 'angle',
+                          str(self.lineEdit_rotation.text()))
+        config_parser.add_section('Update')
+        config_parser.set('Update', 'update_events',
+                          str(self.lineEdit_update.text()))
+
+        # epics keys need to be parsed from textbox, and put into a
+        # comma separated string
+        epics_text = str(self.epics_TextEdit.toPlainText())
+        # convert text to list
+        epics_list = [x.strip() for x in epics_text.split('\n')]
+        # remove any empty strings
+        epics_list = list(filter(None, epics_list))
+        # convert to single string with comma separation
+        epics_string = ','.join(epics_list)
+        config_parser.set('Processing', 'epics_keys', epics_string)
+
+        # get the filename that was entered
+        filename = 'config/' + str(self.lineEdit_filename.text()) + '.cfg'
+
+        # write the new config file
+        with open(filename, 'wb') as configfile:
+            config_parser.write(configfile)
+
+        # make sure this is the config file that is being used now
+        self.parent.config = filename
 
 
 class CrosshairWidget(QCrosshair, Ui_Crosshair):
