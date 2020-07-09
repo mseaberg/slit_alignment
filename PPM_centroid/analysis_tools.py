@@ -364,7 +364,7 @@ class XTESAlign:
 
         Ni, Mi = np.shape(img)
 
-        Nr = 128
+        Nr = 256
 
         # log-polar coordinate system
         r1 = np.linspace(0, np.log(self.Nt / 8) / np.log(self.logbase), Nr)

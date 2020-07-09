@@ -73,7 +73,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         
         #  rotation plot
         self.rotation_plot = PPM_widgets.StripChart(self.rotationCanvas, 'Rotation (degrees)')
-        self.rotation_plot.addSeries(keys, labels)
+        self.rotation_plot.addSeries(['average'],[''])
 
         self.imager_type = 'PPM'
 
@@ -108,7 +108,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict = {}
         self.data_dict['im0'] = im0
         self.data_dict['contrast'] = np.zeros((4, 100))
-        self.data_dict['rotation'] = np.zeros((4,100))
+        self.data_dict['rotation'] = np.zeros(100)
         self.data_dict['iteration'] = np.tile(np.linspace(-99, 0, 100), (4, 1))
         self.data_dict['counter'] = 0.
         self.data_dict['center'] = np.zeros((4,2))
@@ -232,10 +232,10 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         if self.imager_type == 'PPM':
 
             self.main_image.update_image(data_dict['im1'], self.pixSize, center=center, scale=scale)
-            self.top_left.update_image(data_dict['shifts'][0][210:300, 210:300])
-            self.top_right.update_image(data_dict['shifts'][1][210:300, 210:300])
-            self.bottom_left.update_image(data_dict['shifts'][2][210:300, 210:300])
-            self.bottom_right.update_image(data_dict['shifts'][3][210:300, 210:300])
+            self.top_left.update_image(data_dict['shifts'][3][210:300, 210:300])
+            self.top_right.update_image(data_dict['shifts'][2][210:300, 210:300])
+            self.bottom_left.update_image(data_dict['shifts'][1][210:300, 210:300])
+            self.bottom_right.update_image(data_dict['shifts'][0][210:300, 210:300])
 
         else:
             self.main_image.update_image(data_dict['im1'], self.pixSize)
@@ -246,9 +246,9 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         time_stamps = data_dict['timestamps']
 
 
-        self.contrast_plot.update_plots(time_stamps, tl=contrast[0,:], tr=contrast[1,:], bl=contrast[2,:], br=contrast[3,:])
+        self.contrast_plot.update_plots(time_stamps, tl=contrast[3,:], tr=contrast[2,:], bl=contrast[1,:], br=contrast[0,:])
 
-        self.rotation_plot.update_plots(time_stamps, tl=rotation[0,:], tr=rotation[1,:], bl=rotation[2,:], br=rotation[3,:])
+        self.rotation_plot.update_plots(time_stamps, average=rotation)
 
 
         self.label.setText(data_dict['tx'])

@@ -278,7 +278,7 @@ class RunRegistration(QtCore.QObject):
             # self.gui.img0.setImage(np.flipud(self.im1).T,levels=(0,300))
 
             self.data_dict['contrast'] = np.roll(self.data_dict['contrast'], -1, axis=1)
-            self.data_dict['rotation'] = np.roll(self.data_dict['rotation'], -1, axis=1)
+            self.data_dict['rotation'] = np.roll(self.data_dict['rotation'], -1)
             self.data_dict['iteration'] = np.roll(self.data_dict['iteration'], -1, axis=1)
             self.data_dict['iteration'][:, -1] = self.counter
 
@@ -296,9 +296,9 @@ class RunRegistration(QtCore.QObject):
 
                 rotation1 = (translation[1, 1] - translation[3, 1]) / (translation[3, 0] - translation[1, 0])
                 rotation2 = (translation[3, 0] - translation[2, 0]) / (translation[3, 1] - translation[2, 1])
-                self.data_dict['rotation'][:, -1] = (rotation1 + rotation2) * 180 / np.pi / 2
+                self.data_dict['rotation'][-1] = (rotation1 + rotation2) * 180 / np.pi / 2
             else:
-                self.data_dict['rotation'][:, -1] = 0.0
+                self.data_dict['rotation'][-1] = 0.0
             # scale
             scale = alignment_output['scale']
             # centering

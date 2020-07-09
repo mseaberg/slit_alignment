@@ -209,7 +209,7 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         y_width = np.max(y) - np.min(y)
 
         # set image data
-        self.img.setImage(np.flipud(image_data).T,
+        self.img.setImage(np.fliplr(image_data).T,
                 levels=(self.minimum, self.maximum))
 
         # set rect size based on coordinates
@@ -439,7 +439,7 @@ class ImageZoom:
 
     def update_image(self, image_data):
 
-        self.img.setImage(np.flipud(image_data).T, levels=(self.minimum, self.maximum))
+        self.img.setImage(np.fliplr(image_data).T, levels=(self.minimum, self.maximum))
    
     def connect_levels(self, levels):
         """
@@ -497,14 +497,14 @@ class ImageRegister:
         self.img = pg.ImageItem(border='w')
         self.view.addItem(self.img)
 
-        self.rect1 = QtWidgets.QGraphicsRectItem(0,0,160,160)
-        self.rect1.setPen(QPen(Qt.cyan, 8, Qt.SolidLine))
-        self.rect2 = QtWidgets.QGraphicsRectItem(1888,0,160,160)
-        self.rect2.setPen(QPen(Qt.darkMagenta, 8, Qt.SolidLine))
-        self.rect3 = QtWidgets.QGraphicsRectItem(0,1888,160,160)
-        self.rect3.setPen(QPen(Qt.red, 8, Qt.SolidLine))
-        self.rect4 = QtWidgets.QGraphicsRectItem(1888,1888,160,160)
-        self.rect4.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+        self.rect_bl = QtWidgets.QGraphicsRectItem(0,0,160,160)
+        self.rect_bl.setPen(QPen(Qt.cyan, 8, Qt.SolidLine))
+        self.rect_br = QtWidgets.QGraphicsRectItem(1888,0,160,160)
+        self.rect_br.setPen(QPen(Qt.darkMagenta, 8, Qt.SolidLine))
+        self.rect_tl = QtWidgets.QGraphicsRectItem(0,1888,160,160)
+        self.rect_tl.setPen(QPen(Qt.red, 8, Qt.SolidLine))
+        self.rect_tr = QtWidgets.QGraphicsRectItem(1888,1888,160,160)
+        self.rect_tr.setPen(QPen(Qt.green, 8, Qt.SolidLine))
 
 
         #circ1 = QtWidgets.QGraphicsEllipseItem(1024-25,1024-25,50,50)
@@ -523,28 +523,28 @@ class ImageRegister:
         self.crossy.setPen(QPen(Qt.red, 8, Qt.SolidLine))
 
         
-        self.circ1 = QtWidgets.QGraphicsRectItem(256-25,1792-25,50,50)
-        self.circ1.setPen(QPen(Qt.red, 8, Qt.SolidLine))
-        self.circ2 = QtWidgets.QGraphicsRectItem(1792-25,1792-25,50,50)
-        self.circ2.setPen(QPen(Qt.green, 8, Qt.SolidLine))
-        self.circ3 = QtWidgets.QGraphicsRectItem(256-25,256-25,50,50)
-        self.circ3.setPen(QPen(Qt.cyan, 8, Qt.SolidLine))
-        self.circ4 = QtWidgets.QGraphicsRectItem(1792-25,256-25,50,50)
-        self.circ4.setPen(QPen(Qt.darkMagenta, 8, Qt.SolidLine))
-        self.view.addItem(self.rect1)
-        self.view.addItem(self.rect2)
-        self.view.addItem(self.rect3)
-        self.view.addItem(self.rect4)
+        self.circ_tl = QtWidgets.QGraphicsRectItem(256-25,1792-25,50,50)
+        self.circ_tl.setPen(QPen(Qt.red, 8, Qt.SolidLine))
+        self.circ_tr = QtWidgets.QGraphicsRectItem(1792-25,1792-25,50,50)
+        self.circ_tr.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+        self.circ_bl = QtWidgets.QGraphicsRectItem(256-25,256-25,50,50)
+        self.circ_bl.setPen(QPen(Qt.cyan, 8, Qt.SolidLine))
+        self.circ_br = QtWidgets.QGraphicsRectItem(1792-25,256-25,50,50)
+        self.circ_br.setPen(QPen(Qt.darkMagenta, 8, Qt.SolidLine))
+        self.view.addItem(self.rect_bl)
+        self.view.addItem(self.rect_br)
+        self.view.addItem(self.rect_tl)
+        self.view.addItem(self.rect_tr)
         #self.view0.addItem(circ1)
         self.view.addItem(self.crossx0)
         self.view.addItem(self.crossy0)
         self.view.addItem(self.crossx)
         self.view.addItem(self.crossy)
         #self.view0.addItem(self.circ0)
-        self.view.addItem(self.circ1)
-        self.view.addItem(self.circ2)
-        self.view.addItem(self.circ3)
-        self.view.addItem(self.circ4)
+        self.view.addItem(self.circ_tl)
+        self.view.addItem(self.circ_tr)
+        self.view.addItem(self.circ_bl)
+        self.view.addItem(self.circ_br)
 
 
 
@@ -607,7 +607,7 @@ class ImageRegister:
     
         width = self.rect.rect().width()
         height = self.rect.rect().height()
-        self.img.setImage(np.flipud(image_data).T,
+        self.img.setImage(np.fliplr(image_data).T,
                 levels=(self.minimum, self.maximum))
 
         self.img.setRect(QtCore.QRectF(-width/2, -height/2, width, height))
@@ -618,14 +618,23 @@ class ImageRegister:
 
             center = center - width/2
             rwidth = width/45
-            self.circ1.setRect(center[0,1]-scale[0]*rwidth,center[0,0]-scale[0]*rwidth,
-                2*rwidth*scale[0],2*rwidth*scale[0])
-            self.circ2.setRect(center[1,1]-scale[1]*rwidth,center[1,0]-scale[1]*rwidth,
-                2*rwidth*scale[1],2*rwidth*scale[1])
-            self.circ3.setRect(center[2,1]-scale[2]*rwidth,center[2,0]-scale[2]*rwidth,
-                2*rwidth*scale[2],2*rwidth*scale[2])
-            self.circ4.setRect(center[3,1]-scale[3]*rwidth,center[3,0]-scale[3]*rwidth,
+            #self.circ1.setRect(center[0,1]-scale[0]*rwidth,center[0,0]-scale[0]*rwidth,
+            #    2*rwidth*scale[0],2*rwidth*scale[0])
+            #self.circ2.setRect(center[1,1]-scale[1]*rwidth,center[1,0]-scale[1]*rwidth,
+            #    2*rwidth*scale[1],2*rwidth*scale[1])
+            #self.circ3.setRect(center[2,1]-scale[2]*rwidth,center[2,0]-scale[2]*rwidth,
+            #    2*rwidth*scale[2],2*rwidth*scale[2])
+            #self.circ4.setRect(center[3,1]-scale[3]*rwidth,center[3,0]-scale[3]*rwidth,
+            #    2*rwidth*scale[3],2*rwidth*scale[3])
+            
+            self.circ_tl.setRect(-center[3,1]-scale[3]*rwidth,-center[3,0]-scale[3]*rwidth,
                 2*rwidth*scale[3],2*rwidth*scale[3])
+            self.circ_tr.setRect(-center[2,1]-scale[2]*rwidth,-center[2,0]-scale[2]*rwidth,
+                2*rwidth*scale[2],2*rwidth*scale[2])
+            self.circ_bl.setRect(-center[1,1]-scale[1]*rwidth,-center[1,0]-scale[1]*rwidth,
+                2*rwidth*scale[1],2*rwidth*scale[1])
+            self.circ_br.setRect(-center[0,1]-scale[0]*rwidth,-center[0,0]-scale[0]*rwidth,
+                2*rwidth*scale[0],2*rwidth*scale[0])
 
 
             full_center = np.mean(center,axis=0)
@@ -675,14 +684,14 @@ class ImageRegister:
         self.rect.setPen(QtGui.QPen(QtCore.Qt.white, width/256., QtCore.Qt.SolidLine))
         self.rect.setRect(-width/2, -height/2, width, height)
         
-        self.rect1.setRect(-width/2,-width/2,width/12, width/12)
-        self.rect1.setPen(QPen(Qt.cyan, width/256, Qt.SolidLine))
-        self.rect2.setRect(width/2-width/12,-width/2,width/12,width/12)
-        self.rect2.setPen(QPen(Qt.darkMagenta, width/256, Qt.SolidLine))
-        self.rect3.setRect(-width/2,width/2-width/12,width/12,width/12)
-        self.rect3.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
-        self.rect4.setRect(width/2-width/12,width/2-width/12,width/12,width/12)
-        self.rect4.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
+        self.rect_bl.setRect(-width/2,-width/2,width/12, width/12)
+        self.rect_bl.setPen(QPen(Qt.cyan, width/256, Qt.SolidLine))
+        self.rect_br.setRect(width/2-width/12,-width/2,width/12,width/12)
+        self.rect_br.setPen(QPen(Qt.darkMagenta, width/256, Qt.SolidLine))
+        self.rect_tl.setRect(-width/2,width/2-width/12,width/12,width/12)
+        self.rect_tl.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
+        self.rect_tr.setRect(width/2-width/12,width/2-width/12,width/12,width/12)
+        self.rect_tr.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
 
 
         
@@ -698,14 +707,14 @@ class ImageRegister:
         self.crossy.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
 
         
-        self.circ1.setRect(-width/2,width/2-width/40,width/40,width/40)
-        self.circ1.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
-        self.circ2.setRect(width/2-width/40,width/2-width/40,width/40,width/40)
-        self.circ2.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
-        self.circ3.setRect(-width/2,-width/2,width/40,width/40)
-        self.circ3.setPen(QPen(Qt.cyan, width/256, Qt.SolidLine))
-        self.circ4.setRect(width/2-width/40,-width/2,width/40,width/40)
-        self.circ4.setPen(QPen(Qt.darkMagenta, width/256, Qt.SolidLine))
+        self.circ_tl.setRect(-width/2,width/2-width/40,width/40,width/40)
+        self.circ_tl.setPen(QPen(Qt.red, width/256, Qt.SolidLine))
+        self.circ_tr.setRect(width/2-width/40,width/2-width/40,width/40,width/40)
+        self.circ_tr.setPen(QPen(Qt.green, width/256, Qt.SolidLine))
+        self.circ_bl.setRect(-width/2,-width/2,width/40,width/40)
+        self.circ_bl.setPen(QPen(Qt.cyan, width/256, Qt.SolidLine))
+        self.circ_br.setRect(width/2-width/40,-width/2,width/40,width/40)
+        self.circ_br.setPen(QPen(Qt.darkMagenta, width/256, Qt.SolidLine))
         self.pix_size_text.setPos(-width/2+width/7,-width/2+width/2048)
 
 class StripChart:
@@ -756,8 +765,12 @@ class StripChart:
         :return:
         """
 
-        # add a LegendItem
-        legend = self.plotWidget.addLegend()
+        
+        if len(series_keys) > 1:
+            # add a LegendItem
+            legend = self.plotWidget.addLegend()
+        else:
+            legend = None
 
         # loop through keys and make PlotItems
         for num, key in enumerate(series_keys):
@@ -765,8 +778,9 @@ class StripChart:
             self.lines[key] = self.plotWidget.plot(np.linspace(-99,0,100), np.zeros(100),
                     pen=pg.mkPen(self.color_order[num], width=5),name=series_labels[num])
 
-        # set up the legend
-        PlotUtil.setup_legend(legend)
+        if legend is not None:
+            # set up the legend
+            PlotUtil.setup_legend(legend)
 
     def set_time_range(self, time_range):
         """
