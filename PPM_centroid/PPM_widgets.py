@@ -1196,6 +1196,22 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
         # blue crosshair position
         self.blue_x.returnPressed.connect(self.update_blue_crosshair)
         self.blue_y.returnPressed.connect(self.update_blue_crosshair)
+
+        self.redCircleButton.toggled.connect(self.red_circle_toggled)
+        self.blueCircleButton.toggled.connect(self.blue_circle_toggled)
+        self.redCircleDiameter.returnPressed.connect(self.set_red_diameter)
+        self.blueCircleDiameter.returnPressed.connect(self.set_blue_diameter)
+
+        # diameter in mm
+        try:
+            self.red_diameter = float(self.redCircleDiameter.text())*1e3
+        except ValueError:
+            self.red_diameter = 0
+        try:
+            self.blue_diameter = float(self.blueCircleDiameter.text())*1e3
+        except ValueError:
+            self.blue_diameter = 0
+
         #self.red_x.returnPressed.connect(self.update_crosshair(self.red_crosshair))
         #self.red_y.returnPressed.connect(self.update_crosshair(self.red_crosshair))
         #self.blue_x.returnPressed.connect(self.update_crosshair(self.blue_crosshair))
@@ -1233,6 +1249,32 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
     def update_blue_crosshair(self):
         self.calculate_distance()
         self.blue_crosshair.update_position()
+
+    def red_circle_toggled(self, evt):
+        if evt:
+            self.red_crosshair.addCircle(self.red_diameter)
+        else:
+            self.red_crosshair.removeCircle()
+
+    def blue_circle_toggled(self, evt):
+        if evt:
+            self.blue_crosshair.addCircle(self.blue_diameter)
+        else:
+            self.blue_crosshair.removeCircle()
+
+    def set_red_diameter(self):
+        try:
+            self.red_diameter = float(self.redCircleDiameter.text())*1e3
+        except ValueError:
+            self.red_diameter = 0
+        self.red_crosshair.updateDiameter(self.red_diameter)
+
+    def set_blue_diameter(self):
+        try:
+            self.blue_diameter = float(self.blueCircleDiameter.text())*1e3
+        except ValueError:
+            self.blue_diameter = 0
+        self.blue_crosshair.updateDiameter(self.blue_diameter)
 
     def red_crosshair_toggled(self, evt):
         """
@@ -1394,15 +1436,35 @@ class Crosshair:
         self.yLineEdit = yLineEdit
         self.lineout_image = lineout_image
 
+        # initialize crosshair coordinates
+        self.xPos = 1024
+        self.yPos = 1024
+
         # define lines that define the crosshair
         self.crossh = QtWidgets.QGraphicsLineItem(1024 - 25, 1024, 1024 + 25, 1024)
         self.crossv = QtWidgets.QGraphicsLineItem(1024, 1024 - 25, 1024, 1024 + 25)
         self.crossh.setPen(QtGui.QPen(self.color, 8, Qt.SolidLine))
         self.crossv.setPen(QtGui.QPen(self.color, 8, Qt.SolidLine))
 
+        self.circle = QtWidgets.QGraphicsEllipseItem(1024, 1024, 0, 0)
+        self.circle.setPen(QtGui.QPen(self.color, 8, Qt.SolidLine))
+
+        self.diameter = 0
+
         # put it in the viewbox
         self.lineout_image.view.addItem(self.crossh)
         self.lineout_image.view.addItem(self.crossv)
+
+    def addCircle(self, diameter):
+        self.lineout_image.view.addItem(self.circle)
+
+    def removeCircle(self):
+        self.lineout_image.view.removeItem(self.circle)
+
+    def updateDiameter(self, diameter):
+        self.diameter = diameter
+        radius = self.diameter/2
+        self.circle.setRect(self.xPos-radius, self.yPos - radius, diameter, diameter)
 
     def update_width(self):
         """
@@ -1416,20 +1478,24 @@ class Crosshair:
         # update lines
         self.crossh.setPen(QtGui.QPen(self.color, thickness, Qt.SolidLine))
         self.crossv.setPen(QtGui.QPen(self.color, thickness, Qt.SolidLine))
+        self.circle.setPen(QtGui.QPen(self.color, thickness, Qt.SolidLine))
 
         try:
             # try to get the position of the crosshair
-            xPos = float(self.xLineEdit.text())
-            yPos = float(self.yLineEdit.text())
+            self.xPos = float(self.xLineEdit.text())
+            self.yPos = float(self.yLineEdit.text())
         except ValueError:
             # if it didn't work put it in the corner
-            xPos = -rect_width/2
-            yPos = -rect_width/2
+            self.xPos = -rect_width/2
+            self.yPos = -rect_width/2
         # set width of crosshair to 4% of the viewbox width
-        self.crossh.setLine(xPos - rect_width * .02, yPos,
-                             xPos + rect_width * .02, yPos)
-        self.crossv.setLine(xPos, yPos - rect_width * .02,
-                             xPos, yPos + rect_width * .02)
+        self.crossh.setLine(self.xPos - rect_width * .02, self.yPos,
+                             self.xPos + rect_width * .02, self.yPos)
+        self.crossv.setLine(self.xPos, self.yPos - rect_width * .02,
+                             self.xPos, self.yPos + rect_width * .02)
+
+        radius = self.diameter/2
+        self.circle.setRect(self.xPos - radius, self.yPos - radius, self.diameter, self.diameter)
 
     def update_position(self):
         """
@@ -1438,12 +1504,15 @@ class Crosshair:
         """
         rect_width = self.lineout_image.rect.boundingRect().width()
         try:
-            xPos = float(self.xLineEdit.text())
-            yPos = float(self.yLineEdit.text())
+            self.xPos = float(self.xLineEdit.text())
+            self.yPos = float(self.yLineEdit.text())
         except ValueError:
             # if it didn't work put it in the corner
-            xPos = -rect_width / 2
-            yPos = -rect_width / 2
+            self.xPos = -rect_width / 2
+            self.yPos = -rect_width / 2
         # move crosshair
-        self.crossh.setLine(xPos - rect_width*.02, yPos, xPos + rect_width*.02, yPos)
-        self.crossv.setLine(xPos, yPos - rect_width*.02, xPos, yPos + rect_width*.02)
+        self.crossh.setLine(self.xPos - rect_width*.02, self.yPos, self.xPos + rect_width*.02, self.yPos)
+        self.crossv.setLine(self.xPos, self.yPos - rect_width*.02, self.xPos, self.yPos + rect_width*.02)
+        radius = self.diameter/2
+        self.circle.setRect(self.xPos - radius, self.yPos - radius, self.diameter, self.diameter)
+

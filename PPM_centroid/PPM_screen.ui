@@ -114,7 +114,7 @@
                <widget class="QGroupBox" name="crosshairGroupBox">
                 <property name="minimumSize">
                  <size>
-                  <width>100</width>
+                  <width>516</width>
                   <height>120</height>
                  </size>
                 </property>
