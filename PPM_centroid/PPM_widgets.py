@@ -209,7 +209,7 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         y_width = np.max(y) - np.min(y)
 
         # set image data
-        self.img.setImage(np.fliplr(image_data).T,
+        self.img.setImage(image_data.T,
                 levels=(self.minimum, self.maximum))
 
         # set rect size based on coordinates
@@ -439,7 +439,7 @@ class ImageZoom:
 
     def update_image(self, image_data):
 
-        self.img.setImage(np.fliplr(image_data).T, levels=(self.minimum, self.maximum))
+        self.img.setImage(image_data.T, levels=(self.minimum, self.maximum))
    
     def connect_levels(self, levels):
         """
@@ -607,7 +607,7 @@ class ImageRegister:
     
         width = self.rect.rect().width()
         height = self.rect.rect().height()
-        self.img.setImage(np.fliplr(image_data).T,
+        self.img.setImage(image_data.T,
                 levels=(self.minimum, self.maximum))
 
         self.img.setRect(QtCore.QRectF(-width/2, -height/2, width, height))

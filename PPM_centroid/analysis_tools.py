@@ -39,6 +39,7 @@ class YagAlign:
 
         # assume that the data coming in is already pretty well-centered
         ims = {}
+        data = np.fliplr(data)
         # crop out one corner
         ims[0] = data[0:200, 0:200]
         # get the average border value
