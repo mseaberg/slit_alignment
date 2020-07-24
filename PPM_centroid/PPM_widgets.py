@@ -6,6 +6,7 @@ import numpy as np
 from datetime import datetime
 from matplotlib import cm
 from PyQt5.QtGui import QPen
+import json
 
 
 Ui_LineoutImage, QLineoutImage = loadUiType('LineoutImage.ui')
@@ -27,6 +28,51 @@ class ImagerControls(QImager, Ui_Imager):
         self.setupUi(self)
 
         self.imager_prefix = self.yStateReadback.channel[5:16]
+
+        self.nominalButton.clicked.connect(self.restore_nominal)
+
+        self.nominal_controls = {
+                'zoom': self.zoomLineEdit,
+                'focus': self.focusLineEdit,
+                'ND': self.ndStateComboBox,
+                'AcquireTime': self.acquireLineEdit
+                }
+
+    def restore_nominal(self):
+
+        # read nominal imager settings
+        imager_name = self.imager_prefix[0:5]
+
+
+        try:
+            #with open('/reg/neh/home/seaberg/Commissioning_Tools/PPM_centroid/imagers.db') as json_file:
+            with open('imagers.db') as json_file:
+                data = json.load(json_file)
+
+        except json.decoder.JSONDecodeError:
+            data = {}
+            print('failed to load file')
+
+        if imager_name in data:
+            settings = data[imager_name]
+            print('found imager settings')
+        else:
+            settings = {}
+            print('imager settings not found')
+
+        for key in settings:
+            if key in self.nominal_controls:
+                if isinstance(self.nominal_controls[key], QtWidgets.QLineEdit):
+                    self.nominal_controls[key].setText(str(settings[key]))
+                    self.nominal_controls[key].send_value()
+                elif isinstance(self.nominal_controls[key], QtWidgets.QComboBox):
+                    index = self.nominal_controls[key].findText(str(settings[key]))
+                    self.nominal_controls[key].setCurrentIndex(index)
+                    self.nominal_controls[key].internal_combo_box_activated_int(index)
+                print(key+' set')
+
+        #self.acquireLineEdit.setText('.008')
+        #self.acquireLineEdit.send_value()
 
     def change_imager(self, imager_prefix):
         
@@ -60,12 +106,21 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
         self.threshold = float(self.thresholdLineEdit.text())
 
         self.thresholdLineEdit.returnPressed.connect(self.update_threshold)
+        self.nImagesLineEdit.returnPressed.connect(self.update_num)
 
         self.image_widget = None
         self.color = QtCore.Qt.green
+        self.num = int(self.nImagesLineEdit.text())
 
         self.circle = QtWidgets.QGraphicsEllipseItem(0, 0, 0, 0)
         self.circle.setPen(QtGui.QPen(self.color, 8, Qt.SolidLine))
+
+    def update_num(self):
+        try:
+            self.num = int(self.nImagesLineEdit.text())
+        except ValueError:
+            self.num = 1
+            self.nImagesLineEdit.setText('1')
 
     def update_width(self):
         # get width of the bounding rect
@@ -83,23 +138,34 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
         self.showFitButton.toggled.connect(self.circle_toggled)
 
     def update_stats(self, data):
-        self.xCentroidLineEdit.setText('%.1f' % data['cx'])
-        self.yCentroidLineEdit.setText('%.1f' % data['cy'])
-        self.xWidthLineEdit.setText('%.1f' % data['wx'])
-        self.yWidthLineEdit.setText('%.1f' % data['wy'])
-        xCentroid = data['cx']
-        yCentroid = data['cy']
-        xWidth = data['wx']
-        yWidth = data['wy']
+        xCentroidMean = np.mean(data['cx'][-self.num:])
+        yCentroidMean = np.mean(data['cy'][-self.num:])
+        xCentroidRMS = np.std(data['cx'][-self.num:])
+        yCentroidRMS = np.std(data['cy'][-self.num:])
+        xWidthMean = np.mean(data['wx'][-self.num:])
+        yWidthMean = np.mean(data['wy'][-self.num:])
+        xWidthRMS = np.std(data['wx'][-self.num:])
+        yWidthRMS = np.std(data['wy'][-self.num:])
+        self.xCentroidLineEdit.setText('%.1f' % xCentroidMean)
+        self.yCentroidLineEdit.setText('%.1f' % yCentroidMean)
+        self.xWidthLineEdit.setText('%.1f' % xWidthMean)
+        self.yWidthLineEdit.setText('%.1f' % yWidthMean)
+        self.xCentroidRMSLineEdit.setText('%.2f' % xCentroidRMS)
+        self.yCentroidRMSLineEdit.setText('%.2f' % yCentroidRMS)
+        self.xWidthRMSLineEdit.setText('%.2f' % xWidthRMS)
+        self.yWidthRMSLineEdit.setText('%.2f' % yWidthRMS)
 
         if self.showFitButton.isChecked():
 
-            self.circle.setRect(xCentroid-xWidth, yCentroid-yWidth,
-                    2*xWidth, 2*yWidth)
+            self.circle.setRect(xCentroidMean-xWidthMean, yCentroidMean-yWidthMean,
+                    2*xWidthMean, 2*yWidthMean)
 
     def update_threshold(self):
-
-        self.threshold = float(self.thresholdLineEdit.text())
+        try:
+            self.threshold = float(self.thresholdLineEdit.text())
+        except ValueError:
+            self.threshold = 0.1
+            self.thresholdLineEdit.setText('0.1')
 
     def get_threshold(self):
 
@@ -1461,7 +1527,7 @@ class AverageWidget(QAverageWidget, Ui_AverageWidget):
         # set attributes
         self.averaging = self.averagingCheckBox.isChecked()
         # default number of images (for no averaging)
-        self.numImages = 1
+        self.numImages = int(self.numImagesLineEdit.text())
         self.set_averaging()
 
     def update_average(self):

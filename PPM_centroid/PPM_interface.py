@@ -29,6 +29,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save_image)
         self.actionAlignment_Screen.triggered.connect(self.run_alignment_screen)
 
+        self.plotRangeLineEdit.returnPressed.connect(self.set_time_range)
+
         # connect line combo box
         self.lineComboBox.currentIndexChanged.connect(self.change_line)
         # connect imager combo box
@@ -142,6 +144,16 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # initialize registration object
         self.processing = None
 
+    def set_time_range(self):
+        try:
+            time_range = float(self.plotRangeLineEdit.text())
+        except ValueError:
+            time_range = 10.0
+            self.plotRangeLineEdit.setText('10.0')
+
+        self.centroid_plot.set_time_range(time_range)
+        self.width_plot.set_time_range(time_range)
+
     def setup_legend(self, legend):
 
         legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
@@ -181,22 +193,18 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.reset_data_dict()
 
     def reset_data_dict(self):
+        N = 1024
         self.data_dict['im0'] = np.zeros((1024,1024))
-        self.data_dict['contrast'] = np.zeros((4, 100))
-        self.data_dict['rotation'] = np.zeros((4, 100))
-        self.data_dict['cx'] = -np.ones(100)
-        self.data_dict['cy'] = -np.ones(100)
-        self.data_dict['wx'] = -np.ones(100)
-        self.data_dict['wy'] = -np.ones(100)
-        self.data_dict['cx_smooth'] = -np.ones(100)
-        self.data_dict['cy_smooth'] = -np.ones(100)
-        self.data_dict['wx_smooth'] = -np.ones(100)
-        self.data_dict['wy_smooth'] = -np.ones(100)
-        self.data_dict['timestamps'] = -np.ones(100)
-        self.data_dict['iteration'] = np.tile(np.linspace(-99, 0, 100), (4, 1))
+        self.data_dict['cx'] = -np.ones(N)
+        self.data_dict['cy'] = -np.ones(N)
+        self.data_dict['wx'] = -np.ones(N)
+        self.data_dict['wy'] = -np.ones(N)
+        self.data_dict['cx_smooth'] = -np.ones(N)
+        self.data_dict['cy_smooth'] = -np.ones(N)
+        self.data_dict['wx_smooth'] = -np.ones(N)
+        self.data_dict['wy_smooth'] = -np.ones(N)
+        self.data_dict['timestamps'] = -np.ones(N)
         self.data_dict['counter'] = 0.
-        self.data_dict['center'] = np.zeros((4, 2))
-        self.data_dict['scale'] = np.zeros(4)
         self.data_dict['pixSize'] = 0.0
         self.data_dict['lineout_x'] = np.zeros(100)
         self.data_dict['lineout_y'] = np.zeros(100)
@@ -206,10 +214,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['y'] = np.linspace(-1024, 1023, 100)
 
         # wavefront sensor data
-        self.data_dict['z_x'] = -np.ones(100)
-        self.data_dict['z_y'] = -np.ones(100)
-        self.data_dict['rms_x'] = -np.ones(100)
-        self.data_dict['rms_y'] = -np.ones(100)
+        self.data_dict['z_x'] = -np.ones(N)
+        self.data_dict['z_y'] = -np.ones(N)
+        self.data_dict['rms_x'] = -np.ones(N)
+        self.data_dict['rms_y'] = -np.ones(N)
         self.data_dict['x_res'] = np.zeros(100)
         self.data_dict['y_res'] = np.zeros(100)
         self.data_dict['x_prime'] = np.linspace(-1024, 1023, 100)
@@ -329,9 +337,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.label.setText(data_dict['tx'])
 
         stats_dict = {}
-        stats_dict['cx'] = data_dict['cx'][-1]
-        stats_dict['cy'] = data_dict['cy'][-1]
-        stats_dict['wx'] = data_dict['wx'][-1]
-        stats_dict['wy'] = data_dict['wy'][-1]
+        stats_dict['cx'] = data_dict['cx']
+        stats_dict['cy'] = data_dict['cy']
+        stats_dict['wx'] = data_dict['wx']
+        stats_dict['wy'] = data_dict['wy']
 
         self.imagerStats.update_stats(stats_dict)

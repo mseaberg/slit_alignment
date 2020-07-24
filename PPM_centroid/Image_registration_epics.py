@@ -146,7 +146,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
 
         # write to the file under the corresponding imager field
         with open('imagers.db', 'w') as outfile:
-            json.dump(data, outfile)
+            json.dump(data, outfile, indent=4)
 
     def change_state(self):
         if self.runButton.text() == 'Run':
