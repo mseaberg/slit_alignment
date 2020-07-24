@@ -14,6 +14,109 @@ Ui_LevelsWidget, QLevelsWidget = loadUiType('LevelsWidget.ui')
 Ui_AverageWidget, QAverageWidget = loadUiType('AverageWidget.ui')
 Ui_Plot, QPlot = loadUiType('Epics_plot.ui')
 Ui_Config, QConfig = loadUiType('Config.ui')
+Ui_Imager, QImager = loadUiType('Imager_controls.ui')
+Ui_ImagerStats, QImagerStats = loadUiType('Imager_stats.ui')
+
+
+class ImagerControls(QImager, Ui_Imager):
+    """
+    Widget class to store some imager controls
+    """
+    def __init__(self, parent=None):
+        super(ImagerControls, self).__init__()
+        self.setupUi(self)
+
+        self.imager_prefix = self.yStateReadback.channel[5:16]
+
+    def change_imager(self, imager_prefix):
+        
+        self.imager_prefix = imager_prefix
+        self.change_channel(self.yStateReadback, 'MMS:STATE:GET_RBV')
+        self.change_channel(self.yStateComboBox, 'MMS:STATE:SET')
+        self.change_channel(self.zoomReadback, 'CLZ.RBV')
+        self.change_channel(self.zoomLineEdit, 'CLZ.VAL')
+        self.change_channel(self.focusReadback, 'CLF.RBV')
+        self.change_channel(self.focusLineEdit, 'CLF.VAL')
+        self.change_channel(self.ndStateReadback, 'MFW:GET_RBV')
+        self.change_channel(self.ndStateComboBox, 'MFW:SET')
+        self.change_channel(self.acquireReadback, 'CAM:AcquireTime_RBV')
+        self.change_channel(self.acquireLineEdit, 'CAM:AcquireTime')
+        self.change_channel(self.yPosReadback, 'MMS.RBV')
+        self.change_channel(self.yPosLineEdit, 'MMS.VAL')
+
+    def change_channel(self, obj, suffix):
+
+        obj.channel = 'ca://'+self.imager_prefix+suffix
+
+
+class ImagerStats(QImagerStats, Ui_ImagerStats):
+    """
+    Widget class to display image/beam stats
+    """
+    def __init__(self, parent=None):
+        super(ImagerStats, self).__init__()
+        self.setupUi(self)
+
+        self.threshold = float(self.thresholdLineEdit.text())
+
+        self.thresholdLineEdit.returnPressed.connect(self.update_threshold)
+
+        self.image_widget = None
+        self.color = QtCore.Qt.green
+
+        self.circle = QtWidgets.QGraphicsEllipseItem(0, 0, 0, 0)
+        self.circle.setPen(QtGui.QPen(self.color, 8, Qt.SolidLine))
+
+    def update_width(self):
+        # get width of the bounding rect
+        rect_width = self.image_widget.rect.boundingRect().width()
+        # set line thickness to 1% of the viewbox width
+        thickness = rect_width * .01
+        # update lines
+        self.circle.setPen(QtGui.QPen(self.color, thickness, Qt.SolidLine))
+
+
+    def connect_image(self, image_widget):
+
+        self.image_widget = image_widget
+
+        self.showFitButton.toggled.connect(self.circle_toggled)
+
+    def update_stats(self, data):
+        self.xCentroidLineEdit.setText('%.1f' % data['cx'])
+        self.yCentroidLineEdit.setText('%.1f' % data['cy'])
+        self.xWidthLineEdit.setText('%.1f' % data['wx'])
+        self.yWidthLineEdit.setText('%.1f' % data['wy'])
+        xCentroid = data['cx']
+        yCentroid = data['cy']
+        xWidth = data['wx']
+        yWidth = data['wy']
+
+        if self.showFitButton.isChecked():
+
+            self.circle.setRect(xCentroid-xWidth, yCentroid-yWidth,
+                    2*xWidth, 2*yWidth)
+
+    def update_threshold(self):
+
+        self.threshold = float(self.thresholdLineEdit.text())
+
+    def get_threshold(self):
+
+        return self.threshold
+
+    def circle_toggled(self, evt):
+
+        if evt:
+            self.addCircle()
+        else:
+            self.removeCircle()
+
+    def addCircle(self):
+        self.image_widget.view.addItem(self.circle)
+
+    def removeCircle(self):
+        self.image_widget.view.removeItem(self.circle)
 
 
 class LineoutImage(QLineoutImage, Ui_LineoutImage):
@@ -209,7 +312,7 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         y_width = np.max(y) - np.min(y)
 
         # set image data
-        self.img.setImage(image_data.T,
+        self.img.setImage(image_data,
                 levels=(self.minimum, self.maximum))
 
         # set rect size based on coordinates
@@ -439,7 +542,7 @@ class ImageZoom:
 
     def update_image(self, image_data):
 
-        self.img.setImage(image_data.T, levels=(self.minimum, self.maximum))
+        self.img.setImage(image_data, levels=(self.minimum, self.maximum))
    
     def connect_levels(self, levels):
         """
@@ -607,7 +710,7 @@ class ImageRegister:
     
         width = self.rect.rect().width()
         height = self.rect.rect().height()
-        self.img.setImage(image_data.T,
+        self.img.setImage(image_data,
                 levels=(self.minimum, self.maximum))
 
         self.img.setRect(QtCore.QRectF(-width/2, -height/2, width, height))

@@ -48,6 +48,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # connect crosshairs to image
         self.imageWidget.connect_crosshairs(self.crosshairsWidget)
 
+        self.imagerStats.connect_image(self.imageWidget)
+
         # wavefront retrieval
         self.wavefrontWidget.change_lineout_label('Phase (rad)')
 
@@ -138,7 +140,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.wavefrontCheckBox.setEnabled(False)
 
         # initialize registration object
-        self.registration = None
+        self.processing = None
 
     def setup_legend(self, legend):
 
@@ -174,6 +176,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         else:
             self.wavefrontCheckBox.setEnabled(False)
         self.imagerpv = self.imagerpv_list[index]
+        self.imagerControls.change_imager(self.imagerpv)
         # reset data_dict
         self.reset_data_dict()
 
@@ -217,33 +220,34 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
             if self.wavefrontCheckBox.isChecked():
                 wfs_name = self.WFS_dict[self.imager]
-                self.registration = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name)
+                self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name, threshold=self.imagerStats.get_threshold())
             else:
-                self.registration = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget)
+                self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, threshold=self.imagerStats.get_threshold())
 
-            width, height = self.registration.get_FOV()
+            width, height = self.processing.get_FOV()
 
             self.imageWidget.update_viewbox(width, height)
 
             # update crosshair sizes
             self.crosshairsWidget.update_crosshair_width()
+            self.imagerStats.update_width()
 
             self.thread = QtCore.QThread()
             self.thread.start()
 
-            self.registration.moveToThread(self.thread)
+            self.processing.moveToThread(self.thread)
             self.runButton.setText('Stop')
             # disable wavefront sensor checkbox until stop is pressed
             self.wavefrontCheckBox.setEnabled(False)
 
-            self.registration.sig.connect(self.update_plots)
+            self.processing.sig.connect(self.update_plots)
 
             self.lineComboBox.setEnabled(False)
             self.imagerComboBox.setEnabled(False)
 
         elif self.runButton.text() == 'Stop':
 
-            self.registration.stop()
+            self.processing.stop()
             self.thread.quit()
             self.thread.wait()
             self.runButton.setText('Run')
@@ -286,7 +290,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
     def closeEvent(self, event):
         if self.runButton.text() == 'Stop':
-            self.registration.stop()
+            self.processing.stop()
             self.thread.quit()
             self.thread.wait()
 
@@ -323,3 +327,11 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['rms_x'], y=data_dict['rms_y'])
 
         self.label.setText(data_dict['tx'])
+
+        stats_dict = {}
+        stats_dict['cx'] = data_dict['cx'][-1]
+        stats_dict['cy'] = data_dict['cy'][-1]
+        stats_dict['wx'] = data_dict['wx'][-1]
+        stats_dict['wy'] = data_dict['wy'][-1]
+
+        self.imagerStats.update_stats(stats_dict)

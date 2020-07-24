@@ -15,12 +15,16 @@ from datetime import datetime
 class RunProcessing(QtCore.QObject):
     sig = QtCore.pyqtSignal(dict)
 
-    def __init__(self, imager_prefix, data_dict, averageWidget, wfs_name=None):
+    def __init__(self, imager_prefix, data_dict, averageWidget, wfs_name=None, threshold=None):
         super(RunProcessing, self).__init__()
 
         # get wavefront sensor (may be None)
         self.wfs_name = wfs_name
 
+        if threshold is None:
+            self.threshold = 0.1
+        else:
+            self.threshold = threshold
 
         if wfs_name is not None:
             self.WFS_object = optics.WFS_Device(wfs_name)
@@ -28,7 +32,7 @@ class RunProcessing(QtCore.QObject):
             self.WFS_object = None
 
         # PPM object for image acquisition and processing
-        self.PPM_object = optics.PPM_Device(imager_prefix, average=averageWidget, threshold=0.1)
+        self.PPM_object = optics.PPM_Device(imager_prefix, average=averageWidget, threshold=self.threshold)
         
         self.running = True
 
