@@ -39,6 +39,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # initialize tab to basic tab
         self.tabWidget.setCurrentIndex(0)
 
+        # connect orientations
+        #self.action0.toggled.connect(self
+
         # font styles
         self.labelStyle = {'color': '#FFF', 'font-size': '10pt'}
         self.font = QtGui.QFont()
@@ -88,7 +91,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.line_list = ['L0', 'L1', 'K0', 'K1', 'K2', 'K3', 'K4']
         # dictionary of imagers
         self.imager_dict = {
-            'L0': ['IM1L0', 'IM2L0', 'IM3L0', 'IM4L0'],
+            'L0': ['IM1L0', 'IM2L0', 'IM3L0', 'IM4L0', 'HX2_shared', 'xcs_yag1', 'mec_yag0', 'xcs_yag2', 'xcs_yag3', 'xcs_yag3m', 'cxi_dg1_yag', 
+                'mfx_dg1_yag', 'mec_yag1', 'xpp_gige_13'],
             'L1': ['IM1L1', 'IM2L1', 'IM3L1', 'IM4L1'],
             'K0': ['IM1K0', 'IM2K0'],
             'K1': ['IM1K1', 'IM2K1'],
@@ -99,7 +103,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         # dictionary of imager PV prefixes
         self.imagerpv_dict = {
-            'L0': ['IM1L0:XTES:', 'IM2L0:XTES:', 'IM3L0:PPM:', 'IM4L0:XTES:'],
+            'L0': ['IM1L0:XTES:', 'IM2L0:XTES:', 'IM3L0:PPM:', 'IM4L0:XTES:', 'XPP:GIGE:01:', 'HXX:UM6:CVV:01:', 'HXX:HXM:CVV:01:',
+                'HFX:DG2:CVV:01:', 'XCS:DG3:CVV:02:', 'HFX:DG3:CVV:01:', 'CXI:DG1:P6740:', 'MFX:DG1:P6740:', 'MEC:HXM:CVV:01:', 'XPP:GIGE:13:'],
             'L1': ['IM1L1:PPM:', 'IM2L1:PPM:', 'IM3L1:PPM:', 'IM4L1:PPM:'],
             'K0': ['IM1K0:XTES:', 'IM2K0:XTES:'],
             'K1': ['IM1K1:PPM:', 'IM2K1:PPM:'],

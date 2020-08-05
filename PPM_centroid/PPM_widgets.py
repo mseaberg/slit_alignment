@@ -185,6 +185,16 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
         self.image_widget.view.removeItem(self.circle)
 
 
+class Orientation:
+
+    def __init__(self, image):
+
+        self.orientation = 0
+
+    def change_orientation(orientation):
+        self.orientation = orientation
+
+
 class LineoutImage(QLineoutImage, Ui_LineoutImage):
     """
     Class to represent a widget containing an image with horizontal and vertical lineouts. Linked to LineoutImage.ui.

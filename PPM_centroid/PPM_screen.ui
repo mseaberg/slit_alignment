@@ -503,7 +503,22 @@
     <addaction name="actionSave"/>
     <addaction name="actionAlignment_Screen"/>
    </widget>
+   <widget class="QMenu" name="menuOrientation">
+    <property name="title">
+     <string>Orientation</string>
+    </property>
+    <addaction name="action0"/>
+    <addaction name="action90"/>
+    <addaction name="action180"/>
+    <addaction name="action270"/>
+    <addaction name="action0_flipud"/>
+    <addaction name="action90_flipud"/>
+    <addaction name="action180_flipud"/>
+    <addaction name="action270_flipud"/>
+    <addaction name="actionSave_orientation"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuOrientation"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSave">
@@ -519,6 +534,75 @@
   <action name="actionAlignment_Screen">
    <property name="text">
     <string>Alignment Screen</string>
+   </property>
+  </action>
+  <action name="action0">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>0</string>
+   </property>
+  </action>
+  <action name="action90">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>90</string>
+   </property>
+  </action>
+  <action name="action270">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>270</string>
+   </property>
+  </action>
+  <action name="action0_flipud">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>0 flipud</string>
+   </property>
+  </action>
+  <action name="action90_flipud">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>90 flipud</string>
+   </property>
+  </action>
+  <action name="action180_flipud">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>180 flipud</string>
+   </property>
+  </action>
+  <action name="action270_flipud">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>270 flipud</string>
+   </property>
+  </action>
+  <action name="action180">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>180</string>
+   </property>
+  </action>
+  <action name="actionSave_orientation">
+   <property name="text">
+    <string>Save orientation</string>
    </property>
   </action>
  </widget>
