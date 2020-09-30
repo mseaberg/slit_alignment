@@ -93,7 +93,7 @@ class RunProcessing(QtCore.QObject):
 
             # update dictionary
             self.data_dict['im1'] = self.PPM_object.profile
-            self.data_dict['imDummy'] = self.PPM_object.get_dummy_image()
+            #self.data_dict['imDummy'] = self.PPM_object.get_dummy_image()
             self.data_dict['lineout_x'] = lineout_x/np.max(lineout_x)
             self.data_dict['lineout_y'] = lineout_y/np.max(lineout_y)
             self.data_dict['fit_x'] = fit_x

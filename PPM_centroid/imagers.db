@@ -28,6 +28,14 @@
         "AcquireTime": 0.008
     },
     "IM1K0": {
-        "pixel": 0.0
+        "pixel": 1.0
+    },
+    "IM2K0": {
+        "pixel": 5.4,
+        "zoom": 190.4,
+        "focus": 9.64,
+        "ND": "T50",
+        "AcquireTime": 0.001
     }
+
 }

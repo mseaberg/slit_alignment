@@ -111,7 +111,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             'K2': ['IM1K2:PPM:', 'IM2K2:PPM:', 'IM3K2:PPM:', 'IM4K2:PPM:', 'IM5K2:PPM:',
                    'IM6K2:PPM:', 'IM7K2:PPM:'],
             'K3': ['IM1K3:PPM:', 'IM2K3:PPM:', 'IM3K3:PPM:'],
-            'K4': ['IM1K4:PPM:', 'IM2K4:PPM:', 'IM3K4:PPM:', 'IM4K4:PPM:', 'IM5K4:PPM:',
+            'K4': ['IM1K4:XTES:', 'IM2K4:PPM:', 'IM3K4:PPM:', 'IM4K4:PPM:', 'IM5K4:PPM:',
                    'IM6K4:PPM:']
         }
 
@@ -318,7 +318,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         fit_y = data_dict['fit_y']
 
         # wfs widget plots
-        dummy_image = data_dict['imDummy']
+        #dummy_image = data_dict['imDummy']
         x_prime = data_dict['x_prime']
         y_prime = data_dict['y_prime']
         x_res = data_dict['x_res']
@@ -328,7 +328,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         
         self.imageWidget.update_plots(image_data, x, y, xlineout, ylineout, fit_x, fit_y)
 
-        self.wavefrontWidget.update_plots(dummy_image, x_prime, y_prime, x_res, y_res, x_res_fit, y_res_fit)
+        self.wavefrontWidget.update_plots(image_data, x_prime, y_prime, x_res, y_res, x_res_fit, y_res_fit)
 
         self.data_dict = data_dict
 
