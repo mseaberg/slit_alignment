@@ -136,6 +136,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         self.imager_list = self.imager_dict['L0']
         self.imager = self.imager_list[0]
+
+        # set wavefront sensor attribute
+        self.wfs_name = None
+
         # make sure this initializes properly
         self.change_imager(0)
         self.imagerpv_list = self.imagerpv_dict['L0']
@@ -190,8 +194,12 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # check if this imager has a wavefront sensor
         if self.imager in self.WFS_list:
             self.wavefrontCheckBox.setEnabled(True)
+            # update wfs_name
+            self.wfs_name = self.WFS_dict[self.imager]
         else:
             self.wavefrontCheckBox.setEnabled(False)
+            # no wavefront sensor associated with this imager
+            self.wfs_name = None
         self.imagerpv = self.imagerpv_list[index]
         self.imagerControls.change_imager(self.imagerpv)
         # reset data_dict
@@ -231,11 +239,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
     def change_state(self):
         if self.runButton.text() == 'Run':
 
-            if self.wavefrontCheckBox.isChecked():
-                wfs_name = self.WFS_dict[self.imager]
-                self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name, threshold=self.imagerStats.get_threshold())
-            else:
-                self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, threshold=self.imagerStats.get_threshold())
+            # if self.wavefrontCheckBox.isChecked():
+            #     wfs_name = self.WFS_dict[self.imager]
+            #     self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name, threshold=self.imagerStats.get_threshold())
+            # else:
+            #     self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, threshold=self.imagerStats.get_threshold())
+
+            self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=self.wfs_name,
+                                            threshold=self.imagerStats.get_threshold())
 
             width, height = self.processing.get_FOV()
 
