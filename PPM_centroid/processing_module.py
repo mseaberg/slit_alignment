@@ -71,6 +71,7 @@ class RunProcessing(QtCore.QObject):
             self.update_1d_data('cy', self.PPM_object.cy)
             self.update_1d_data('wx', self.PPM_object.wx)
             self.update_1d_data('wy', self.PPM_object.wy)
+            self.update_1d_data('intensity', self.PPM_object.intensity)
             self.running_average('cx', 'cx_smooth')
             self.running_average('cy', 'cy_smooth')
             self.running_average('wx', 'wx_smooth')

@@ -227,6 +227,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['cy'] = -np.ones(N)
         self.data_dict['wx'] = -np.ones(N)
         self.data_dict['wy'] = -np.ones(N)
+        self.data_dict['intensity'] = -np.ones(N)
         self.data_dict['cx_smooth'] = -np.ones(N)
         self.data_dict['cy_smooth'] = -np.ones(N)
         self.data_dict['wx_smooth'] = -np.ones(N)
@@ -372,6 +373,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         stats_dict['cy'] = data_dict['cy']
         stats_dict['wx'] = data_dict['wx']
         stats_dict['wy'] = data_dict['wy']
+        stats_dict['intensity'] = data_dict['intensity']
 
         wfs_dict = {}
         wfs_dict['z_x'] = data_dict['z_x']

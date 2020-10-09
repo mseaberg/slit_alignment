@@ -235,6 +235,8 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
         yWidthMean = np.mean(data['wy'][-self.num:])
         xWidthRMS = np.std(data['wx'][-self.num:])
         yWidthRMS = np.std(data['wy'][-self.num:])
+        intensityMean = np.mean(data['intensity'][-self.num])
+        intensityRMS = np.std(data['intensity'][-self.num])
         self.xCentroidLineEdit.setText('%.1f' % xCentroidMean)
         self.yCentroidLineEdit.setText('%.1f' % yCentroidMean)
         self.xWidthLineEdit.setText('%.1f' % xWidthMean)
@@ -243,6 +245,8 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
         self.yCentroidRMSLineEdit.setText('%.2f' % yCentroidRMS)
         self.xWidthRMSLineEdit.setText('%.2f' % xWidthRMS)
         self.yWidthRMSLineEdit.setText('%.2f' % yWidthRMS)
+        self.intensityLineEdit.setText('%.2f' % intensityMean)
+        self.intensityRMSLineEdit.setText('%.2f' % intensityRMS)
 
         if self.showFitButton.isChecked():
 
