@@ -17,6 +17,34 @@ Ui_Plot, QPlot = loadUiType('Epics_plot.ui')
 Ui_Config, QConfig = loadUiType('Config.ui')
 Ui_Imager, QImager = loadUiType('Imager_controls.ui')
 Ui_ImagerStats, QImagerStats = loadUiType('Imager_stats.ui')
+Ui_wfsStats, QwfsStats = loadUiType('wfs_stats.ui')
+Ui_wfs, Qwfs = loadUiType('wfs_controls.ui')
+
+
+class WFSControls(Qwfs, Ui_wfs):
+    """
+    Widget class to store some imager controls
+    """
+    def __init__(self, parent=None):
+        super(WFSControls, self).__init__()
+        self.setupUi(self)
+
+        self.wfs_prefix = self.yStateReadback.channel[5:15]
+
+
+    def change_imager(self, wfs_prefix):
+        
+        self.wfs_prefix = wfs_prefix
+        self.change_channel(self.yStateReadback, 'MMS:STATE:GET_RBV')
+        self.change_channel(self.yStateComboBox, 'MMS:STATE:SET')
+        self.change_channel(self.yPosReadback, 'MMS:Y.RBV')
+        self.change_channel(self.yPosLineEdit, 'MMS:Y.VAL')
+        self.change_channel(self.zPosReadback, 'MMS:Z.RBV')
+        self.change_channel(self.zPosLineEdit, 'MMS:Z.VAL')
+
+    def change_channel(self, obj, suffix):
+
+        obj.channel = 'ca://'+self.imager_prefix+suffix
 
 
 class ImagerControls(QImager, Ui_Imager):
@@ -93,6 +121,59 @@ class ImagerControls(QImager, Ui_Imager):
     def change_channel(self, obj, suffix):
 
         obj.channel = 'ca://'+self.imager_prefix+suffix
+
+
+class WFSStats(QwfsStats, Ui_wfsStats):
+    """
+    Widget class to display image/beam stats
+    """
+    def __init__(self, parent=None):
+        super(WFSStats, self).__init__()
+        self.setupUi(self)
+
+        self.threshold = float(self.thresholdLineEdit.text())
+
+        self.thresholdLineEdit.returnPressed.connect(self.update_threshold)
+        self.nImagesLineEdit.returnPressed.connect(self.update_num)
+
+        self.image_widget = None
+        self.num = int(self.nImagesLineEdit.text())
+
+    def update_num(self):
+        try:
+            self.num = int(self.nImagesLineEdit.text())
+        except ValueError:
+            self.num = 1
+            self.nImagesLineEdit.setText('1')
+
+    def update_stats(self, data):
+        xFocusMean = np.mean(data['z_x'][-self.num:])
+        yFocusMean = np.mean(data['z_y'][-self.num:])
+        xFocusRMS = np.std(data['z_x'][-self.num:])
+        yFocusRMS = np.std(data['z_y'][-self.num:])
+        xWidthMean = np.mean(data['rms_x'][-self.num:])
+        yWidthMean = np.mean(data['rms_y'][-self.num:])
+        xWidthRMS = np.std(data['rms_x'][-self.num:])
+        yWidthRMS = np.std(data['rms_y'][-self.num:])
+        self.xFocusLineEdit.setText('%.1f' % xFocusMean)
+        self.yFocusLineEdit.setText('%.1f' % yFocusMean)
+        self.xWidthLineEdit.setText('%.1f' % xWidthMean)
+        self.yWidthLineEdit.setText('%.1f' % yWidthMean)
+        self.xFocusRMSLineEdit.setText('%.2f' % xFocusRMS)
+        self.yFocusRMSLineEdit.setText('%.2f' % yFocusRMS)
+        self.xWidthRMSLineEdit.setText('%.2f' % xWidthRMS)
+        self.yWidthRMSLineEdit.setText('%.2f' % yWidthRMS)
+
+    def update_threshold(self):
+        try:
+            self.threshold = float(self.thresholdLineEdit.text())
+        except ValueError:
+            self.threshold = 0.1
+            self.thresholdLineEdit.setText('0.1')
+
+    def get_threshold(self):
+
+        return self.threshold
 
 
 class ImagerStats(QImagerStats, Ui_ImagerStats):

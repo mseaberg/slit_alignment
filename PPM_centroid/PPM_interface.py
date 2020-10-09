@@ -347,4 +347,11 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         stats_dict['wx'] = data_dict['wx']
         stats_dict['wy'] = data_dict['wy']
 
+        wfs_dict = {}
+        wfs_dict['z_x'] = data_dict['z_x']
+        wfs_dict['z_y'] = data_dict['z_y']
+        wfs_dict['rms_x'] = data_dict['rms_x']
+        wfs_dict['rms_y'] = data_dict['rms_y']
+
         self.imagerStats.update_stats(stats_dict)
+        self.wfsStats.update_stats(wfs_dict)
