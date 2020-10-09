@@ -7,6 +7,7 @@ from datetime import datetime
 from matplotlib import cm
 from PyQt5.QtGui import QPen
 import json
+import warnings
 
 
 Ui_LineoutImage, QLineoutImage = loadUiType('LineoutImage.ui')
