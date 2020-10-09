@@ -32,20 +32,27 @@ class WFSControls(Qwfs, Ui_wfs):
 
         self.wfs_prefix = self.yStateReadback.channel[5:15]
 
+        self.widgets = [self.yStateReadback, self.yStateComboBox,
+                self.yPosReadback, self.yPosLineEdit, self.zPosReadback,
+                self.zPosLineEdit]
 
-    def change_imager(self, wfs_prefix):
-        
-        self.wfs_prefix = wfs_prefix
-        self.change_channel(self.yStateReadback, 'MMS:STATE:GET_RBV')
-        self.change_channel(self.yStateComboBox, 'MMS:STATE:SET')
-        self.change_channel(self.yPosReadback, 'MMS:Y.RBV')
-        self.change_channel(self.yPosLineEdit, 'MMS:Y.VAL')
-        self.change_channel(self.zPosReadback, 'MMS:Z.RBV')
-        self.change_channel(self.zPosLineEdit, 'MMS:Z.VAL')
+    def change_wfs(self, wfs_name):
+       
+        if wfs_name is None:
+            for widget in self.widgets:
+                self.change_channel(widget, '')
+        else:
+            self.wfs_prefix = wfs_name+':WFS:'
+            self.change_channel(self.yStateReadback, 'MMS:STATE:GET_RBV')
+            self.change_channel(self.yStateComboBox, 'MMS:STATE:SET')
+            self.change_channel(self.yPosReadback, 'MMS:Y.RBV')
+            self.change_channel(self.yPosLineEdit, 'MMS:Y.VAL')
+            self.change_channel(self.zPosReadback, 'MMS:Z.RBV')
+            self.change_channel(self.zPosLineEdit, 'MMS:Z.VAL')
 
     def change_channel(self, obj, suffix):
 
-        obj.channel = 'ca://'+self.imager_prefix+suffix
+        obj.channel = 'ca://' + self.wfs_prefix + suffix
 
 
 class ImagerControls(QImager, Ui_Imager):

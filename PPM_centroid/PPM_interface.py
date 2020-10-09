@@ -29,7 +29,11 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save_image)
         self.actionAlignment_Screen.triggered.connect(self.run_alignment_screen)
 
+        #self.plotRangeLineEdit.returnPressed.connect(lambda: self.set_time_range(self.plotRangeLineEdit))
+        #self.wfsPlotRangeLineEdit.returnPressed.connect(lambda: self.set_time_range(self.wfsPlotRangeLineEdit))
+
         self.plotRangeLineEdit.returnPressed.connect(self.set_time_range)
+        self.wfsPlotRangeLineEdit.returnPressed.connect(self.set_time_range)
 
         # connect line combo box
         self.lineComboBox.currentIndexChanged.connect(self.change_line)
@@ -141,11 +145,13 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.wfs_name = None
 
         # make sure this initializes properly
-        self.change_imager(0)
+        #self.change_imager(0)
         self.imagerpv_list = self.imagerpv_dict['L0']
         self.imagerpv = self.imagerpv_list[0]
         self.imagerComboBox.clear()
         self.imagerComboBox.addItems(self.imager_list)
+
+        self.change_line(0)
 
         # disable wavefront checkbox by default since IM1L0 doesn't have a WFS
         self.wavefrontCheckBox.setEnabled(False)
@@ -153,15 +159,22 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # initialize registration object
         self.processing = None
 
-    def set_time_range(self):
-        try:
-            time_range = float(self.plotRangeLineEdit.text())
-        except ValueError:
-            time_range = 10.0
-            self.plotRangeLineEdit.setText('10.0')
+
+    def set_time_range(self, time_range=10.0):
+  
+        # check if this is called as a callback
+        if self.sender():
+            rangeLineEdit = self.sender()
+            try:
+                time_range = float(rangeLineEdit.text())
+            except ValueError:
+                time_range = 10.0
+                rangeLineEdit.setText('10.0')
 
         self.centroid_plot.set_time_range(time_range)
         self.width_plot.set_time_range(time_range)
+        self.focus_plot.set_time_range(time_range)
+        self.rms_plot.set_time_range(time_range)
 
     def setup_legend(self, legend):
 
@@ -200,8 +213,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             self.wavefrontCheckBox.setEnabled(False)
             # no wavefront sensor associated with this imager
             self.wfs_name = None
+
         self.imagerpv = self.imagerpv_list[index]
         self.imagerControls.change_imager(self.imagerpv)
+        self.wfsControls.change_wfs(self.wfs_name)
         # reset data_dict
         self.reset_data_dict()
 
@@ -239,13 +254,13 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
     def change_state(self):
         if self.runButton.text() == 'Run':
 
-            # if self.wavefrontCheckBox.isChecked():
-            #     wfs_name = self.WFS_dict[self.imager]
-            #     self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name, threshold=self.imagerStats.get_threshold())
-            # else:
-            #     self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, threshold=self.imagerStats.get_threshold())
 
-            self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=self.wfs_name,
+            if self.wavefrontCheckBox.isChecked():
+                wfs_name = self.wfs_name
+            else:
+                wfs_name = None
+
+            self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name,
                                             threshold=self.imagerStats.get_threshold())
 
             width, height = self.processing.get_FOV()
