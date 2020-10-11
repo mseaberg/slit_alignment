@@ -8,6 +8,7 @@ import imageio
 import scipy.ndimage.interpolation as interpolate
 import sys
 import time
+import json
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 from PyQt5.uic import loadUiType
@@ -39,6 +40,18 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.lineComboBox.currentIndexChanged.connect(self.change_line)
         # connect imager combo box
         self.imagerComboBox.currentIndexChanged.connect(self.change_imager)
+
+        self.orientation_actions = [self.action0, self.action90, self.action180, self.action270, 
+                self.action0_flip, self.action90_flip, self.action180_flip, self.action270_flip]
+
+        # connect orientation actions
+        for action in self.orientation_actions:
+            action.triggered.connect(self.change_orientation)
+
+        self.actionSave_orientation.triggered.connect(self.save_orientation)
+
+        # set orientation
+        self.orientation = 'action0'
 
         # initialize tab to basic tab
         self.tabWidget.setCurrentIndex(0)
@@ -159,6 +172,55 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # initialize registration object
         self.processing = None
 
+    def uncheck_all(self):
+
+        for action in self.orientation_actions:
+            action.setChecked(False)
+
+    def change_orientation(self):
+        menu_item = self.sender()
+
+        self.uncheck_all()
+        menu_item.setChecked(True)
+
+        self.orientation = menu_item.objectName()
+
+        # check if running, if so send orientation information
+        if self.processing is not None:
+            self.processing.set_orientation(self.orientation)
+
+    def load_orientation(self):
+        try:
+            with open('/reg/neh/home/seaberg/Commissioning_Tools/PPM_centroid/imagers.db') as json_file:
+                data = json.load(json_file)
+            self.orientation = data[self.imager]['orientation']
+            print('using orientation %s' % self.orientation)
+        except json.decoder.JSONDecodeError:
+            self.orientation = 'action0'
+        except KeyError:
+            print('orientation not set, using 0.')
+            self.orientation = 'action0'
+
+    def save_orientation(self):
+        # get current file contents
+        try:
+            with open('imagers.db') as json_file:
+                data = json.load(json_file)
+
+        except json.decoder.JSONDecodeError:
+            # give up...
+            pass
+
+        if self.imager in data:
+
+            data[self.imager]['orientation'] = self.orientation
+        else:
+            data[self.imager] = {}
+            data[self.imager]['orientation'] = self.orientation
+
+        # write to the file under the corresponding imager field
+        with open('imagers.db', 'w') as outfile:
+            json.dump(data, outfile, indent=4)
 
     def set_time_range(self, time_range=10.0):
   
@@ -219,6 +281,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.wfsControls.change_wfs(self.wfs_name)
         # reset data_dict
         self.reset_data_dict()
+        self.load_orientation()
 
     def reset_data_dict(self):
         N = 1024
@@ -237,6 +300,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['pixSize'] = 0.0
         self.data_dict['lineout_x'] = np.zeros(100)
         self.data_dict['lineout_y'] = np.zeros(100)
+        self.data_dict['projection_x'] = np.zeros(100)
+        self.data_dict['projection_y'] = np.zeros(100)
         self.data_dict['fit_x'] = np.zeros(100)
         self.data_dict['fit_y'] = np.zeros(100)
         self.data_dict['x'] = np.linspace(-1024, 1023, 100)
@@ -265,8 +330,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                                             threshold=self.imagerStats.get_threshold())
 
             width, height = self.processing.get_FOV()
+            self.processing.set_orientation(self.orientation)
 
             self.imageWidget.update_viewbox(width, height)
+            self.wavefrontWidget.update_viewbox(width, height)
 
             # update crosshair sizes
             self.crosshairsWidget.update_crosshair_width()
@@ -341,6 +408,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         image_data = data_dict['im1']
         xlineout = data_dict['lineout_x']
         ylineout = data_dict['lineout_y']
+        xprojection = data_dict['projection_x']
+        yprojection = data_dict['projection_y']
         fit_x = data_dict['fit_x']
         fit_y = data_dict['fit_y']
 
@@ -353,18 +422,20 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         x_res_fit = np.zeros_like(x_res)
         y_res_fit = np.zeros_like(y_res)
         
-        self.imageWidget.update_plots(image_data, x, y, xlineout, ylineout, fit_x, fit_y)
+        self.imageWidget.update_plots(image_data, x, y, xprojection, yprojection, fit_x, fit_y, 
+                xlineout_data=xlineout, ylineout_data=ylineout)
 
-        self.wavefrontWidget.update_plots(image_data, x_prime, y_prime, x_res, y_res, x_res_fit, y_res_fit)
+        if self.wavefrontCheckBox.isChecked():
+            self.wavefrontWidget.update_plots(image_data, x_prime, y_prime, x_res, y_res, x_res_fit, y_res_fit)
+            self.focus_plot.update_plots(data_dict['timestamps'], x=data_dict['z_x'], y=data_dict['z_y'])
+            self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['rms_x'], y=data_dict['rms_y'])
+
 
         self.data_dict = data_dict
 
         self.centroid_plot.update_plots(data_dict['timestamps'], x=data_dict['cx'], y=data_dict['cy'], x_smooth=data_dict['cx_smooth'], y_smooth=data_dict['cy_smooth'])
 
         self.width_plot.update_plots(data_dict['timestamps'], x=data_dict['wx'], y=data_dict['wy'], x_smooth=data_dict['wx_smooth'], y_smooth=data_dict['wy_smooth'])
-
-        self.focus_plot.update_plots(data_dict['timestamps'], x=data_dict['z_x'], y=data_dict['z_y'])
-        self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['rms_x'], y=data_dict['rms_y'])
 
         self.label.setText(data_dict['tx'])
 

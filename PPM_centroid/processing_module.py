@@ -47,7 +47,10 @@ class RunProcessing(QtCore.QObject):
 
         #### Start  #####################
         self._update()
-        
+    
+    def set_orientation(self, orientation):
+        self.PPM_object.set_orientation(orientation)
+
     def get_FOV(self):
         width = self.PPM_object.FOV
         height = np.copy(width)
@@ -81,22 +84,28 @@ class RunProcessing(QtCore.QObject):
             # get lineouts
             lineout_x = self.PPM_object.x_lineout
             lineout_y = self.PPM_object.y_lineout
+            projection_x = self.PPM_object.x_projection
+            projection_y = self.PPM_object.y_projection
 
             # gaussian fits
             try:
-                fit_x = np.exp(-(self.PPM_object.x - self.PPM_object.cx) ** 2 / 2 / (self.PPM_object.wx / 2.355) ** 2)
+                fit_x = self.PPM_object.amp_x*np.exp(-(self.PPM_object.x - self.PPM_object.cx) ** 2 / 2 / (self.PPM_object.wx / 2.355) ** 2)
             except RuntimeWarning:
                 fit_x = np.zeros_like(lineout_x)
             try:
-                fit_y = np.exp(-(self.PPM_object.y - self.PPM_object.cy) ** 2 / 2 / (self.PPM_object.wy / 2.355) ** 2)
+                fit_y = self.PPM_object.amp_y*np.exp(-(self.PPM_object.y - self.PPM_object.cy) ** 2 / 2 / (self.PPM_object.wy / 2.355) ** 2)
             except RuntimeWarning:
                 fit_y = np.zeros_like(lineout_y)
 
             # update dictionary
             self.data_dict['im1'] = self.PPM_object.profile
             #self.data_dict['imDummy'] = self.PPM_object.get_dummy_image()
-            self.data_dict['lineout_x'] = lineout_x/np.max(lineout_x)
-            self.data_dict['lineout_y'] = lineout_y/np.max(lineout_y)
+            #self.data_dict['lineout_x'] = lineout_x/np.max(lineout_x)
+            #self.data_dict['lineout_y'] = lineout_y/np.max(lineout_y)
+            self.data_dict['lineout_x'] = lineout_x
+            self.data_dict['lineout_y'] = lineout_y
+            self.data_dict['projection_x'] = projection_x
+            self.data_dict['projection_y'] = projection_y
             self.data_dict['fit_x'] = fit_x
             self.data_dict['fit_y'] = fit_y
             self.data_dict['x'] = self.PPM_object.x

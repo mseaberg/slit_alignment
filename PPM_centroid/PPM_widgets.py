@@ -444,7 +444,7 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         """
         return self.image_canvas, self.xlineout_canvas, self.ylineout_canvas
 
-    def update_plots(self, image_data, x, y, xlineout_data, ylineout_data, fit_x, fit_y):
+    def update_plots(self, image_data, x, y, xprojection_data, yprojection_data, fit_x, fit_y, xlineout_data=None, ylineout_data=None):
         """
         Method to update image, lineout plots
         :param image_data: (N, M) ndarray
@@ -463,6 +463,11 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
             1D array containing gaussian fit to vertical lineout
         :return:
         """
+
+        if xlineout_data is None or ylineout_data is None:
+            xlineout_data = xprojection_data
+            ylineout_data = yprojection_data
+
         # check if there is an associated levels widget
         if self.levels is not None:
             # check if we're autoscaling
@@ -488,10 +493,17 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         self.img.setRect(QtCore.QRectF(np.min(x),np.min(y),x_width, y_width))
 
         # set lineout data
-        self.horizontalLineout.setData(x, xlineout_data)
-        self.horizontalFit.setData(x, fit_x)
-        self.verticalLineout.setData(ylineout_data, y)
-        self.verticalFit.setData(fit_y, y)
+        
+        if self.lineoutCheckBox.isChecked():
+            self.horizontalLineout.setData(x, xlineout_data)
+            self.horizontalFit.setData(x, fit_x)
+            self.verticalLineout.setData(ylineout_data, y)
+            self.verticalFit.setData(fit_y, y)
+        else:
+            self.horizontalLineout.setData(x, xprojection_data)
+            self.horizontalFit.setData(x, fit_x)
+            self.verticalLineout.setData(yprojection_data, y)
+            self.verticalFit.setData(fit_y, y)
 
     def set_min(self):
         """
@@ -580,7 +592,7 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
             PlotUtil.setup_legend(legend)
 
             # set range to be normalized
-            lineoutPlot.setYRange(0, 1)
+            #lineoutPlot.setYRange(0, 1)
 
             # plot labels
             PlotUtil.label_plot(lineoutPlot, u'x (\u03BCm)', 'Intensity')
@@ -598,7 +610,7 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
                                            pen=pg.mkPen(colors[1], width=2),name=names[1])
 
             # set range to be normalized
-            lineoutPlot.setXRange(0, 1)
+            #lineoutPlot.setXRange(0, 1)
             # plot labels
             PlotUtil.label_plot(lineoutPlot, 'Intensity', u'y (\u03BCm)')
             # link axis to image
