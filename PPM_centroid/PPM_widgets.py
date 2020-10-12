@@ -535,6 +535,7 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
         rect1.setPen(QtGui.QPen(QtCore.Qt.white, width/50., QtCore.Qt.SolidLine))
         # add the rectangle to the viewbox
         self.view.addItem(rect1)
+        self.view.invertX(True)
         # return the rectangle
         return rect1
         
@@ -598,6 +599,8 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
             PlotUtil.label_plot(lineoutPlot, u'x (\u03BCm)', 'Intensity')
             # link axis to image
             lineoutPlot.setXLink(self.view)
+
+            lineoutPlot.invertX(True)
 
         elif direction == 'vertical':
             # vertical lineout

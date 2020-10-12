@@ -38,15 +38,18 @@
         "AcquireTime": 0.001
     },
     "IM2K4": {
-        "pixel": 4.525624814314197
+        "pixel": 4.525624814314197,
+        "orientation": "action180_flip"
     },
     "IM5K4": {
         "pixel": 4.580303353221568
     },
     "IM4K4": {
-        "pixel": 2.7314367678972165
+        "pixel": 2.7314367678972165,
+        "orientation": "action180_flip"
     },
     "IM3K4": {
-        "pixel": 4.594732749964082
+        "pixel": 4.594732749964082,
+        "orientation": "action180_flip"
     }
 }

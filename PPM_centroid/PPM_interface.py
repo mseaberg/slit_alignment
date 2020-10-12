@@ -44,6 +44,17 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.orientation_actions = [self.action0, self.action90, self.action180, self.action270, 
                 self.action0_flip, self.action90_flip, self.action180_flip, self.action270_flip]
 
+        self.orientation_dict = {
+                'action0': self.action0,
+                'action90': self.action90,
+                'action180': self.action180,
+                'action270': self.action270,
+                'action0_flip': self.action0_flip,
+                'action90_flip': self.action90_flip,
+                'action180_flip': self.action180_flip,
+                'action270_flip': self.action270_flip
+                }
+
         # connect orientation actions
         for action in self.orientation_actions:
             action.triggered.connect(self.change_orientation)
@@ -200,6 +211,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         except KeyError:
             print('orientation not set, using 0.')
             self.orientation = 'action0'
+
+        # set appropriate checkbox
+        self.uncheck_all()
+        self.orientation_dict[self.orientation].setChecked(True)
 
     def save_orientation(self):
         # get current file contents
