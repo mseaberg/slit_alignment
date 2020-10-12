@@ -6,6 +6,7 @@ import time
 from pyqtgraph.Qt import QtCore
 from pcdsdevices.areadetector.detectors import PCDSAreaDetector
 from lcls_beamline_toolbox.xraybeamline2d import optics
+from lcls_beamline_toolbox.polyprojection.legendre import LegendreFit2D
 import sys
 import pandas as pd
 from analysis_tools import YagAlign
@@ -27,12 +28,24 @@ class RunProcessing(QtCore.QObject):
             self.threshold = threshold
 
         if wfs_name is not None:
-            self.WFS_object = optics.WFS_Device(wfs_name)
+            # need to make fraction more accessible...
+            self.WFS_object = optics.WFS_Device(wfs_name, fraction=3)
         else:
             self.WFS_object = None
 
         # PPM object for image acquisition and processing
         self.PPM_object = optics.PPM_Device(imager_prefix, average=averageWidget, threshold=self.threshold)
+
+        downsample = 3
+
+        Nd = int(self.PPM_object.N / (2 ** downsample))
+        Md = int(self.PPM_object.M / (2 ** downsample))
+        order = 16
+
+        ###### set up Legendre basis
+        if wfs_name is not None:
+            fit_object = LegendreFit2D(Nd, Md, order)
+            self.PPM_object.add_fit_object(fit_object)
         
         self.running = True
 
@@ -116,6 +129,7 @@ class RunProcessing(QtCore.QObject):
             if self.WFS_object is not None:
                 wfs_data, wfs_param = self.PPM_object.retrieve_wavefront(self.WFS_object)
 
+                self.data_dict['F0'] = wfs_data['F0']
                 self.update_1d_data('z_x', wfs_data['z2x'])
                 self.update_1d_data('z_y', wfs_data['z2y'])
                 self.update_1d_data('rms_x', np.std(wfs_data['x_res']))
