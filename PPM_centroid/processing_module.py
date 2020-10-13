@@ -29,7 +29,7 @@ class RunProcessing(QtCore.QObject):
 
         if wfs_name is not None:
             # need to make fraction more accessible...
-            self.WFS_object = optics.WFS_Device(wfs_name, fraction=3)
+            self.WFS_object = optics.WFS_Device(wfs_name, fraction=3.)
         else:
             self.WFS_object = None
 
@@ -130,6 +130,7 @@ class RunProcessing(QtCore.QObject):
                 wfs_data, wfs_param = self.PPM_object.retrieve_wavefront(self.WFS_object)
 
                 self.data_dict['F0'] = wfs_data['F0']
+                self.data_dict['focus'] = wfs_data['focus']
                 self.update_1d_data('z_x', wfs_data['z2x'])
                 self.update_1d_data('z_y', wfs_data['z2y'])
                 self.update_1d_data('rms_x', np.std(wfs_data['x_res']))

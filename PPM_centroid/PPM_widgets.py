@@ -359,7 +359,8 @@ class LineoutImage(QLineoutImage, Ui_LineoutImage):
     def get_lut(self, name):
         cmap = cm.get_cmap(name)
         cmap._init()
-        lut = (cmap._lut * 255).view(np.ndarray)
+        lut = (cmap._lut * 255).view(np.ndarray)[:256,:]
+        lut[-1,:] = 255
 
         return lut
 

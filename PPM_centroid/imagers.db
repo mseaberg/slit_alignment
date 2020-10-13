@@ -28,14 +28,16 @@
         "AcquireTime": 0.008
     },
     "IM1K0": {
-        "pixel": 1.0
+        "pixel": 1.0,
+        "orientation": "action180"
     },
     "IM2K0": {
         "pixel": 5.4,
         "zoom": 190.4,
         "focus": 9.64,
         "ND": "T50",
-        "AcquireTime": 0.001
+        "AcquireTime": 0.001,
+        "orientation": "action180"
     },
     "IM2K4": {
         "pixel": 4.525624814314197,

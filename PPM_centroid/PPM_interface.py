@@ -441,7 +441,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                 xlineout_data=xlineout, ylineout_data=ylineout)
 
         if self.wavefrontCheckBox.isChecked():
-            self.wavefrontWidget.update_plots(data_dict['F0']/0.1, x_prime, y_prime, x_res, y_res, x_res_fit, y_res_fit)
+            self.wavefrontWidget.update_plots(data_dict['focus'], x, y, xprojection, yprojection, fit_x, fit_y)
             self.focus_plot.update_plots(data_dict['timestamps'], x=data_dict['z_x'], y=data_dict['z_y'])
             self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['rms_x'], y=data_dict['rms_y'])
 
