@@ -89,7 +89,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # connect levels to wavefront image
         self.wavefrontWidget.connect_levels(self.wavefrontLevelsWidget)
         # connect wavefront image to crosshairs
-        self.wavefrontCrosshairsWidget.connect_image(self.wavefrontWidget)
+        self.wavefrontWidget.connect_crosshairs(self.wavefrontCrosshairsWidget)
 
         # add centroid plot
         self.centroid_plot = PPM_widgets.StripChart(self.centroidCanvas, u'Beam Centroid (\u03BCm)')
@@ -281,6 +281,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # update imager
         self.imager = self.imager_list[index]
         self.imageGroupBox.setTitle(self.imager)
+        self.wavefrontGroupBox.setTitle(self.imager)
         # check if this imager has a wavefront sensor
         if self.imager in self.WFS_list:
             self.wavefrontCheckBox.setEnabled(True)
@@ -325,8 +326,12 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # wavefront sensor data
         self.data_dict['z_x'] = -np.ones(N)
         self.data_dict['z_y'] = -np.ones(N)
+        self.data_dict['z_x_smooth'] = -np.ones(N)
+        self.data_dict['z_y_smooth'] = -np.ones(N)
         self.data_dict['rms_x'] = -np.ones(N)
         self.data_dict['rms_y'] = -np.ones(N)
+        self.data_dict['rms_x_smooth'] = -np.ones(N)
+        self.data_dict['rms_y_smooth'] = -np.ones(N)
         self.data_dict['x_res'] = np.zeros(100)
         self.data_dict['y_res'] = np.zeros(100)
         self.data_dict['x_prime'] = np.linspace(-1024, 1023, 100)
@@ -341,17 +346,27 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             else:
                 wfs_name = None
 
+            # get Talbot fraction
+            try:
+                fraction = float(self.wfsControls.fractionLineEdit.text())
+            except:
+                fraction = 1
+
             self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name,
-                                            threshold=self.imagerStats.get_threshold())
+                                            threshold=self.imagerStats.get_threshold(), focusFOV=self.displayWidget.FOV, fraction=fraction)
 
             width, height = self.processing.get_FOV()
             self.processing.set_orientation(self.orientation)
 
             self.imageWidget.update_viewbox(width, height)
-            self.wavefrontWidget.update_viewbox(width, height)
+            if self.displayWidget.display_choice == 'Focus':
+                self.wavefrontWidget.update_viewbox(self.displayWidget.FOV, self.displayWidget.FOV)
+            else:
+                self.wavefrontWidget.update_viewbox(width, height)
 
             # update crosshair sizes
             self.crosshairsWidget.update_crosshair_width()
+            self.wavefrontCrosshairsWidget.update_crosshair_width()
             self.imagerStats.update_width()
 
             self.thread = QtCore.QThread()
@@ -436,14 +451,27 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         y_res = data_dict['y_res']
         x_res_fit = np.zeros_like(x_res)
         y_res_fit = np.zeros_like(y_res)
+        xf = data_dict['xf']
         
         self.imageWidget.update_plots(image_data, x, y, xprojection, yprojection, fit_x, fit_y, 
                 xlineout_data=xlineout, ylineout_data=ylineout)
 
         if self.wavefrontCheckBox.isChecked():
-            self.wavefrontWidget.update_plots(data_dict['focus'], x, y, xprojection, yprojection, fit_x, fit_y)
-            self.focus_plot.update_plots(data_dict['timestamps'], x=data_dict['z_x'], y=data_dict['z_y'])
-            self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['rms_x'], y=data_dict['rms_y'])
+
+
+            if self.displayWidget.display_choice == 'Focus':
+                xline = data_dict['focus_horizontal']
+                yline = data_dict['focus_vertical']
+                self.wavefrontWidget.update_plots(data_dict['focus'], xf, xf, xline, yline, xline, yline)
+            elif self.displayWidget.display_choice == 'Fourier transform':
+                self.wavefrontWidget.update_plots(data_dict['F0'], x, y, xprojection, yprojection, fit_x, fit_y)
+            elif self.displayWidget.display_choice == 'Phase':
+                self.wavefrontWidget.update_plots(data_dict['wave'], x_prime, y_prime, x_res, y_res, x_res, y_res)
+
+
+
+            self.focus_plot.update_plots(data_dict['timestamps'], x=data_dict['z_x'], y=data_dict['z_y'], x_smooth=data_dict['z_x_smooth'], y_smooth=data_dict['z_y_smooth'])
+            self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['rms_x'], y=data_dict['rms_y'], x_smooth=data_dict['rms_x_smooth'], y_smooth=data_dict['rms_y_smooth'])
 
 
         self.data_dict = data_dict
@@ -469,3 +497,4 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         self.imagerStats.update_stats(stats_dict)
         self.wfsStats.update_stats(wfs_dict)
+

@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>270</width>
-    <height>200</height>
+    <height>220</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -29,6 +29,22 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="2" column="1">
+    <widget class="PyDMLabel" name="zPosReadback">
+     <property name="minimumSize">
+      <size>
+       <width>80</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string/>
+     </property>
+     <property name="channel" stdset="0">
+      <string>ca://PF1K0:WFS:MMS:Z.RBV</string>
+     </property>
+    </widget>
+   </item>
    <item row="1" column="0">
     <widget class="QLabel" name="yPosLabel">
      <property name="minimumSize">
@@ -42,6 +58,22 @@
      </property>
     </widget>
    </item>
+   <item row="1" column="2">
+    <widget class="PyDMLineEdit" name="yPosLineEdit">
+     <property name="minimumSize">
+      <size>
+       <width>80</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string/>
+     </property>
+     <property name="channel" stdset="0">
+      <string>ca://PF1K0:WFS:MMS:Y.VAL</string>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="0">
     <widget class="QLabel" name="zPosLabel">
      <property name="minimumSize">
@@ -52,6 +84,35 @@
      </property>
      <property name="text">
       <string>Z Pos</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <widget class="QPushButton" name="nominalButton">
+     <property name="minimumSize">
+      <size>
+       <width>165</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Restore nominal settings</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="PyDMLabel" name="yPosReadback">
+     <property name="minimumSize">
+      <size>
+       <width>80</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string/>
+     </property>
+     <property name="channel" stdset="0">
+      <string>ca://PF1K0:WFS:MMS:Y.RBV</string>
      </property>
     </widget>
    </item>
@@ -74,48 +135,10 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="PyDMLabel" name="yPosReadback">
-     <property name="minimumSize">
-      <size>
-       <width>80</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string/>
-     </property>
-     <property name="channel" stdset="0">
-      <string>ca://PF1K0:WFS:MMS:Y.RBV</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="PyDMLabel" name="zPosReadback">
-     <property name="minimumSize">
-      <size>
-       <width>80</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string/>
-     </property>
-     <property name="channel" stdset="0">
-      <string>ca://PF1K0:WFS:MMS:Z.RBV</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="2">
-    <widget class="QPushButton" name="nominalButton">
-     <property name="minimumSize">
-      <size>
-       <width>165</width>
-       <height>0</height>
-      </size>
-     </property>
+   <item row="0" column="0">
+    <widget class="QLabel" name="yStateLabel">
      <property name="text">
-      <string>Restore nominal settings</string>
+      <string>Y State</string>
      </property>
     </widget>
    </item>
@@ -132,29 +155,6 @@
      </property>
      <property name="channel" stdset="0">
       <string>ca://PF1K0:WFS:MMS:Z.VAL</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="yStateLabel">
-     <property name="text">
-      <string>Y State</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="PyDMLineEdit" name="yPosLineEdit">
-     <property name="minimumSize">
-      <size>
-       <width>80</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string/>
-     </property>
-     <property name="channel" stdset="0">
-      <string>ca://PF1K0:WFS:MMS:Y.VAL</string>
      </property>
     </widget>
    </item>
@@ -177,6 +177,20 @@
      </property>
      <property name="channel" stdset="0">
       <string>ca://PF1K0:WFS:MMS:STATE:GET_RBV</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Talbot Fraction</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QLineEdit" name="fractionLineEdit">
+     <property name="text">
+      <string>3</string>
      </property>
     </widget>
    </item>

@@ -20,6 +20,37 @@ Ui_Imager, QImager = loadUiType('Imager_controls.ui')
 Ui_ImagerStats, QImagerStats = loadUiType('Imager_stats.ui')
 Ui_wfsStats, QwfsStats = loadUiType('wfs_stats.ui')
 Ui_wfs, Qwfs = loadUiType('wfs_controls.ui')
+Ui_DisplayOptions, QDisplayOptions = loadUiType('Wavefront_Display_Options.ui')
+
+
+class WFSDisplay(QDisplayOptions, Ui_DisplayOptions):
+    """
+    Widget class for choosing wavefront display
+    """
+    def __init__(self, parent=None):
+        super(WFSDisplay, self).__init__()
+        self.setupUi(self)
+
+        self.FOVLineEdit.returnPressed.connect(self.change_FOV)
+        self.displayComboBox.currentIndexChanged.connect(self.change_display)
+        
+        self.FOV = 0
+        self.display_choice = ''
+
+        self.change_FOV()
+        self.change_display(0)
+
+    def change_FOV(self):
+
+        try:
+            self.FOV = float(self.FOVLineEdit.text())
+        except ValueError:
+            self.FOV = 10.0
+            self.FOVLineEdit.setText('10.0')
+
+    def change_display(self, index):
+        self.display_choice = self.displayComboBox.currentText()
+        print(self.display_choice)
 
 
 class WFSControls(Qwfs, Ui_wfs):
@@ -1527,7 +1558,7 @@ class CrosshairWidget(QCrosshair, Ui_Crosshair):
         distance = np.sqrt((red_x-blue_x)**2 + (red_y-blue_y)**2)*1e-3
 
         #self.distanceLineEdit.setText('%.2f' % distance)
-        self.distanceLabel.setText('Distance between crosshairs: %.2f mm' % distance)
+        self.distanceLabel.setText('Distance between crosshairs: %.2e mm' % distance)
         #pass
 
     def update_red_crosshair(self):
@@ -1803,4 +1834,5 @@ class Crosshair:
         self.crossv.setLine(self.xPos, self.yPos - rect_width*.02, self.xPos, self.yPos + rect_width*.02)
         radius = self.diameter/2
         self.circle.setRect(self.xPos - radius, self.yPos - radius, self.diameter, self.diameter)
+
 

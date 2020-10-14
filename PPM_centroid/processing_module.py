@@ -16,11 +16,12 @@ from datetime import datetime
 class RunProcessing(QtCore.QObject):
     sig = QtCore.pyqtSignal(dict)
 
-    def __init__(self, imager_prefix, data_dict, averageWidget, wfs_name=None, threshold=None):
+    def __init__(self, imager_prefix, data_dict, averageWidget, wfs_name=None, threshold=None, focusFOV=10, fraction=1):
         super(RunProcessing, self).__init__()
 
         # get wavefront sensor (may be None)
         self.wfs_name = wfs_name
+        self.focusFOV = focusFOV
 
         if threshold is None:
             self.threshold = 0.1
@@ -29,7 +30,7 @@ class RunProcessing(QtCore.QObject):
 
         if wfs_name is not None:
             # need to make fraction more accessible...
-            self.WFS_object = optics.WFS_Device(wfs_name, fraction=3.)
+            self.WFS_object = optics.WFS_Device(wfs_name, fraction=fraction)
         else:
             self.WFS_object = None
 
@@ -127,14 +128,22 @@ class RunProcessing(QtCore.QObject):
 
             # wavefront sensing
             if self.WFS_object is not None:
-                wfs_data, wfs_param = self.PPM_object.retrieve_wavefront(self.WFS_object)
+                wfs_data, wfs_param = self.PPM_object.retrieve_wavefront(self.WFS_object, focusFOV=self.focusFOV)
 
                 self.data_dict['F0'] = wfs_data['F0']
                 self.data_dict['focus'] = wfs_data['focus']
+                self.data_dict['wave'] = wfs_data['wave']
+                self.data_dict['xf'] = wfs_data['xf']
+                self.data_dict['focus_horizontal'] = wfs_data['focus_horizontal']
+                self.data_dict['focus_vertical'] = wfs_data['focus_vertical']
                 self.update_1d_data('z_x', wfs_data['z2x'])
                 self.update_1d_data('z_y', wfs_data['z2y'])
                 self.update_1d_data('rms_x', np.std(wfs_data['x_res']))
                 self.update_1d_data('rms_y', np.std(wfs_data['y_res']))
+                self.running_average('z_x', 'z_x_smooth')
+                self.running_average('z_y', 'z_y_smooth')
+                self.running_average('rms_x', 'rms_x_smooth')
+                self.running_average('rms_y', 'rms_y_smooth')
                 self.data_dict['x_res'] = wfs_data['x_res']
                 self.data_dict['y_res'] = wfs_data['y_res']
                 self.data_dict['x_prime'] = wfs_data['x_prime']

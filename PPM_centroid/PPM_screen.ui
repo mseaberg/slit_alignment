@@ -444,6 +444,24 @@
                </widget>
               </item>
               <item>
+               <widget class="QGroupBox" name="displayGroupBox">
+                <property name="minimumSize">
+                 <size>
+                  <width>200</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="title">
+                 <string>Display options</string>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_8">
+                 <item row="0" column="0">
+                  <widget class="WFSDisplay" name="displayWidget" native="true"/>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
                <spacer name="horizontalSpacer_3">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -567,7 +585,7 @@
      <x>0</x>
      <y>0</y>
      <width>1140</width>
-     <height>23</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -731,6 +749,12 @@
   </customwidget>
   <customwidget>
    <class>WFSStats</class>
+   <extends>QWidget</extends>
+   <header>PPM_widgets</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>WFSDisplay</class>
    <extends>QWidget</extends>
    <header>PPM_widgets</header>
    <container>1</container>
