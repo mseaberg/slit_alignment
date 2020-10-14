@@ -353,7 +353,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                 fraction = 1
 
             self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name,
-                                            threshold=self.imagerStats.get_threshold(), focusFOV=self.displayWidget.FOV, fraction=fraction)
+                                            threshold=self.imagerStats.get_threshold(), focusFOV=self.displayWidget.FOV, fraction=fraction, focus_z=self.displayWidget.focus_z)
 
             width, height = self.processing.get_FOV()
             self.processing.set_orientation(self.orientation)

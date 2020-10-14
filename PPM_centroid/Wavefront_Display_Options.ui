@@ -14,6 +14,26 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="FOVLineEdit">
+     <property name="text">
+      <string>10</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="minimumSize">
+      <size>
+       <width>100</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Focus FOV (μm)</string>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QComboBox" name="displayComboBox">
      <item>
@@ -33,23 +53,17 @@
      </item>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label">
-     <property name="minimumSize">
-      <size>
-       <width>100</width>
-       <height>0</height>
-      </size>
-     </property>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Focus FOV (μm)</string>
+      <string>Focus z (mm)</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="FOVLineEdit">
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="zLineEdit">
      <property name="text">
-      <string>10</string>
+      <string>0</string>
      </property>
     </widget>
    </item>

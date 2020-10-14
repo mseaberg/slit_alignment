@@ -16,12 +16,13 @@ from datetime import datetime
 class RunProcessing(QtCore.QObject):
     sig = QtCore.pyqtSignal(dict)
 
-    def __init__(self, imager_prefix, data_dict, averageWidget, wfs_name=None, threshold=None, focusFOV=10, fraction=1):
+    def __init__(self, imager_prefix, data_dict, averageWidget, wfs_name=None, threshold=None, focusFOV=10, fraction=1, focus_z=0):
         super(RunProcessing, self).__init__()
 
         # get wavefront sensor (may be None)
         self.wfs_name = wfs_name
         self.focusFOV = focusFOV
+        self.focus_z = focus_z
 
         if threshold is None:
             self.threshold = 0.1
@@ -128,7 +129,7 @@ class RunProcessing(QtCore.QObject):
 
             # wavefront sensing
             if self.WFS_object is not None:
-                wfs_data, wfs_param = self.PPM_object.retrieve_wavefront(self.WFS_object, focusFOV=self.focusFOV)
+                wfs_data, wfs_param = self.PPM_object.retrieve_wavefront(self.WFS_object, focusFOV=self.focusFOV, focus_z=self.focus_z)
 
                 self.data_dict['F0'] = wfs_data['F0']
                 self.data_dict['focus'] = wfs_data['focus']
