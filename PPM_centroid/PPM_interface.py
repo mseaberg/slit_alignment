@@ -451,7 +451,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         y_res = data_dict['y_res']
         x_res_fit = np.zeros_like(x_res)
         y_res_fit = np.zeros_like(y_res)
-        xf = data_dict['xf']
         
         self.imageWidget.update_plots(image_data, x, y, xprojection, yprojection, fit_x, fit_y, 
                 xlineout_data=xlineout, ylineout_data=ylineout)
@@ -459,6 +458,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         if self.wavefrontCheckBox.isChecked():
 
 
+            xf = data_dict['xf']
             if self.displayWidget.display_choice == 'Focus':
                 xline = data_dict['focus_horizontal']
                 yline = data_dict['focus_vertical']
