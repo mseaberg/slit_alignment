@@ -34,14 +34,17 @@ class WFSDisplay(QDisplayOptions, Ui_DisplayOptions):
         self.FOVLineEdit.returnPressed.connect(self.change_FOV)
         self.displayComboBox.currentIndexChanged.connect(self.change_display)
         self.zLineEdit.returnPressed.connect(self.change_z)
+        self.imrotLineEdit.returnPressed.connect(self.change_rotation)
         
         self.FOV = 0
         self.display_choice = ''
         self.focus_z = 0
+        self.rotation = 0
 
         self.change_FOV()
         self.change_display(0)
         self.change_z()
+        self.change_rotation()
 
     def change_z(self):
         try:
@@ -49,6 +52,13 @@ class WFSDisplay(QDisplayOptions, Ui_DisplayOptions):
         except ValueError:
             self.focus_z = 0.0
             self.zLineEdit.setText('0.0')
+
+    def change_rotation(self):
+        try:
+            self.rotation = float(self.imrotLineEdit.text())
+        except ValueError:
+            self.rotation = 0.0
+            self.imrotLineEdit.setText('0.0')
 
     def change_FOV(self):
 

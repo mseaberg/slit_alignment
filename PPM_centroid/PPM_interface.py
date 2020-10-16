@@ -417,7 +417,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
             # initialize processing object. This really needs a dictionary as input...
             self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name,
-                                            threshold=self.imagerStats.get_threshold(), focusFOV=self.displayWidget.FOV, fraction=fraction, focus_z=self.displayWidget.focus_z)
+                                            threshold=self.imagerStats.get_threshold(), focusFOV=self.displayWidget.FOV, fraction=fraction, focus_z=self.displayWidget.focus_z, displayWidget=self.displayWidget)
 
             # find out what the FOV of the screen is
             width, height = self.processing.get_FOV()
