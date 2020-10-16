@@ -25,14 +25,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         super(PPM_Interface, self).__init__()
         self.setupUi(self)
 
+        # button to start calculations
         self.runButton.clicked.connect(self.change_state)
-
+        # method to save an image. Maybe replace and/or supplement this with image "recording" in the future
         self.actionSave.triggered.connect(self.save_image)
+        # open alignment screen for calculating center and pixel size
         self.actionAlignment_Screen.triggered.connect(self.run_alignment_screen)
 
-        #self.plotRangeLineEdit.returnPressed.connect(lambda: self.set_time_range(self.plotRangeLineEdit))
-        #self.wfsPlotRangeLineEdit.returnPressed.connect(lambda: self.set_time_range(self.wfsPlotRangeLineEdit))
-
+        # adjustment for amount of time to show on plots (this should be cleaned up later)
         self.plotRangeLineEdit.returnPressed.connect(self.set_time_range)
         self.wfsPlotRangeLineEdit.returnPressed.connect(self.set_time_range)
 
@@ -41,9 +41,12 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # connect imager combo box
         self.imagerComboBox.currentIndexChanged.connect(self.change_imager)
 
+        # list of QAction objects for controlling the image orientation
         self.orientation_actions = [self.action0, self.action90, self.action180, self.action270, 
                 self.action0_flip, self.action90_flip, self.action180_flip, self.action270_flip]
 
+        # dictionary of QAction objects. Probably this could replace the above list eventually, but it works so won't
+        # break it for now...
         self.orientation_dict = {
                 'action0': self.action0,
                 'action90': self.action90,
@@ -59,6 +62,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         for action in self.orientation_actions:
             action.triggered.connect(self.change_orientation)
 
+        # connect method to save the current orientation
         self.actionSave_orientation.triggered.connect(self.save_orientation)
 
         # set orientation
@@ -67,20 +71,13 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # initialize tab to basic tab
         self.tabWidget.setCurrentIndex(0)
 
-        # connect orientations
-        #self.action0.toggled.connect(self
-
-        # font styles
-        self.labelStyle = {'color': '#FFF', 'font-size': '10pt'}
-        self.font = QtGui.QFont()
-        self.font.setPointSize(10)
-        self.font.setFamily('Arial')
-
         # connect levels to image
         self.imageWidget.connect_levels(self.levelsWidget)
         # connect crosshairs to image
         self.imageWidget.connect_crosshairs(self.crosshairsWidget)
 
+        # connect stats to image. This is for displaying the circle on the image centered on the
+        # beam with diameter of 2*FWHM
         self.imagerStats.connect_image(self.imageWidget)
 
         # wavefront retrieval
@@ -93,10 +90,12 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         # add centroid plot
         self.centroid_plot = PPM_widgets.StripChart(self.centroidCanvas, u'Beam Centroid (\u03BCm)')
-      
+
+        # labels and keys for plots
         labels = ['X', 'Y', 'X smoothed', 'Y smoothed']
         keys = ['x', 'y', 'x_smooth', 'y_smooth']
 
+        # plot for centroids
         self.centroid_plot.addSeries(keys, labels)
 
         # add FWHM plot
@@ -110,6 +109,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # add rms error plot
         self.rms_plot = PPM_widgets.StripChart(self.rmsErrorCanvas, 'RMS wavefront error (rad)')
         self.rms_plot.addSeries(keys, labels)
+
+        # make a list of all the plots
+        self.all_plots = [self.centroid_plot, self.width_plot, self.focus_plot, self.rms_plot]
 
         # initialize data dictionary
         self.data_dict = {}
@@ -161,7 +163,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.line = 'L0'
         self.lineComboBox.addItems(self.line_list)
 
-
+        # initialize imager list and imager
         self.imager_list = self.imager_dict['L0']
         self.imager = self.imager_list[0]
 
@@ -169,12 +171,12 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.wfs_name = None
 
         # make sure this initializes properly
-        #self.change_imager(0)
         self.imagerpv_list = self.imagerpv_dict['L0']
         self.imagerpv = self.imagerpv_list[0]
         self.imagerComboBox.clear()
         self.imagerComboBox.addItems(self.imager_list)
 
+        # more initialization...
         self.change_line(0)
 
         # disable wavefront checkbox by default since IM1L0 doesn't have a WFS
@@ -184,11 +186,17 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.processing = None
 
     def uncheck_all(self):
-
+        """
+        Method to uncheck all orientation options.
+        """
         for action in self.orientation_actions:
             action.setChecked(False)
 
     def change_orientation(self):
+        """
+        Method that is called when an orientation menu item is selected. This causes a change to the orientation
+        of the displayed image.
+        """
         menu_item = self.sender()
 
         self.uncheck_all()
@@ -201,35 +209,47 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             self.processing.set_orientation(self.orientation)
 
     def load_orientation(self):
+        """
+        Method to load the previously saved orientation. Defaults to no rotation if there hasn't been anything saved.
+        """
         try:
+            # read the imagers.db file
             with open('/reg/neh/home/seaberg/Commissioning_Tools/PPM_centroid/imagers.db') as json_file:
                 data = json.load(json_file)
+            # set orientation from the file
             self.orientation = data[self.imager]['orientation']
             print('using orientation %s' % self.orientation)
         except json.decoder.JSONDecodeError:
+            # catch the exception that the file doesn't exist
             self.orientation = 'action0'
         except KeyError:
+            # catch the exception that the orientation hasn't been saved for this imager
             print('orientation not set, using 0.')
             self.orientation = 'action0'
 
-        # set appropriate checkbox
+        # set appropriate checkbox and uncheck any other boxes
         self.uncheck_all()
         self.orientation_dict[self.orientation].setChecked(True)
 
     def save_orientation(self):
+        """
+        Method to save the current image orientation.
+        """
         # get current file contents
         try:
             with open('imagers.db') as json_file:
                 data = json.load(json_file)
 
         except json.decoder.JSONDecodeError:
-            # give up...
+            # give up if there's no file for now...
             pass
 
+        # check if there is already information about this imager
         if self.imager in data:
-
+            # if so, add orientation information
             data[self.imager]['orientation'] = self.orientation
         else:
+            # if not, initialize information about this imager
             data[self.imager] = {}
             data[self.imager]['orientation'] = self.orientation
 
@@ -238,7 +258,11 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             json.dump(data, outfile, indent=4)
 
     def set_time_range(self, time_range=10.0):
-  
+        """
+        Method to set the time range of the centroid, etc plots.
+        :param time_range: float
+            time for x-axis in seconds
+        """
         # check if this is called as a callback
         if self.sender():
             rangeLineEdit = self.sender()
@@ -248,20 +272,31 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                 time_range = 10.0
                 rangeLineEdit.setText('10.0')
 
-        self.centroid_plot.set_time_range(time_range)
-        self.width_plot.set_time_range(time_range)
-        self.focus_plot.set_time_range(time_range)
-        self.rms_plot.set_time_range(time_range)
+        # set time range for all stripchart-type plots
+        for plot in self.all_plots:
+            plot.set_time_range(time_range)
 
     def setup_legend(self, legend):
+        """
+        Method to set up a legend for a plot. This should probably belong in the PPM_widgets module.
+        Parameters
+        ----------
+        legend: string
+            pyqtgraph Legend object
+        """
 
+        # set style: white text, 10pt
         legendLabelStyle = {'color': '#FFF', 'size': '10pt'}
+        # the following was just taken from the web...
         for item in legend.items:
            for single_item in item:
                if isinstance(single_item, pg.graphicsItems.LabelItem.LabelItem):
                    single_item.setText(single_item.text, **legendLabelStyle)
 
     def run_alignment_screen(self):
+        """
+        Method to open the alignment screen
+        """
 
         cam_name = self.imagerpv
 
@@ -269,6 +304,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         alignment_app.show()
 
     def change_line(self, index):
+        """
+        Method to change which beamline from which to select an imager.
+
+        Parameters
+        ----------
+        index: int
+            index corresponding to which beamline as defined in self.line_list
+        """
         # update line
         self.line = self.line_list[index]
         self.imager_list = self.imager_dict[self.line]
@@ -278,6 +321,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.change_imager(0)
 
     def change_imager(self, index):
+        """
+        Method to change settings based on selection of a new imager
+
+        Parameters
+        ----------
+        index: int
+            index corresponding to which imager as defined in self.imager_list
+        """
         # update imager
         self.imager = self.imager_list[index]
         self.imageGroupBox.setTitle(self.imager)
@@ -288,6 +339,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             # update wfs_name
             self.wfs_name = self.WFS_dict[self.imager]
         else:
+            self.wavefrontCheckBox.setChecked(False)
             self.wavefrontCheckBox.setEnabled(False)
             # no wavefront sensor associated with this imager
             self.wfs_name = None
@@ -300,6 +352,12 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.load_orientation()
 
     def reset_data_dict(self):
+        """
+        Method to reset the data. This is called when a new imager is selected for instance.
+        This should really be cleaned up so that it's easier to add new items to the data dictionary. Basically
+        just need to categorize different types of data based on array size in terms of how to initialize them. This
+        could be defined in a file.
+        """
         N = 1024
         self.data_dict['im0'] = np.zeros((1024,1024))
         self.data_dict['cx'] = -np.ones(N)
@@ -338,100 +396,165 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['y_prime'] = np.linspace(-1024, 1023, 100)
 
     def change_state(self):
+        """
+        Method to start the calculation running, or stop it.
+        """
+
+        # check if "Run" was selected
         if self.runButton.text() == 'Run':
 
-
+            # check if we are going to calculate the wavefront. Set wfs_name to None if not.
             if self.wavefrontCheckBox.isChecked():
                 wfs_name = self.wfs_name
             else:
                 wfs_name = None
 
-            # get Talbot fraction
+            # get Talbot fraction. This will eventually be automated based on the photon energy and WFS state.
             try:
                 fraction = float(self.wfsControls.fractionLineEdit.text())
-            except:
+            except ValueError:
                 fraction = 1
 
+            # initialize processing object. This really needs a dictionary as input...
             self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name,
                                             threshold=self.imagerStats.get_threshold(), focusFOV=self.displayWidget.FOV, fraction=fraction, focus_z=self.displayWidget.focus_z)
 
+            # find out what the FOV of the screen is
             width, height = self.processing.get_FOV()
+            # set the orientation for processing
             self.processing.set_orientation(self.orientation)
 
+            # update viewboxes based on FOV
             self.imageWidget.update_viewbox(width, height)
             if self.displayWidget.display_choice == 'Focus':
                 self.wavefrontWidget.update_viewbox(self.displayWidget.FOV, self.displayWidget.FOV)
             else:
+                # this would eventually change for the FFT option
                 self.wavefrontWidget.update_viewbox(width, height)
 
             # update crosshair sizes
             self.crosshairsWidget.update_crosshair_width()
             self.wavefrontCrosshairsWidget.update_crosshair_width()
+
+            # update width for circle displayed on beam
             self.imagerStats.update_width()
 
+            # initialize a new thread
             self.thread = QtCore.QThread()
             self.thread.start()
 
+            # move the processing object to the new thread
             self.processing.moveToThread(self.thread)
+            # change the button state
             self.runButton.setText('Stop')
             # disable wavefront sensor checkbox until stop is pressed
             self.wavefrontCheckBox.setEnabled(False)
 
+            # connect processing object to plotting function
             self.processing.sig.connect(self.update_plots)
 
+            # disable imager selection until Stop is pressed
             self.lineComboBox.setEnabled(False)
             self.imagerComboBox.setEnabled(False)
 
+        # check if "Stop" was selected
         elif self.runButton.text() == 'Stop':
 
+            # stop processing and quit the thread
             self.processing.stop()
             self.thread.quit()
             self.thread.wait()
+
+            # update the button to be ready to "Run"
             self.runButton.setText('Run')
-            # enable wavefront sensor checkbox if imager is has a wavefront sensor
+            # re-enable wavefront sensor checkbox if imager is has a wavefront sensor
             if self.imager in self.WFS_list:
                 self.wavefrontCheckBox.setEnabled(True)
+
+            # re-enable imager selection
             self.lineComboBox.setEnabled(True)
             self.imagerComboBox.setEnabled(True)
 
     @staticmethod
     def normalize_image(image):
+        """
+        This probably belongs somewhere else... The idea is to normalize an image to 8-bit dynamic range
+        for saving to a png file
+
+        Parameters
+        ----------
+        image: ndarray (N,M)
+            input image
+        Returns
+        -------
+        ndarray (N,M)
+            output image
+        """
         image -= np.min(image)
         image *= 255./float(np.max(image))
         image = np.array(image,dtype='uint8')
         return image
 
     def save_image(self):
+        """
+        Method to save a png image based on the latest image grabbed
+        """
         formats = 'Portable Network Graphic (*.png)'
         filename = QtGui.QFileDialog.getSaveFileName(self, 
                 'Save Image','untitled.png',formats)
-        #name = str(name).strip()
+        # make sure a file name was chosen
         if not filename[0] == '':
+            # normalize the image and write to file
             im = App.normalize_image(self.data_dict['im1'])
             filename = App.get_filename(filename)
-            #imageio.imwrite(filename,self.data_dict['im1'])
             imageio.imwrite(filename,im)
         print(filename)
-        #im = Image.fromarray(self.data_dict['im1'])
-        #im.save(name)
-     
 
     @staticmethod
     def get_filename(name):
+        """
+        Method to get the filename from QFileDialog
+        Parameters
+        ----------
+        name: list of strings
+            first entry is the full path including file name, second entry is the extension
+
+        Returns
+        -------
+        string
+            full path including file name and extension
+        """
         path = name[0]
         extension = name[1].split('*')[1][0:4]
         if path[-4:] != extension:
             path = path + extension
         return path
 
-
     def closeEvent(self, event):
+        """
+        Method to control what happens if the window is closed.
+
+        Parameters
+        ----------
+        event: signal
+        """
+        # check if anything is running, otherwise do nothing else
         if self.runButton.text() == 'Stop':
             self.processing.stop()
             self.thread.quit()
             self.thread.wait()
 
-    def update_plots(self,data_dict):
+    def update_plots(self, data_dict):
+        """
+        Method to update all the plots. Would be nice to find a way to make this less explicit. One idea would be
+        to pass the dictionary keys into the plots when they are first initialized. Seems like passing the dictionary
+        around to all the plot functions probably only passes by reference or something.
+
+        Parameters
+        ----------
+        data_dict: dict
+            This is where all the data to display is stored
+        """
 
         x = data_dict['x']
         y = data_dict['y']
@@ -444,21 +567,24 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         fit_y = data_dict['fit_y']
 
         # wfs widget plots
-        #dummy_image = data_dict['imDummy']
         x_prime = data_dict['x_prime']
         y_prime = data_dict['y_prime']
         x_res = data_dict['x_res']
         y_res = data_dict['y_res']
         x_res_fit = np.zeros_like(x_res)
         y_res_fit = np.zeros_like(y_res)
-        
+
+        # update main image and lineouts
         self.imageWidget.update_plots(image_data, x, y, xprojection, yprojection, fit_x, fit_y, 
                 xlineout_data=xlineout, ylineout_data=ylineout)
 
+        # update wavefront tab
         if self.wavefrontCheckBox.isChecked():
 
-
+            # get focus coordinates
             xf = data_dict['xf']
+
+            # check what is supposed to be displayed. Would be nice to also clean this up
             if self.displayWidget.display_choice == 'Focus':
                 xline = data_dict['focus_horizontal']
                 yline = data_dict['focus_vertical']
@@ -468,20 +594,20 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             elif self.displayWidget.display_choice == 'Phase':
                 self.wavefrontWidget.update_plots(data_dict['wave'], x_prime, y_prime, x_res, y_res, x_res, y_res)
 
-
-
+            # update wavefront tab stripchart plots
             self.focus_plot.update_plots(data_dict['timestamps'], x=data_dict['z_x'], y=data_dict['z_y'], x_smooth=data_dict['z_x_smooth'], y_smooth=data_dict['z_y_smooth'])
             self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['rms_x'], y=data_dict['rms_y'], x_smooth=data_dict['rms_x_smooth'], y_smooth=data_dict['rms_y_smooth'])
 
-
+        # update data. Should check if this is ever used anywhere...
         self.data_dict = data_dict
 
+        # update centroid plots
         self.centroid_plot.update_plots(data_dict['timestamps'], x=data_dict['cx'], y=data_dict['cy'], x_smooth=data_dict['cx_smooth'], y_smooth=data_dict['cy_smooth'])
-
         self.width_plot.update_plots(data_dict['timestamps'], x=data_dict['wx'], y=data_dict['wy'], x_smooth=data_dict['wx_smooth'], y_smooth=data_dict['wy_smooth'])
 
         self.label.setText(data_dict['tx'])
 
+        # dict for stats. This probably isn't needed, should just pass in full data_dict
         stats_dict = {}
         stats_dict['cx'] = data_dict['cx']
         stats_dict['cy'] = data_dict['cy']
@@ -489,12 +615,13 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         stats_dict['wy'] = data_dict['wy']
         stats_dict['intensity'] = data_dict['intensity']
 
+        # dict for wfs. This probably isn't needed, should just pass in full data_dict
         wfs_dict = {}
         wfs_dict['z_x'] = data_dict['z_x']
         wfs_dict['z_y'] = data_dict['z_y']
         wfs_dict['rms_x'] = data_dict['rms_x']
         wfs_dict['rms_y'] = data_dict['rms_y']
 
+        # update stats values
         self.imagerStats.update_stats(stats_dict)
         self.wfsStats.update_stats(wfs_dict)
-
