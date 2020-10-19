@@ -59,7 +59,7 @@
              </property>
              <property name="maximumSize">
               <size>
-               <width>300</width>
+               <width>400</width>
                <height>16777215</height>
               </size>
              </property>
@@ -123,7 +123,7 @@
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>300</width>
+                  <width>800</width>
                   <height>16777215</height>
                  </size>
                 </property>
@@ -148,19 +148,6 @@
                  </item>
                 </layout>
                </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_2">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
               </item>
              </layout>
             </widget>
@@ -219,7 +206,7 @@
              </property>
              <property name="maximumSize">
               <size>
-               <width>300</width>
+               <width>400</width>
                <height>16777215</height>
               </size>
              </property>
@@ -348,7 +335,7 @@
              </property>
              <property name="maximumSize">
               <size>
-               <width>300</width>
+               <width>400</width>
                <height>16777215</height>
               </size>
              </property>
@@ -372,7 +359,7 @@
              </property>
              <property name="maximumSize">
               <size>
-               <width>330</width>
+               <width>400</width>
                <height>16777215</height>
               </size>
              </property>
@@ -421,6 +408,12 @@
               </item>
               <item>
                <widget class="QGroupBox" name="crosshairGroupBox_2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>516</width>
@@ -429,7 +422,7 @@
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>300</width>
+                  <width>800</width>
                   <height>16777215</height>
                  </size>
                 </property>
@@ -460,19 +453,6 @@
                  </item>
                 </layout>
                </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_3">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
               </item>
              </layout>
             </widget>
@@ -533,6 +513,13 @@
         <widget class="QCheckBox" name="wavefrontCheckBox">
          <property name="text">
           <string>Calculate wavefront?</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="plotButton">
+         <property name="text">
+          <string>New Plot</string>
          </property>
         </widget>
        </item>
@@ -657,7 +644,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>0 flipud</string>
+    <string>0 flip</string>
    </property>
   </action>
   <action name="action90_flip">
@@ -665,7 +652,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>90 flipud</string>
+    <string>90 flip</string>
    </property>
   </action>
   <action name="action180_flip">
@@ -673,7 +660,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>180 flipud</string>
+    <string>180 flip</string>
    </property>
   </action>
   <action name="action270_flip">
@@ -681,7 +668,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>270 flipud</string>
+    <string>270 flip</string>
    </property>
   </action>
   <action name="action180">

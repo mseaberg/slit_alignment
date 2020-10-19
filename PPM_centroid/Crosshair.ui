@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>504</width>
-    <height>105</height>
+    <height>217</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -20,7 +20,7 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0" rowspan="2">
+   <item row="1" column="0">
     <widget class="QPushButton" name="redButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -58,8 +58,24 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="4" rowspan="2" colspan="2">
-    <widget class="QLabel" name="redCircleLabel">
+   <item row="1" column="3">
+    <widget class="QLineEdit" name="red_y">
+     <property name="minimumSize">
+      <size>
+       <width>75</width>
+       <height>20</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>75</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="5">
+    <widget class="QLabel" name="blueCircleLabel">
      <property name="minimumSize">
       <size>
        <width>100</width>
@@ -71,7 +87,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
+   <item row="1" column="2">
     <widget class="QLineEdit" name="red_x">
      <property name="minimumSize">
       <size>
@@ -90,8 +106,8 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="2">
-    <widget class="QLineEdit" name="red_y">
+   <item row="4" column="3">
+    <widget class="QLineEdit" name="blue_y">
      <property name="minimumSize">
       <size>
        <width>75</width>
@@ -106,7 +122,49 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="3">
+   <item row="1" column="5">
+    <widget class="QLabel" name="redCircleLabel">
+     <property name="minimumSize">
+      <size>
+       <width>100</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Diameter (mm)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="7">
+    <widget class="QLabel" name="distanceLabel">
+     <property name="minimumSize">
+      <size>
+       <width>250</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Distance between crosshairs: 0 mm</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="4">
+    <widget class="QPushButton" name="blueCircleButton">
+     <property name="minimumSize">
+      <size>
+       <width>80</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Show Circle</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="4">
     <widget class="QPushButton" name="redCircleButton">
      <property name="minimumSize">
       <size>
@@ -122,7 +180,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="5">
+   <item row="1" column="6">
     <widget class="QLineEdit" name="redCircleDiameter">
      <property name="minimumSize">
       <size>
@@ -138,7 +196,33 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0" rowspan="2">
+   <item row="4" column="2">
+    <widget class="QLineEdit" name="blue_x">
+     <property name="minimumSize">
+      <size>
+       <width>75</width>
+       <height>20</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>75</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="6">
+    <widget class="QLineEdit" name="blueCircleDiameter">
+     <property name="maximumSize">
+      <size>
+       <width>75</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
     <widget class="QPushButton" name="blueButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -173,90 +257,6 @@
      </property>
      <property name="checkable">
       <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="4" rowspan="2" colspan="2">
-    <widget class="QLabel" name="blueCircleLabel">
-     <property name="minimumSize">
-      <size>
-       <width>100</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Diameter (mm)</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="blue_x">
-     <property name="minimumSize">
-      <size>
-       <width>75</width>
-       <height>20</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>75</width>
-       <height>16777215</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2">
-    <widget class="QLineEdit" name="blue_y">
-     <property name="minimumSize">
-      <size>
-       <width>75</width>
-       <height>20</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>75</width>
-       <height>16777215</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="3">
-    <widget class="QPushButton" name="blueCircleButton">
-     <property name="minimumSize">
-      <size>
-       <width>80</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Show Circle</string>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="5">
-    <widget class="QLineEdit" name="blueCircleDiameter">
-     <property name="maximumSize">
-      <size>
-       <width>75</width>
-       <height>16777215</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="6">
-    <widget class="QLabel" name="distanceLabel">
-     <property name="minimumSize">
-      <size>
-       <width>250</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Distance between crosshairs: 0 mm</string>
      </property>
     </widget>
    </item>
