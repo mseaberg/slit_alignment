@@ -205,13 +205,14 @@ class RunProcessing(QtCore.QObject):
                 self.data_dict['y_prime'] = wfs_data['y_prime']
 
             # frame rate code
-            now = time.time()
-            dt = (now - self.lastupdate)
-            if dt <= 0:
-                dt = 0.000000000001
-            fps2 = 1.0 / dt
-            self.lastupdate = now
-            self.fps = self.fps * 0.9 + fps2 * 0.1
+            # check if we have less than 10 frames so far
+            num = int(np.min([self.counter+1, 10]))
+
+            # calculate frame rate based on past 10 frames
+            if num > 1:
+                self.fps = 1.0/(np.mean(np.diff(self.data_dict['timestamps'][-num:])))
+            else:
+                self.fps = 1.0
             tx = 'Mean Frame Rate:  {fps:.3f} FPS'.format(fps=self.fps)
             self.data_dict['tx'] = tx
 
