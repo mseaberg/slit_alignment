@@ -1,4 +1,4 @@
-from epics import PV
+from epics import PV, caget
 import numpy as np
 import scipy.ndimage.interpolation as interpolate
 import scipy.ndimage as ndimage
@@ -11,6 +11,7 @@ import sys
 import pandas as pd
 from analysis_tools import YagAlign
 from datetime import datetime
+from ophyd import EpicsSignalRO as SignalRO
 
 
 class RunProcessing(QtCore.QObject):
@@ -19,6 +20,11 @@ class RunProcessing(QtCore.QObject):
     def __init__(self, imager_prefix, data_dict, averageWidget, wfs_name=None, threshold=None, focusFOV=10, fraction=1, focus_z=0, displayWidget=None):
         super(RunProcessing, self).__init__()
 
+        # read file with PV names
+        self.pv_names = self.read_pv_names('/reg/neh/home/seaberg/Commissioning_Tools/PPM_centroid/epics_pvs.txt')
+
+        self.num_pvs = len(self.pv_names)
+        
         # get wavefront sensor (may be None)
         self.wfs_name = wfs_name
         self.focusFOV = focusFOV
@@ -60,11 +66,38 @@ class RunProcessing(QtCore.QObject):
         # initialize dictionary to pass for plotting
         self.data_dict = data_dict
 
+        self.epics_signals = {}
+
+        # add pv's to data_dict
+        for name in self.pv_names:
+            tempSignal = SignalRO(name)
+            try:
+                tempSignal.wait_for_connection()
+                self.epics_signals[name] = tempSignal
+                self.data_dict[name] = np.full(1024, np.nan, dtype=float)
+                self.data_dict['key_list'].append(name)
+            except TimeoutError:
+                print('could not connect to %s' % name)
+                self.pv_names.remove(name)
+
+        self.data_dict['cx_ref'] = self.PPM_object.cx_target
+        self.data_dict['cy_ref'] = self.PPM_object.cy_target
+
         self.counter = self.data_dict['counter']
 
         #### Start  #####################
         self._update()
-    
+
+    def read_pv_names(self, filename):
+        # read pv names from the file
+        with open(filename) as f:
+            pv_names = f.readlines()
+
+        # strip the whitespace
+        pv_names = [name.strip() for name in pv_names]
+
+        return pv_names
+
     def set_orientation(self, orientation):
         self.PPM_object.set_orientation(orientation)
 
@@ -108,6 +141,14 @@ class RunProcessing(QtCore.QObject):
             self.running_average('wy', 'wy_smooth')
             self.update_1d_data('timestamps', self.PPM_object.time_stamp)
 
+            # update pv's
+            for name in self.pv_names:
+                #self.update_1d_data(name, PV(name).get())
+                #self.update_1d_data(name, self.epics_signals[name].read()[name]['value'])
+                self.update_1d_data(name, self.epics_signals[name].get())
+                #self.update_1d_data(name, PV(name).value)
+                #self.update_1d_data(name, caget(name))
+
             # get lineouts
             lineout_x = self.PPM_object.x_lineout
             lineout_y = self.PPM_object.y_lineout
@@ -141,8 +182,9 @@ class RunProcessing(QtCore.QObject):
 
             # wavefront sensing
             if self.WFS_object is not None:
+                
                 wfs_data, wfs_param = self.PPM_object.retrieve_wavefront(self.WFS_object, focusFOV=focusFOV, focus_z=focus_z)
-
+                
                 self.data_dict['F0'] = wfs_data['F0']
                 self.data_dict['focus'] = wfs_data['focus']
                 self.data_dict['wave'] = wfs_data['wave']
@@ -161,7 +203,6 @@ class RunProcessing(QtCore.QObject):
                 self.data_dict['y_res'] = wfs_data['y_res']
                 self.data_dict['x_prime'] = wfs_data['x_prime']
                 self.data_dict['y_prime'] = wfs_data['y_prime']
-
 
             # frame rate code
             now = time.time()

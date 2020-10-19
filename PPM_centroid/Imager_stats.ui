@@ -18,7 +18,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>300</width>
+    <width>500</width>
     <height>16777215</height>
    </size>
   </property>
@@ -155,6 +155,23 @@
        <widget class="QLineEdit" name="intensityRMSLineEdit"/>
       </item>
      </layout>
+     <zorder>xWidthRMSLineEdit</zorder>
+     <zorder>yWidthLabel</zorder>
+     <zorder>xWidthLabel</zorder>
+     <zorder>yWidthRMSLineEdit</zorder>
+     <zorder>yCentroidLabel</zorder>
+     <zorder>yCentroidRMSLineEdit</zorder>
+     <zorder>label_2</zorder>
+     <zorder>xCentroidRMSLineEdit</zorder>
+     <zorder>label</zorder>
+     <zorder>xCentroidLabel</zorder>
+     <zorder>label_3</zorder>
+     <zorder>intensityRMSLineEdit</zorder>
+     <zorder>xCentroidLineEdit</zorder>
+     <zorder>yCentroidLineEdit</zorder>
+     <zorder>xWidthLineEdit</zorder>
+     <zorder>yWidthLineEdit</zorder>
+     <zorder>intensityLineEdit</zorder>
     </widget>
    </item>
    <item row="1" column="0">

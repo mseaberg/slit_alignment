@@ -269,8 +269,13 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
         self.color = QtCore.Qt.green
         self.num = int(self.nImagesLineEdit.text())
 
+        self.thickness = 8
+
         self.circle = QtWidgets.QGraphicsEllipseItem(0, 0, 0, 0)
-        self.circle.setPen(QtGui.QPen(self.color, 8, Qt.SolidLine))
+        self.circle.setPen(QtGui.QPen(self.color, self.thickness, Qt.SolidLine))
+
+        self.ref_circle = QtWidgets.QGraphicsEllipseItem(0, 0, 0, 0)
+        self.ref_circle.setPen(QtGui.QPen(QtCore.Qt.white, self.thickness, Qt.SolidLine))
 
     def update_num(self):
         try:
@@ -283,9 +288,10 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
         # get width of the bounding rect
         rect_width = self.image_widget.rect.boundingRect().width()
         # set line thickness to 1% of the viewbox width
-        thickness = rect_width * .01
+        self.thickness = rect_width * .01
         # update lines
-        self.circle.setPen(QtGui.QPen(self.color, thickness, Qt.SolidLine))
+        self.circle.setPen(QtGui.QPen(self.color, self.thickness, Qt.SolidLine))
+        self.ref_circle.setPen(QtGui.QPen(QtCore.Qt.white, self.thickness, Qt.SolidLine))
 
 
     def connect_image(self, image_widget):
@@ -316,10 +322,25 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
         self.intensityLineEdit.setText('%.2f' % intensityMean)
         self.intensityRMSLineEdit.setText('%.2f' % intensityRMS)
 
+        xRef = data['cx_ref']
+        yRef = data['cy_ref']
+
+        distance = np.sqrt((xRef-xCentroidMean)**2 + (yRef-yCentroidMean)**2)
+
+        if distance < 50:
+            self.color = QtCore.Qt.green
+        else:
+            self.color = QtCore.Qt.red
+
         if self.showFitButton.isChecked():
 
             self.circle.setRect(xCentroidMean-xWidthMean, yCentroidMean-yWidthMean,
                     2*xWidthMean, 2*yWidthMean)
+            self.ref_circle.setRect(xRef-xWidthMean, yRef-yWidthMean,
+                    2*xWidthMean, 2*yWidthMean)
+            self.circle.setPen(QtGui.QPen(self.color, self.thickness, Qt.SolidLine))
+            self.ref_circle.setPen(QtGui.QPen(QtCore.Qt.white, self.thickness, Qt.SolidLine))
+
 
     def update_threshold(self):
         try:
@@ -341,9 +362,11 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
 
     def addCircle(self):
         self.image_widget.view.addItem(self.circle)
+        self.image_widget.view.addItem(self.ref_circle)
 
     def removeCircle(self):
         self.image_widget.view.removeItem(self.circle)
+        self.image_widget.view.removeItem(self.ref_circle)
 
 
 class Orientation:
@@ -1240,6 +1263,13 @@ class NewPlot(QPlot, Ui_Plot):
         # initialize plot data
         self.xplotdata = None
         self.yplotdata = None
+        ## font styles
+        self.labelStyle = {'color': '#FFF', 'font-size': '12pt'}
+        self.font = QtGui.QFont()
+        self.font.setPointSize(10)
+        self.font.setFamily('Arial')
+
+        self.update_axes()
 
     def populate_combobox(self, axis_list):
         """
@@ -1296,7 +1326,7 @@ class NewPlot(QPlot, Ui_Plot):
         # calculate bin parameters
         bin_width = (self.maximum - self.minimum) / (self.points - 1)
         dx = bin_width / 2.
-        self.bins = np.linspace(self.minimum - dx, self.maximum + dx, self.points + 1)
+        self.bins = np.linspace(self.minimum - dx, self.maximum + dx, int(self.points) + 1)
         self.binPlot = (self.bins[:-1] + self.bins[1:]) / 2.
 
     def update_axes(self):
@@ -1305,9 +1335,27 @@ class NewPlot(QPlot, Ui_Plot):
         """
         self.xaxis = str(self.xaxis_comboBox.currentText())
         self.yaxis = str(self.yaxis_comboBox.currentText())
-        self.parent.label_plot(self.plot_item, self.xaxis, self.yaxis)
+        self.label_plot(self.plot_item, self.xaxis, self.yaxis)
         # disable re-population of combo boxes by setting the flag to 0.
         self.flag = 0
+
+    def label_plot(self, plot, xlabel, ylabel):
+        """
+        Helper function to set plot labels
+        :param plot: pyqtgraph plot item
+        :param xlabel: x-axis label (str)
+        :param ylabel: y-axis label (str)
+        """
+        xaxis = plot.getAxis('bottom')
+        xaxis.setLabel(text=xlabel,**self.labelStyle)
+        xaxis.tickFont = self.font
+        xaxis.setPen(pg.mkPen('w',width=1))
+        yaxis = plot.getAxis('left')
+        yaxis.setLabel(text=ylabel,**self.labelStyle)
+        yaxis.tickFont = self.font
+        yaxis.setPen(pg.mkPen('w',width=1))
+
+
 
     def update_plot(self, data_dict):
         """
@@ -1317,16 +1365,35 @@ class NewPlot(QPlot, Ui_Plot):
 
         try:
             # if we're starting a new data analysis process, see if we should update combo box
-            if data_dict['iteration'] == 0:
+            if data_dict['counter'] == 0:
                 self.populate_combobox(data_dict['key_list'])
             # get data based on x and y-axis keys
-            xdata = data_dict[self.xaxis]
+
+            if self.xaxis == 'timestamps':
+
+                # get current time
+                now = datetime.now()
+                now_stamp = datetime.timestamp(now)
+                # subtract current time from timestamps
+                time_stamps = data_dict['timestamps'] - now_stamp
+                # mask out invalid data
+                xdata = time_stamps
+            else:
+                xdata = data_dict[self.xaxis]
+
             ydata = data_dict[self.yaxis]
 
             # bin_width = (self.maximum - self.minimum)/(self.points-1)
             # dx = bin_width/2.
             # bins = np.linspace(self.minimum-dx,self.maximum+dx,self.points+1)
             # binPlot = (bins[:-1]+bins[1:])/2.
+
+            # mask out nan's
+
+            mask = np.logical_not(np.isnan(xdata))
+            mask = np.logical_and(mask, np.logical_not(np.isnan(ydata)))
+            xdata = xdata[mask]
+            ydata = ydata[mask]
 
             # figure out which bin each xdata belongs to
             digitized = np.digitize(xdata, self.bins)

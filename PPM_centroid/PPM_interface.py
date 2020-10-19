@@ -21,12 +21,20 @@ import PPM_widgets
 Ui_MainWindow, QMainWindow = loadUiType('PPM_screen.ui')
 
 class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, args=None):
         super(PPM_Interface, self).__init__()
         self.setupUi(self)
 
+        if args is not None:
+            print(args.camera)
+            cam = args.camera
+        else:
+            cam = 'IM1L0'
+
         # button to start calculations
         self.runButton.clicked.connect(self.change_state)
+
+        self.plotButton.clicked.connect(self.make_new_plot)
         # method to save an image. Maybe replace and/or supplement this with image "recording" in the future
         self.actionSave.triggered.connect(self.save_image)
         # open alignment screen for calculating center and pixel size
@@ -160,30 +168,54 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         }
 
         # initialize line combo box
-        self.line = 'L0'
         self.lineComboBox.addItems(self.line_list)
 
+        self.line = None
+        valid_cam = False
+        # figure out which line
+        for key in self.imager_dict.keys():
+            if cam in self.imager_dict[key]:
+                self.line = key
+                valid_cam = True
+        #if self.line is None:
+        #    self.line = 'L0'
+
+        line_index = self.line_list.index(self.line)
+
         # initialize imager list and imager
-        self.imager_list = self.imager_dict['L0']
-        self.imager = self.imager_list[0]
+        #self.imager_list = self.imager_dict['L0']
+        self.imager_list = self.imager_dict[self.line]
+        if valid_cam:
+            self.imager = cam
+        #self.imager = self.imager_list[0]
+        cam_index = self.imager_list.index(cam)
+        print(cam_index)
+
 
         # set wavefront sensor attribute
         self.wfs_name = None
 
         # make sure this initializes properly
-        self.imagerpv_list = self.imagerpv_dict['L0']
-        self.imagerpv = self.imagerpv_list[0]
+        self.imagerpv_list = self.imagerpv_dict[self.line]
+        self.imagerpv = self.imagerpv_list[cam_index]
         self.imagerComboBox.clear()
         self.imagerComboBox.addItems(self.imager_list)
 
         # more initialization...
-        self.change_line(0)
-
+        self.lineComboBox.setCurrentIndex(line_index)
+        self.imagerComboBox.setCurrentIndex(cam_index)
         # disable wavefront checkbox by default since IM1L0 doesn't have a WFS
         self.wavefrontCheckBox.setEnabled(False)
 
         # initialize registration object
         self.processing = None
+
+        self.plots = []
+
+    def make_new_plot(self):
+        plot_window = PPM_widgets.NewPlot(self)
+        plot_window.show()
+        self.plots.append(plot_window)
 
     def uncheck_all(self):
         """
@@ -371,6 +403,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['wy_smooth'] = -np.ones(N)
         self.data_dict['timestamps'] = -np.ones(N)
         self.data_dict['counter'] = 0.
+        self.data_dict['counters'] = np.flipud(np.linspace(0,1023,1024))
         self.data_dict['pixSize'] = 0.0
         self.data_dict['lineout_x'] = np.zeros(100)
         self.data_dict['lineout_y'] = np.zeros(100)
@@ -380,6 +413,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['fit_y'] = np.zeros(100)
         self.data_dict['x'] = np.linspace(-1024, 1023, 100)
         self.data_dict['y'] = np.linspace(-1024, 1023, 100)
+        self.data_dict['cx_ref'] = 0
+        self.data_dict['cy_ref'] = 0
 
         # wavefront sensor data
         self.data_dict['z_x'] = -np.ones(N)
@@ -394,6 +429,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_dict['y_res'] = np.zeros(100)
         self.data_dict['x_prime'] = np.linspace(-1024, 1023, 100)
         self.data_dict['y_prime'] = np.linspace(-1024, 1023, 100)
+        self.data_dict['key_list'] = ['timestamps','cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
+                'rms_y', 'intensity']
 
     def change_state(self):
         """
@@ -414,6 +451,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                 fraction = float(self.wfsControls.fractionLineEdit.text())
             except ValueError:
                 fraction = 1
+
+            # reset data dict here for now. Eventually we could check if we're moving to a new imager or not or something...
+            self.reset_data_dict()
 
             # initialize processing object. This really needs a dictionary as input...
             self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name,
@@ -623,5 +663,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         wfs_dict['rms_y'] = data_dict['rms_y']
 
         # update stats values
-        self.imagerStats.update_stats(stats_dict)
-        self.wfsStats.update_stats(wfs_dict)
+        self.imagerStats.update_stats(data_dict)
+        self.wfsStats.update_stats(data_dict)
+
+        for plot in self.plots:
+            plot.update_plot(self.data_dict)
