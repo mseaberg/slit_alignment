@@ -31,22 +31,28 @@ class WFSDisplay(QDisplayOptions, Ui_DisplayOptions):
         super(WFSDisplay, self).__init__()
         self.setupUi(self)
 
+        # connect callbacks
         self.FOVLineEdit.returnPressed.connect(self.change_FOV)
         self.displayComboBox.currentIndexChanged.connect(self.change_display)
         self.zLineEdit.returnPressed.connect(self.change_z)
         self.imrotLineEdit.returnPressed.connect(self.change_rotation)
-        
+
+        # initialize attributes
         self.FOV = 0
         self.display_choice = ''
         self.focus_z = 0
         self.rotation = 0
 
+        # call all callbacks to set default values
         self.change_FOV()
         self.change_display(0)
         self.change_z()
         self.change_rotation()
 
     def change_z(self):
+        """
+        Method to adjust the viewing plane of the focus based on user input
+        """
         try:
             self.focus_z = float(self.zLineEdit.text())
         except ValueError:
@@ -54,6 +60,9 @@ class WFSDisplay(QDisplayOptions, Ui_DisplayOptions):
             self.zLineEdit.setText('0.0')
 
     def change_rotation(self):
+        """
+        Method to adjust the rotation of the image in case the image isn't lined up with the Talbot pattern
+        """
         try:
             self.rotation = float(self.imrotLineEdit.text())
         except ValueError:
@@ -61,7 +70,9 @@ class WFSDisplay(QDisplayOptions, Ui_DisplayOptions):
             self.imrotLineEdit.setText('0.0')
 
     def change_FOV(self):
-
+        """
+        Method to change the field of view of the focus (interpolated)
+        """
         try:
             self.FOV = float(self.FOVLineEdit.text())
         except ValueError:
@@ -69,8 +80,14 @@ class WFSDisplay(QDisplayOptions, Ui_DisplayOptions):
             self.FOVLineEdit.setText('10.0')
 
     def change_display(self, index):
+        """
+        Method to change the 2D display on the wavefront tab
+        Parameters
+        ----------
+        index: int
+            not used
+        """
         self.display_choice = self.displayComboBox.currentText()
-        print(self.display_choice)
 
 
 class WFSControls(Qwfs, Ui_wfs):
