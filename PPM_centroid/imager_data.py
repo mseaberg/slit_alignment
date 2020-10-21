@@ -184,6 +184,10 @@ class DataHandler:
             for key in wfs_array_keys:
                 self.data_dict[key] = wfs_data[key]
 
+        else:
+            for key in self.stripchart_wfs_keys:
+                self.update_1d_data(key, np.nan)
+
         # update running averages
         for key in self.stripchart_smooth_keys:
             self.running_average(key, key+'_smooth')

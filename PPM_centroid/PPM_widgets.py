@@ -1194,11 +1194,16 @@ class StripChart:
 
         # loop through datasets
         for key, value in data.items():
+
             # filter data with mask
             filtered_value = value[mask]
+
+            # find any nan's in the values
+            plot_mask = np.logical_not(np.isnan(filtered_value))
+
             try:
                 # set plot data
-                self.lines[key].setData(time_stamps, filtered_value)
+                self.lines[key].setData(time_stamps[plot_mask], filtered_value[plot_mask])
             except KeyError:
                 # catch exceptions related to the wrong key
                 print('Data had the wrong name')
