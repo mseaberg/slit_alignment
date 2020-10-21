@@ -17,6 +17,7 @@ import warnings
 from processing_module import RunProcessing
 from Image_registration_epics import App
 import PPM_widgets
+from imager_data import DataHandler
 
 Ui_MainWindow, QMainWindow = loadUiType('PPM_screen.ui')
 
@@ -121,9 +122,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # make a list of all the plots
         self.all_plots = [self.centroid_plot, self.width_plot, self.focus_plot, self.rms_plot]
 
-        # initialize data dictionary
-        self.data_dict = {}
-        self.reset_data_dict()
+        # initialize data handler
+        self.data_handler = DataHandler()
 
         # list of beamlines
         self.line_list = ['L0', 'L1', 'K0', 'K1', 'K2', 'K3', 'K4']
@@ -379,58 +379,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.imagerpv = self.imagerpv_list[index]
         self.imagerControls.change_imager(self.imagerpv)
         self.wfsControls.change_wfs(self.wfs_name)
-        # reset data_dict
-        self.reset_data_dict()
+        # uninitialize data handler
+        self.data_handler.uninitialize()
         self.load_orientation()
-
-    def reset_data_dict(self):
-        """
-        Method to reset the data. This is called when a new imager is selected for instance.
-        This should really be cleaned up so that it's easier to add new items to the data dictionary. Basically
-        just need to categorize different types of data based on array size in terms of how to initialize them. This
-        could be defined in a file.
-        """
-        N = 1024
-        self.data_dict['im0'] = np.zeros((1024,1024))
-        self.data_dict['cx'] = -np.ones(N)
-        self.data_dict['cy'] = -np.ones(N)
-        self.data_dict['wx'] = -np.ones(N)
-        self.data_dict['wy'] = -np.ones(N)
-        self.data_dict['intensity'] = -np.ones(N)
-        self.data_dict['cx_smooth'] = -np.ones(N)
-        self.data_dict['cy_smooth'] = -np.ones(N)
-        self.data_dict['wx_smooth'] = -np.ones(N)
-        self.data_dict['wy_smooth'] = -np.ones(N)
-        self.data_dict['timestamps'] = -np.ones(N)
-        self.data_dict['counter'] = 0.
-        self.data_dict['counters'] = np.flipud(np.linspace(0,1023,1024))
-        self.data_dict['pixSize'] = 0.0
-        self.data_dict['lineout_x'] = np.zeros(100)
-        self.data_dict['lineout_y'] = np.zeros(100)
-        self.data_dict['projection_x'] = np.zeros(100)
-        self.data_dict['projection_y'] = np.zeros(100)
-        self.data_dict['fit_x'] = np.zeros(100)
-        self.data_dict['fit_y'] = np.zeros(100)
-        self.data_dict['x'] = np.linspace(-1024, 1023, 100)
-        self.data_dict['y'] = np.linspace(-1024, 1023, 100)
-        self.data_dict['cx_ref'] = 0
-        self.data_dict['cy_ref'] = 0
-
-        # wavefront sensor data
-        self.data_dict['z_x'] = -np.ones(N)
-        self.data_dict['z_y'] = -np.ones(N)
-        self.data_dict['z_x_smooth'] = -np.ones(N)
-        self.data_dict['z_y_smooth'] = -np.ones(N)
-        self.data_dict['rms_x'] = -np.ones(N)
-        self.data_dict['rms_y'] = -np.ones(N)
-        self.data_dict['rms_x_smooth'] = -np.ones(N)
-        self.data_dict['rms_y_smooth'] = -np.ones(N)
-        self.data_dict['x_res'] = np.zeros(100)
-        self.data_dict['y_res'] = np.zeros(100)
-        self.data_dict['x_prime'] = np.linspace(-1024, 1023, 100)
-        self.data_dict['y_prime'] = np.linspace(-1024, 1023, 100)
-        self.data_dict['key_list'] = ['timestamps','cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
-                'rms_y', 'intensity']
 
     def change_state(self):
         """
@@ -452,11 +403,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             except ValueError:
                 fraction = 1
 
-            # reset data dict here for now. Eventually we could check if we're moving to a new imager or not or something...
-            self.reset_data_dict()
-
             # initialize processing object. This really needs a dictionary as input...
-            self.processing = RunProcessing(self.imagerpv, self.data_dict, self.averageWidget, wfs_name=wfs_name,
+            self.processing = RunProcessing(self.imagerpv, self.data_handler, self.averageWidget, wfs_name=wfs_name,
                                             threshold=self.imagerStats.get_threshold(), focusFOV=self.displayWidget.FOV, fraction=fraction, focus_z=self.displayWidget.focus_z, displayWidget=self.displayWidget)
 
             # find out what the FOV of the screen is
@@ -584,7 +532,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             self.thread.quit()
             self.thread.wait()
 
-    def update_plots(self, data_dict):
+    def update_plots(self):
         """
         Method to update all the plots. Would be nice to find a way to make this less explicit. One idea would be
         to pass the dictionary keys into the plots when they are first initialized. Seems like passing the dictionary
@@ -595,6 +543,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         data_dict: dict
             This is where all the data to display is stored
         """
+
+        data_dict = self.data_handler.data_dict
 
         x = data_dict['x']
         y = data_dict['y']
@@ -646,21 +596,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.width_plot.update_plots(data_dict['timestamps'], x=data_dict['wx'], y=data_dict['wy'], x_smooth=data_dict['wx_smooth'], y_smooth=data_dict['wy_smooth'])
 
         self.label.setText(data_dict['tx'])
-
-        # dict for stats. This probably isn't needed, should just pass in full data_dict
-        stats_dict = {}
-        stats_dict['cx'] = data_dict['cx']
-        stats_dict['cy'] = data_dict['cy']
-        stats_dict['wx'] = data_dict['wx']
-        stats_dict['wy'] = data_dict['wy']
-        stats_dict['intensity'] = data_dict['intensity']
-
-        # dict for wfs. This probably isn't needed, should just pass in full data_dict
-        wfs_dict = {}
-        wfs_dict['z_x'] = data_dict['z_x']
-        wfs_dict['z_y'] = data_dict['z_y']
-        wfs_dict['rms_x'] = data_dict['rms_x']
-        wfs_dict['rms_y'] = data_dict['rms_y']
 
         # update stats values
         self.imagerStats.update_stats(data_dict)

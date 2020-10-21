@@ -12,12 +12,13 @@ import pandas as pd
 from analysis_tools import YagAlign
 from datetime import datetime
 from ophyd import EpicsSignalRO as SignalRO
+from imager_data import DataHandler
 
 
 class RunProcessing(QtCore.QObject):
-    sig = QtCore.pyqtSignal(dict)
+    sig = QtCore.pyqtSignal()
 
-    def __init__(self, imager_prefix, data_dict, averageWidget, wfs_name=None, threshold=None, focusFOV=10, fraction=1, focus_z=0, displayWidget=None):
+    def __init__(self, imager_prefix, data_handler, averageWidget, wfs_name=None, threshold=0.1, focusFOV=10, fraction=1, focus_z=0, displayWidget=None):
         super(RunProcessing, self).__init__()
 
         # read file with PV names
@@ -30,12 +31,11 @@ class RunProcessing(QtCore.QObject):
         self.focusFOV = focusFOV
         self.focus_z = focus_z
 
+        # set wavefront display widget as attribute
         self.displayWidget = displayWidget
 
-        if threshold is None:
-            self.threshold = 0.1
-        else:
-            self.threshold = threshold
+        # set threshold attribute (defaults to 0.1)
+        self.threshold = threshold
 
         if wfs_name is not None:
             # need to make fraction more accessible...
@@ -46,10 +46,14 @@ class RunProcessing(QtCore.QObject):
         # PPM object for image acquisition and processing
         self.PPM_object = optics.PPM_Device(imager_prefix, average=averageWidget, threshold=self.threshold)
 
+        # downsampling is hard-coded here for now
         downsample = 3
 
+        # calculate downsampled array sizes
         Nd = int(self.PPM_object.N / (2 ** downsample))
         Md = int(self.PPM_object.M / (2 ** downsample))
+
+        # Legendre order is hard-coded here for now
         order = 16
 
         ###### set up Legendre basis
@@ -63,40 +67,20 @@ class RunProcessing(QtCore.QObject):
         self.fps = 0.
         self.lastupdate = time.time()
 
-        # initialize dictionary to pass for plotting
-        self.data_dict = data_dict
+        # initialize data handler
+        self.data_handler = data_handler
 
-        self.epics_signals = {}
-
-        # add pv's to data_dict
-        for name in self.pv_names:
-            tempSignal = SignalRO(name)
-            try:
-                tempSignal.wait_for_connection()
-                self.epics_signals[name] = tempSignal
-                self.data_dict[name] = np.full(1024, np.nan, dtype=float)
-                self.data_dict['key_list'].append(name)
-            except TimeoutError:
-                print('could not connect to %s' % name)
-                self.pv_names.remove(name)
-
-        self.data_dict['cx_ref'] = self.PPM_object.cx_target
-        self.data_dict['cy_ref'] = self.PPM_object.cy_target
+        # check if data handler is initialized
+        if self.data_handler.initialized:
+            # just update PPM object
+            self.data_handler.update_imager(self.PPM_object)
+        else:
+            self.data_handler.initialize(self.PPM_object)
 
         self.counter = self.data_dict['counter']
 
         #### Start  #####################
         self._update()
-
-    def read_pv_names(self, filename):
-        # read pv names from the file
-        with open(filename) as f:
-            pv_names = f.readlines()
-
-        # strip the whitespace
-        pv_names = [name.strip() for name in pv_names]
-
-        return pv_names
 
     def set_orientation(self, orientation):
         self.PPM_object.set_orientation(orientation)
@@ -105,13 +89,6 @@ class RunProcessing(QtCore.QObject):
         width = self.PPM_object.FOV
         height = np.copy(width)
         return width, height
-
-    def update_1d_data(self, dict_key, new_value):
-        self.data_dict[dict_key] = np.roll(self.data_dict[dict_key], -1)
-        self.data_dict[dict_key][-1] = new_value
-
-    def running_average(self, source_key, dest_key):
-        self.data_dict[dest_key] = pd.Series(self.data_dict[source_key]).rolling(10, min_periods=1).mean().values
 
     def _update(self):
 
@@ -129,80 +106,13 @@ class RunProcessing(QtCore.QObject):
             # get latest image
             self.PPM_object.get_image(angle=angle)
 
-            # update dictionary
-            self.update_1d_data('cx', self.PPM_object.cx)
-            self.update_1d_data('cy', self.PPM_object.cy)
-            self.update_1d_data('wx', self.PPM_object.wx)
-            self.update_1d_data('wy', self.PPM_object.wy)
-            self.update_1d_data('intensity', self.PPM_object.intensity)
-            self.running_average('cx', 'cx_smooth')
-            self.running_average('cy', 'cy_smooth')
-            self.running_average('wx', 'wx_smooth')
-            self.running_average('wy', 'wy_smooth')
-            self.update_1d_data('timestamps', self.PPM_object.time_stamp)
-
-            # update pv's
-            for name in self.pv_names:
-                #self.update_1d_data(name, PV(name).get())
-                #self.update_1d_data(name, self.epics_signals[name].read()[name]['value'])
-                self.update_1d_data(name, self.epics_signals[name].get())
-                #self.update_1d_data(name, PV(name).value)
-                #self.update_1d_data(name, caget(name))
-
-            # get lineouts
-            lineout_x = self.PPM_object.x_lineout
-            lineout_y = self.PPM_object.y_lineout
-            projection_x = self.PPM_object.x_projection
-            projection_y = self.PPM_object.y_projection
-
-            # gaussian fits
-            try:
-                fit_x = self.PPM_object.amp_x*np.exp(-(self.PPM_object.x - self.PPM_object.cx) ** 2 / 2 / (self.PPM_object.wx / 2.355) ** 2)
-            except RuntimeWarning:
-                fit_x = np.zeros_like(lineout_x)
-            try:
-                fit_y = self.PPM_object.amp_y*np.exp(-(self.PPM_object.y - self.PPM_object.cy) ** 2 / 2 / (self.PPM_object.wy / 2.355) ** 2)
-            except RuntimeWarning:
-                fit_y = np.zeros_like(lineout_y)
-
-            # update dictionary
-            self.data_dict['im1'] = self.PPM_object.profile
-            #self.data_dict['imDummy'] = self.PPM_object.get_dummy_image()
-            #self.data_dict['lineout_x'] = lineout_x/np.max(lineout_x)
-            #self.data_dict['lineout_y'] = lineout_y/np.max(lineout_y)
-            self.data_dict['lineout_x'] = lineout_x
-            self.data_dict['lineout_y'] = lineout_y
-            self.data_dict['projection_x'] = projection_x
-            self.data_dict['projection_y'] = projection_y
-            self.data_dict['fit_x'] = fit_x
-            self.data_dict['fit_y'] = fit_y
-            self.data_dict['x'] = self.PPM_object.x
-            self.data_dict['y'] = self.PPM_object.y
-
-
             # wavefront sensing
             if self.WFS_object is not None:
-                
                 wfs_data, wfs_param = self.PPM_object.retrieve_wavefront(self.WFS_object, focusFOV=focusFOV, focus_z=focus_z)
-                
-                self.data_dict['F0'] = wfs_data['F0']
-                self.data_dict['focus'] = wfs_data['focus']
-                self.data_dict['wave'] = wfs_data['wave']
-                self.data_dict['xf'] = wfs_data['xf']
-                self.data_dict['focus_horizontal'] = wfs_data['focus_horizontal']
-                self.data_dict['focus_vertical'] = wfs_data['focus_vertical']
-                self.update_1d_data('z_x', wfs_data['z2x'])
-                self.update_1d_data('z_y', wfs_data['z2y'])
-                self.update_1d_data('rms_x', np.std(wfs_data['x_res']))
-                self.update_1d_data('rms_y', np.std(wfs_data['y_res']))
-                self.running_average('z_x', 'z_x_smooth')
-                self.running_average('z_y', 'z_y_smooth')
-                self.running_average('rms_x', 'rms_x_smooth')
-                self.running_average('rms_y', 'rms_y_smooth')
-                self.data_dict['x_res'] = wfs_data['x_res']
-                self.data_dict['y_res'] = wfs_data['y_res']
-                self.data_dict['x_prime'] = wfs_data['x_prime']
-                self.data_dict['y_prime'] = wfs_data['y_prime']
+            else:
+                wfs_data = None
+
+            self.data_handler.update_data(wfs_data=wfs_data)
 
             # frame rate code
             # check if we have less than 10 frames so far
@@ -217,7 +127,7 @@ class RunProcessing(QtCore.QObject):
             self.data_dict['tx'] = tx
 
             # send data
-            self.sig.emit(self.data_dict)
+            self.sig.emit()
 
             # keep running unless the stop button is pressed
             if self.running:
