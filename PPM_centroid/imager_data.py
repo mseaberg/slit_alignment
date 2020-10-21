@@ -179,7 +179,7 @@ class DataHandler:
         # get wfs data
         if wfs_data is not None:
             for key in self.stripchart_wfs_keys:
-                self.data_dict[key] = self.update_1d_data(key, wfs_data[key])
+                self.update_1d_data(key, wfs_data[key])
 
             for key in wfs_array_keys:
                 self.data_dict[key] = wfs_data[key]
