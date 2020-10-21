@@ -1182,7 +1182,7 @@ class StripChart:
         """
 
         # filter out any data that doesn't exist yet
-        mask = time_stamps > 0
+        mask = np.logical_not(np.isnan(time_stamps))
 
         # get current time
         now = datetime.now()
