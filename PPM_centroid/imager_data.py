@@ -188,6 +188,20 @@ class DataHandler:
         for key in self.stripchart_smooth_keys:
             self.running_average(key, key+'_smooth')
 
+        self.data_dict['counter'] += 1
+
+        # calculate frame rate
+        # check if we have less than 10 frames so far
+        num = int(np.min([self.data_dict['counter'], 10]))
+
+        # calculate frame rate based on past 10 frames
+        if num > 1:
+            fps = 1.0/(np.mean(np.diff(self.data_dict['timestamps'][-num:])))
+        else:
+            fps = 1.0
+        tx = 'Mean Frame Rate:  {fps:.3f} FPS'.format(fps=fps)
+        self.data_dict['tx'] = tx
+
     def update_wfs_data(self, wfs_data):
         for key in wfs_data.keys():
             if key in self.image_keys:

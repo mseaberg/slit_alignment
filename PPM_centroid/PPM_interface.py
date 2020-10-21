@@ -493,7 +493,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # make sure a file name was chosen
         if not filename[0] == '':
             # normalize the image and write to file
-            im = App.normalize_image(self.data_dict['im1'])
+            im = App.normalize_image(self.data_handler.data_dict['profile'])
             filename = App.get_filename(filename)
             imageio.imwrite(filename,im)
         print(filename)
@@ -548,7 +548,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         x = data_dict['x']
         y = data_dict['y']
-        image_data = data_dict['im1']
+        image_data = data_dict['profile']
         xlineout = data_dict['lineout_x']
         ylineout = data_dict['lineout_y']
         xprojection = data_dict['projection_x']
@@ -588,9 +588,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             self.focus_plot.update_plots(data_dict['timestamps'], x=data_dict['z_x'], y=data_dict['z_y'], x_smooth=data_dict['z_x_smooth'], y_smooth=data_dict['z_y_smooth'])
             self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['rms_x'], y=data_dict['rms_y'], x_smooth=data_dict['rms_x_smooth'], y_smooth=data_dict['rms_y_smooth'])
 
-        # update data. Should check if this is ever used anywhere...
-        self.data_dict = data_dict
-
         # update centroid plots
         self.centroid_plot.update_plots(data_dict['timestamps'], x=data_dict['cx'], y=data_dict['cy'], x_smooth=data_dict['cx_smooth'], y_smooth=data_dict['cy_smooth'])
         self.width_plot.update_plots(data_dict['timestamps'], x=data_dict['wx'], y=data_dict['wy'], x_smooth=data_dict['wx_smooth'], y_smooth=data_dict['wy_smooth'])
@@ -602,4 +599,4 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.wfsStats.update_stats(data_dict)
 
         for plot in self.plots:
-            plot.update_plot(self.data_dict)
+            plot.update_plot(data_dict)

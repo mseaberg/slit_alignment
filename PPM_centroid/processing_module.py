@@ -21,11 +21,6 @@ class RunProcessing(QtCore.QObject):
     def __init__(self, imager_prefix, data_handler, averageWidget, wfs_name=None, threshold=0.1, focusFOV=10, fraction=1, focus_z=0, displayWidget=None):
         super(RunProcessing, self).__init__()
 
-        # read file with PV names
-        self.pv_names = self.read_pv_names('/reg/neh/home/seaberg/Commissioning_Tools/PPM_centroid/epics_pvs.txt')
-
-        self.num_pvs = len(self.pv_names)
-        
         # get wavefront sensor (may be None)
         self.wfs_name = wfs_name
         self.focusFOV = focusFOV
@@ -77,8 +72,6 @@ class RunProcessing(QtCore.QObject):
         else:
             self.data_handler.initialize(self.PPM_object)
 
-        self.counter = self.data_dict['counter']
-
         #### Start  #####################
         self._update()
 
@@ -114,25 +107,12 @@ class RunProcessing(QtCore.QObject):
 
             self.data_handler.update_data(wfs_data=wfs_data)
 
-            # frame rate code
-            # check if we have less than 10 frames so far
-            num = int(np.min([self.counter+1, 10]))
-
-            # calculate frame rate based on past 10 frames
-            if num > 1:
-                self.fps = 1.0/(np.mean(np.diff(self.data_dict['timestamps'][-num:])))
-            else:
-                self.fps = 1.0
-            tx = 'Mean Frame Rate:  {fps:.3f} FPS'.format(fps=self.fps)
-            self.data_dict['tx'] = tx
-
             # send data
             self.sig.emit()
 
             # keep running unless the stop button is pressed
             if self.running:
                 QtCore.QTimer.singleShot(500, self._update)
-                self.counter += 1
             else:
                 self.PPM_object.reset_camera()
 
