@@ -588,6 +588,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             self.focus_plot.update_plots(data_dict['timestamps'], x=data_dict['z_x'], y=data_dict['z_y'], x_smooth=data_dict['z_x_smooth'], y_smooth=data_dict['z_y_smooth'])
             self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['rms_x'], y=data_dict['rms_y'], x_smooth=data_dict['rms_x_smooth'], y_smooth=data_dict['rms_y_smooth'])
 
+            self.wfsStats.update_stats(data_dict)
+
         # update centroid plots
         self.centroid_plot.update_plots(data_dict['timestamps'], x=data_dict['cx'], y=data_dict['cy'], x_smooth=data_dict['cx_smooth'], y_smooth=data_dict['cy_smooth'])
         self.width_plot.update_plots(data_dict['timestamps'], x=data_dict['wx'], y=data_dict['wy'], x_smooth=data_dict['wx_smooth'], y_smooth=data_dict['wy_smooth'])
@@ -596,7 +598,6 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         # update stats values
         self.imagerStats.update_stats(data_dict)
-        self.wfsStats.update_stats(data_dict)
 
         for plot in self.plots:
             plot.update_plot(data_dict)
