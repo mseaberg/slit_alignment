@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from ophyd import EpicsSignalRO as SignalRO
+from ophyd.signal import ReadTimeoutError
 
 
 class DataHandler:
@@ -109,6 +110,16 @@ class DataHandler:
         could be defined in a file.
         """
 
+        # reset data dict
+        self.data_dict = {}
+       
+        # destroy old epics signals
+        for key in self.epics_signals:
+            self.epics_signals[key].destroy()
+
+        # reinitialize epics signals
+        self.epics_signals = {}
+
         # initialize timestamps
         self.data_dict[self.timestamp_key] = np.full(self.N, np.nan, dtype=float)
 
@@ -152,7 +163,7 @@ class DataHandler:
         # update keys that are allowed for plotting
         self.key_list = ['timestamps','cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
                 'rms_y', 'intensity']
-
+        
         # connect to epics signals and add to data_dict
         self.connect_epics_pvs()
 
@@ -177,7 +188,11 @@ class DataHandler:
 
         # update pv's
         for key in self.pv_keys:
-            self.update_1d_data(key, self.epics_signals[key].get())
+            try:
+                new_data = self.epics_signals[key].value
+                self.update_1d_data(key, new_data)
+            except ReadTimeoutError:
+                self.update_1d_data(key, np.nan)
 
         # get non-stripchart data
         for key in standalone_keys:
@@ -238,12 +253,14 @@ class DataHandler:
     def connect_epics_pvs(self):
         # add pv's to data_dict
         for key in self.pv_keys:
-            tempSignal = SignalRO(key)
+            tempSignal = SignalRO(key, auto_monitor=True)
             try:
                 tempSignal.wait_for_connection()
+                print('connected to %s' % key)
                 self.epics_signals[key] = tempSignal
                 self.data_dict[key] = np.full(self.N, np.nan, dtype=float)
                 self.key_list.append(key)
             except TimeoutError:
                 print('could not connect to %s' % key)
                 self.pv_keys.remove(key)
+

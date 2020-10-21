@@ -20,6 +20,7 @@ class RunProcessing(QtCore.QObject):
 
     def __init__(self, imager_prefix, data_handler, averageWidget, wfs_name=None, threshold=0.1, focusFOV=10, fraction=1, focus_z=0, displayWidget=None):
         super(RunProcessing, self).__init__()
+        #QtCore.QThread.__init__(self)
 
         # get wavefront sensor (may be None)
         self.wfs_name = wfs_name
@@ -48,6 +49,12 @@ class RunProcessing(QtCore.QObject):
         # initialize data handler
         self.data_handler = data_handler
 
+        
+        #### Start  #####################
+        # self._update()
+
+    def run(self):
+       
         # check if data handler is initialized
         if self.data_handler.initialized:
             # just update PPM object
@@ -55,10 +62,6 @@ class RunProcessing(QtCore.QObject):
         else:
             self.data_handler.initialize(self.PPM_object)
 
-        #### Start  #####################
-        # self._update()
-
-    def start_processing(self):
         # downsampling is hard-coded here for now
         downsample = 3
 
