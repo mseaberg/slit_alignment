@@ -41,12 +41,6 @@ class RunProcessing(QtCore.QObject):
         # PPM object for image acquisition and processing
         self.PPM_object = optics.PPM_Device(imager_prefix, average=averageWidget, threshold=self.threshold)
 
-
-
-
-        
-        # self.running = True
-
         # frame rate initialization
         self.fps = 0.
         self.lastupdate = time.time()

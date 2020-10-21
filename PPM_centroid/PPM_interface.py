@@ -22,6 +22,9 @@ from imager_data import DataHandler
 Ui_MainWindow, QMainWindow = loadUiType('PPM_screen.ui')
 
 class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
+
+    start_sig = QtCore.pyqtSignal()
+
     def __init__(self, parent=None, args=None):
         super(PPM_Interface, self).__init__()
         self.setupUi(self)
@@ -407,6 +410,11 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             self.processing = RunProcessing(self.imagerpv, self.data_handler, self.averageWidget, wfs_name=wfs_name,
                                             threshold=self.imagerStats.get_threshold(), focusFOV=self.displayWidget.FOV, fraction=fraction, focus_z=self.displayWidget.focus_z, displayWidget=self.displayWidget)
 
+            # connect processing object to plotting function
+            self.processing.sig.connect(self.update_plots)
+
+            self.start_sig.connect(self.processing.start_processing)
+
             # find out what the FOV of the screen is
             width, height = self.processing.get_FOV()
             # set the orientation for processing
@@ -433,14 +441,12 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
             # move the processing object to the new thread
             self.processing.moveToThread(self.thread)
-            self.processing.start_processing()
+            self.start_sig.emit()
+
             # change the button state
             self.runButton.setText('Stop')
             # disable wavefront sensor checkbox until stop is pressed
             self.wavefrontCheckBox.setEnabled(False)
-
-            # connect processing object to plotting function
-            self.processing.sig.connect(self.update_plots)
 
             # disable imager selection until Stop is pressed
             self.lineComboBox.setEnabled(False)
