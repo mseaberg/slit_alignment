@@ -222,23 +222,29 @@ class WFSStats(QwfsStats, Ui_wfsStats):
             self.num = 1
             self.nImagesLineEdit.setText('1')
 
+    def get_filtered(self, data):
+        # get most recent data
+        recent_data = data[-self.num:]
+        # filter out nan's
+        mask = np.logical_not(np.isnan(recent_data))
+
+        return recent_data[mask]
+
     def update_stats(self, data):
-        xFocusMean = np.mean(data['z_x'][-self.num:])
-        yFocusMean = np.mean(data['z_y'][-self.num:])
-        xFocusRMS = np.std(data['z_x'][-self.num:])
-        yFocusRMS = np.std(data['z_y'][-self.num:])
-        xWidthMean = np.mean(data['rms_x'][-self.num:])
-        yWidthMean = np.mean(data['rms_y'][-self.num:])
-        xWidthRMS = np.std(data['rms_x'][-self.num:])
-        yWidthRMS = np.std(data['rms_y'][-self.num:])
-        self.xFocusLineEdit.setText('%.1f' % xFocusMean)
-        self.yFocusLineEdit.setText('%.1f' % yFocusMean)
-        self.xWidthLineEdit.setText('%.1f' % xWidthMean)
-        self.yWidthLineEdit.setText('%.1f' % yWidthMean)
-        self.xFocusRMSLineEdit.setText('%.2f' % xFocusRMS)
-        self.yFocusRMSLineEdit.setText('%.2f' % yFocusRMS)
-        self.xWidthRMSLineEdit.setText('%.2f' % xWidthRMS)
-        self.yWidthRMSLineEdit.setText('%.2f' % yWidthRMS)
+
+        z_x = self.get_filtered(data['z_x'])
+        z_y = self.get_filtered(data['z_y'])
+        rms_x = self.get_filtered(data['rms_x'])
+        rms_y = self.get_filtered(data['rms_y'])
+
+        self.xFocusLineEdit.setText('%.1f' % np.mean(z_x))
+        self.yFocusLineEdit.setText('%.1f' % np.mean(z_y))
+        self.xWidthLineEdit.setText('%.1f' % np.mean(rms_x))
+        self.yWidthLineEdit.setText('%.1f' % np.mean(rms_y))
+        self.xFocusRMSLineEdit.setText('%.2f' % np.std(z_x))
+        self.yFocusRMSLineEdit.setText('%.2f' % np.std(z_y))
+        self.xWidthRMSLineEdit.setText('%.2f' % np.std(rms_x))
+        self.yWidthRMSLineEdit.setText('%.2f' % np.std(rms_y))
 
     def update_threshold(self):
         try:
@@ -277,6 +283,14 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
         self.ref_circle = QtWidgets.QGraphicsEllipseItem(0, 0, 0, 0)
         self.ref_circle.setPen(QtGui.QPen(QtCore.Qt.white, self.thickness, Qt.SolidLine))
 
+    def get_filtered(self, data):
+        # get most recent data
+        recent_data = data[-self.num:]
+        # filter out nan's
+        mask = np.logical_not(np.isnan(recent_data))
+
+        return recent_data[mask]
+
     def update_num(self):
         try:
             self.num = int(self.nImagesLineEdit.text())
@@ -301,31 +315,33 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
         self.showFitButton.toggled.connect(self.circle_toggled)
 
     def update_stats(self, data):
-        xCentroidMean = np.mean(data['cx'][-self.num:])
-        yCentroidMean = np.mean(data['cy'][-self.num:])
-        xCentroidRMS = np.std(data['cx'][-self.num:])
-        yCentroidRMS = np.std(data['cy'][-self.num:])
-        xWidthMean = np.mean(data['wx'][-self.num:])
-        yWidthMean = np.mean(data['wy'][-self.num:])
-        xWidthRMS = np.std(data['wx'][-self.num:])
-        yWidthRMS = np.std(data['wy'][-self.num:])
-        intensityMean = np.mean(data['intensity'][-self.num])
-        intensityRMS = np.std(data['intensity'][-self.num])
-        self.xCentroidLineEdit.setText('%.1f' % xCentroidMean)
-        self.yCentroidLineEdit.setText('%.1f' % yCentroidMean)
-        self.xWidthLineEdit.setText('%.1f' % xWidthMean)
-        self.yWidthLineEdit.setText('%.1f' % yWidthMean)
-        self.xCentroidRMSLineEdit.setText('%.2f' % xCentroidRMS)
-        self.yCentroidRMSLineEdit.setText('%.2f' % yCentroidRMS)
-        self.xWidthRMSLineEdit.setText('%.2f' % xWidthRMS)
-        self.yWidthRMSLineEdit.setText('%.2f' % yWidthRMS)
-        self.intensityLineEdit.setText('%.2f' % intensityMean)
-        self.intensityRMSLineEdit.setText('%.2f' % intensityRMS)
+
+        cx = self.get_filtered(data['cx'])
+        cy = self.get_filtered(data['cy'])
+        wx = self.get_filtered(data['wx'])
+        wy = self.get_filtered(data['wy'])
+        intensity = self.get_filtered(data['intensity'])
+
+        cx_mean = np.mean(cx)
+        cy_mean = np.mean(cy)
+        wx_mean = np.mean(wx)
+        wy_mean = np.mean(wy)
+
+        self.xCentroidLineEdit.setText('%.1f' % cx_mean)
+        self.yCentroidLineEdit.setText('%.1f' % cy_mean)
+        self.xWidthLineEdit.setText('%.1f' % wx_mean)
+        self.yWidthLineEdit.setText('%.1f' % wy_mean)
+        self.xCentroidRMSLineEdit.setText('%.2f' % np.std(cx))
+        self.yCentroidRMSLineEdit.setText('%.2f' % np.std(cy))
+        self.xWidthRMSLineEdit.setText('%.2f' % np.std(wx))
+        self.yWidthRMSLineEdit.setText('%.2f' % np.std(wy))
+        self.intensityLineEdit.setText('%.2f' % np.mean(intensity))
+        self.intensityRMSLineEdit.setText('%.2f' % np.std(intensity))
 
         xRef = data['cx_ref']
         yRef = data['cy_ref']
 
-        distance = np.sqrt((xRef-xCentroidMean)**2 + (yRef-yCentroidMean)**2)
+        distance = np.sqrt((xRef-cx_mean)**2 + (yRef-cy_mean)**2)
 
         if distance < 50:
             self.color = QtCore.Qt.green
@@ -334,13 +350,12 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
 
         if self.showFitButton.isChecked():
 
-            self.circle.setRect(xCentroidMean-xWidthMean, yCentroidMean-yWidthMean,
-                    2*xWidthMean, 2*yWidthMean)
-            self.ref_circle.setRect(xRef-xWidthMean, yRef-yWidthMean,
-                    2*xWidthMean, 2*yWidthMean)
+            self.circle.setRect(cx_mean-wx_mean, cy_mean-wy_mean,
+                    2*wx_mean, 2*wy_mean)
+            self.ref_circle.setRect(xRef-wx_mean, yRef-wy_mean,
+                    2*wx_mean, 2*wy_mean)
             self.circle.setPen(QtGui.QPen(self.color, self.thickness, Qt.SolidLine))
             self.ref_circle.setPen(QtGui.QPen(QtCore.Qt.white, self.thickness, Qt.SolidLine))
-
 
     def update_threshold(self):
         try:
@@ -375,7 +390,7 @@ class Orientation:
 
         self.orientation = 0
 
-    def change_orientation(orientation):
+    def change_orientation(self, orientation):
         self.orientation = orientation
 
 
