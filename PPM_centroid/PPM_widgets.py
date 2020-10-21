@@ -1232,7 +1232,7 @@ class NewPlot(QPlot, Ui_Plot):
     Class for making AMI-style plots in a separate window
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent, key_list):
         """
         Create NewPlot object
         :param parent: parent is the App object
@@ -1278,7 +1278,7 @@ class NewPlot(QPlot, Ui_Plot):
         self.flag = 1
 
         # populate combo boxes
-        self.populate_combobox(parent.data_dict['key_list'])
+        self.populate_combobox(key_list)
 
         # initialize plot data
         self.xplotdata = None
@@ -1375,9 +1375,7 @@ class NewPlot(QPlot, Ui_Plot):
         yaxis.tickFont = self.font
         yaxis.setPen(pg.mkPen('w',width=1))
 
-
-
-    def update_plot(self, data_dict):
+    def update_plot(self, data_dict, key_list):
         """
         Called from the main GUI when new data comes in.
         :param data_dict: dictionary containing the data to plot
@@ -1386,7 +1384,7 @@ class NewPlot(QPlot, Ui_Plot):
         try:
             # if we're starting a new data analysis process, see if we should update combo box
             if data_dict['counter'] == 0:
-                self.populate_combobox(data_dict['key_list'])
+                self.populate_combobox(key_list)
             # get data based on x and y-axis keys
 
             if self.xaxis == 'timestamps':

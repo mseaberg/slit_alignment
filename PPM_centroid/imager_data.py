@@ -58,11 +58,18 @@ class DataHandler:
         # initialize epics signals
         self.epics_signals = {}
 
+        # update keys that are allowed for plotting
+        self.key_list = ['timestamps', 'cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
+                         'rms_y', 'intensity']
+
         # set initialized to False until we get an imager
         self.initialized = False
 
         # initialize PPM_object to None
         self.imager = None
+
+    def plot_keys(self):
+        return self.key_list
 
     def initialize(self, PPM_object, N=1024):
 
@@ -143,7 +150,7 @@ class DataHandler:
             self.data_dict[key] = np.full(self.N, np.nan, dtype=float)
 
         # update keys that are allowed for plotting
-        self.data_dict['key_list'] = ['timestamps','cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
+        self.key_list = ['timestamps','cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
                 'rms_y', 'intensity']
 
         # connect to epics signals and add to data_dict
@@ -236,7 +243,7 @@ class DataHandler:
                 tempSignal.wait_for_connection()
                 self.epics_signals[key] = tempSignal
                 self.data_dict[key] = np.full(self.N, np.nan, dtype=float)
-                self.data_dict['key_list'].append(key)
+                self.key_list.append(key)
             except TimeoutError:
                 print('could not connect to %s' % key)
                 self.pv_keys.remove(key)

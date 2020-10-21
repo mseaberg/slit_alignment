@@ -213,7 +213,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.plots = []
 
     def make_new_plot(self):
-        plot_window = PPM_widgets.NewPlot(self)
+        plot_window = PPM_widgets.NewPlot(self, self.data_handler.plot_keys())
         plot_window.show()
         self.plots.append(plot_window)
 
@@ -600,4 +600,4 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.imagerStats.update_stats(data_dict)
 
         for plot in self.plots:
-            plot.update_plot(data_dict)
+            plot.update_plot(data_dict, self.data_handler.plot_keys())
