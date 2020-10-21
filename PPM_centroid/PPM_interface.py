@@ -433,6 +433,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
             # move the processing object to the new thread
             self.processing.moveToThread(self.thread)
+            self.processing.start_processing()
             # change the button state
             self.runButton.setText('Stop')
             # disable wavefront sensor checkbox until stop is pressed

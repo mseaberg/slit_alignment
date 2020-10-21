@@ -41,22 +41,11 @@ class RunProcessing(QtCore.QObject):
         # PPM object for image acquisition and processing
         self.PPM_object = optics.PPM_Device(imager_prefix, average=averageWidget, threshold=self.threshold)
 
-        # downsampling is hard-coded here for now
-        downsample = 3
 
-        # calculate downsampled array sizes
-        Nd = int(self.PPM_object.N / (2 ** downsample))
-        Md = int(self.PPM_object.M / (2 ** downsample))
 
-        # Legendre order is hard-coded here for now
-        order = 16
 
-        ###### set up Legendre basis
-        if wfs_name is not None:
-            fit_object = LegendreFit2D(Nd, Md, order)
-            self.PPM_object.add_fit_object(fit_object)
         
-        self.running = True
+        # self.running = True
 
         # frame rate initialization
         self.fps = 0.
@@ -73,6 +62,23 @@ class RunProcessing(QtCore.QObject):
             self.data_handler.initialize(self.PPM_object)
 
         #### Start  #####################
+        # self._update()
+
+    def start_processing(self):
+        # downsampling is hard-coded here for now
+        downsample = 3
+
+        # calculate downsampled array sizes
+        Nd = int(self.PPM_object.N / (2 ** downsample))
+        Md = int(self.PPM_object.M / (2 ** downsample))
+
+        # Legendre order is hard-coded here for now
+        order = 16
+        ###### set up Legendre basis
+        if self.wfs_name is not None:
+            fit_object = LegendreFit2D(Nd, Md, order)
+            self.PPM_object.add_fit_object(fit_object)
+        self.running = True
         self._update()
 
     def set_orientation(self, orientation):
