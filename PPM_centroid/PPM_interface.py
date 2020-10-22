@@ -55,6 +55,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.orientation_actions = [self.action0, self.action90, self.action180, self.action270, 
                 self.action0_flip, self.action90_flip, self.action180_flip, self.action270_flip]
 
+        self.groupBox_3.setObjectName("CentroidStatsGroupBox")
+        self.groupBox_5.setObjectName("WavefrontStatsGroupBox")
+
         # dictionary of QAction objects. Probably this could replace the above list eventually, but it works so won't
         # break it for now...
         self.orientation_dict = {
@@ -562,9 +565,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         wavefront_validity = data_dict['wavefront_is_valid']
 
         if centroid_validity:
-            self.groupBox_3.setStyleSheet("QGroupBox#ColoredGroupBox { border: 1px solid green;}")
+            self.groupBox_3.setStyleSheet("QGroupBox#CentroidStatsGroupBox { border: 2px solid green;}")
         else:
-            self.groupBox_3.setStyleSheet("QGroupBox#ColoredGroupBox { border: 1px solid red;}")
+            self.groupBox_3.setStyleSheet("QGroupBox#CentroidStatsGroupBox { border: 2px solid red;}")
+
+        if wavefront_validity:
+            self.groupBox_5.setStyleSheet("QGroupBox#WavefrontStatsGroupBox { border: 2px solid green;}")
+        else:
+            self.groupBox_5.setStyleSheet("QGroupBox#WavefrontStatsGroupBox { border: 2px solid red;}")
 
         x = data_dict['x']
         y = data_dict['y']
