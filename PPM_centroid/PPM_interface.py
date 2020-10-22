@@ -231,7 +231,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         calib_plot.show()
         self.plots.append(calib_plot)
 
-        calib = Calibration()
+        calib = Calibration(self.data_handler)
         calib.finished.connect(calib_plot.closeEvent)
         calib.start()
 
