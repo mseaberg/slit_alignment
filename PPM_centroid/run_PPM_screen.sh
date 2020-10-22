@@ -1,7 +1,7 @@
 #!/bin/env bash
-source /reg/neh/home/seaberg/setup_python.sh
+source /cds/home/s/seaberg/setup_python.sh
 
-cd /reg/neh/home/seaberg/Commissioning_Tools/PPM_centroid
+cd /cds/home/s/seaberg/Commissioning_Tools/PPM_centroid
 
 if [ $# -eq 1 ]; then
     IMAGER=$1

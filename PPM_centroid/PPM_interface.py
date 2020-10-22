@@ -35,6 +35,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         # button to start calculations
         self.runButton.clicked.connect(self.change_state)
+        # button to start calibration
+        self.calibrateButton.clicked.connect(self.calibrate)
 
         self.plotButton.clicked.connect(self.make_new_plot)
         # method to save an image. Maybe replace and/or supplement this with image "recording" in the future
@@ -208,6 +210,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # disable wavefront checkbox by default since IM1L0 doesn't have a WFS
         self.wavefrontCheckBox.setEnabled(False)
 
+        # disable calibrate button unless processing is running
+        self.calibrateButton.setEnabled(False)
+
         # more initialization...
         self.lineComboBox.setCurrentIndex(line_index)
         self.imagerComboBox.setCurrentIndex(cam_index)
@@ -216,6 +221,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.processing = None
 
         self.plots = []
+
+    def calibrate(self):
+        calib_plot = PPM_widgets.NewPlot(self, self.data_handler.plot_keys())
+        calib_plot.xaxis_comboBox.setCurrentText('MR2K4:KBO:MMS:PITCH.RBV')
+        calib_plot.yaxis_comboBox.setCurrentText('cx')
+        calib_plot.update_axes()
+        calib_plot.show()
+        self.plots.append(calib_plot)
 
     def make_new_plot(self):
         plot_window = PPM_widgets.NewPlot(self, self.data_handler.plot_keys())
@@ -251,7 +264,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         """
         try:
             # read the imagers.db file
-            with open('/reg/neh/home/seaberg/Commissioning_Tools/PPM_centroid/imagers.db') as json_file:
+            with open('/cds/home/s/seaberg/Commissioning_Tools/PPM_centroid/imagers.db') as json_file:
                 data = json.load(json_file)
             # set orientation from the file
             self.orientation = data[self.imager]['orientation']
@@ -457,6 +470,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             # disable imager selection until Stop is pressed
             self.lineComboBox.setEnabled(False)
             self.imagerComboBox.setEnabled(False)
+            self.calibrateButton.setEnabled(True)
 
         # check if "Stop" was selected
         elif self.runButton.text() == 'Stop':
@@ -468,6 +482,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
             # update the button to be ready to "Run"
             self.runButton.setText('Run')
+            self.calibrateButton.setEnabled(False)
             # re-enable wavefront sensor checkbox if imager is has a wavefront sensor
             if self.imager in self.WFS_list:
                 self.wavefrontCheckBox.setEnabled(True)

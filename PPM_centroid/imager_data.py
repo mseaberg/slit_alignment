@@ -54,7 +54,7 @@ class DataHandler:
         self.wfs_image_keys = ['focus', 'F0', 'wave']
 
         # read file with PV names
-        self.filename = '/reg/neh/home/seaberg/Commissioning_Tools/PPM_centroid/epics_pvs.txt'
+        self.filename = '/cds/home/s/seaberg/Commissioning_Tools/PPM_centroid/epics_pvs.txt'
 
         # initialize data dictionary
         self.data_dict = {}

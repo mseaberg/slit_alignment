@@ -24,7 +24,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="centroidTab">
        <attribute name="title">
@@ -520,6 +520,13 @@
         <widget class="QPushButton" name="plotButton">
          <property name="text">
           <string>New Plot</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="calibrateButton">
+         <property name="text">
+          <string>Calibrate</string>
          </property>
         </widget>
        </item>
