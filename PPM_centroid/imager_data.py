@@ -29,7 +29,10 @@ class DataHandler:
         self.stripchart_smooth_keys = [key+'_smooth' for key in self.stripchart_all_keys]
 
         # keys for constants
-        self.constant_keys = ['counter', 'pixSize', 'cx_ref', 'cy_ref', 'tx']
+        self.constant_keys = ['counter', 'pixSize', 'cx_ref', 'cy_ref', 'tx', 'centroid_is_valid',
+                              'wavefront_is_valid']
+
+        self.valid_keys = ['centroid_is_valid', 'wavefront_is_valid']
 
         # keys for 1-D coordinates
         self.coord_keys = ['x', 'y']
@@ -209,6 +212,10 @@ class DataHandler:
         else:
             for key in self.stripchart_wfs_keys:
                 self.update_1d_data(key, np.nan)
+
+        # update validity data
+        for key in self.valid_keys:
+            self.data_dict[key] = getattr(self.imager, key)
 
         # update running averages
         for key in self.stripchart_smooth_keys:

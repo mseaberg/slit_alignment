@@ -557,6 +557,15 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         data_dict = self.data_handler.data_dict
 
+        # get validity
+        centroid_validity = data_dict['centroid_is_valid']
+        wavefront_validity = data_dict['wavefront_is_valid']
+
+        if centroid_validity:
+            self.groupBox_3.palette.setColor('text',Qt.green)
+        else:
+            self.groupBox_3.palette.setColor('text',Qt.red)
+
         x = data_dict['x']
         y = data_dict['y']
         image_data = data_dict['profile']
