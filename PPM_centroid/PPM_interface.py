@@ -220,6 +220,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         # initialize registration object
         self.processing = None
+        self.calib = None
 
         self.plots = []
 
@@ -231,9 +232,9 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         calib_plot.show()
         self.plots.append(calib_plot)
 
-        calib = Calibration(self.data_handler)
-        calib.finished.connect(calib_plot.closeEvent)
-        calib.start()
+        self.calib = Calibration()
+        self.calib.finished.connect(calib_plot.closeEvent)
+        self.calib.start()
 
     def make_new_plot(self):
         plot_window = PPM_widgets.NewPlot(self, self.data_handler.plot_keys())
