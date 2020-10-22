@@ -18,6 +18,7 @@ from processing_module import RunProcessing
 from Image_registration_epics import App
 import PPM_widgets
 from imager_data import DataHandler
+from motion_module import Calibration
 
 Ui_MainWindow, QMainWindow = loadUiType('PPM_screen.ui')
 
@@ -229,6 +230,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         calib_plot.update_axes()
         calib_plot.show()
         self.plots.append(calib_plot)
+
+        calib = Calibration()
+        calib.finished.connect(calib_plot.closeEvent)
+        calib.start()
 
     def make_new_plot(self):
         plot_window = PPM_widgets.NewPlot(self, self.data_handler.plot_keys())
