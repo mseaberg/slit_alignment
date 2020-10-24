@@ -376,8 +376,9 @@ class ImagerStats(QImagerStats, Ui_ImagerStats):
             self.removeCircle()
 
     def addCircle(self):
-        self.image_widget.view.addItem(self.circle)
+
         self.image_widget.view.addItem(self.ref_circle)
+        self.image_widget.view.addItem(self.circle)
 
     def removeCircle(self):
         self.image_widget.view.removeItem(self.circle)

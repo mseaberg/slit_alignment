@@ -226,14 +226,17 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
     def calibrate(self):
         calib_plot = PPM_widgets.NewPlot(self, self.data_handler.plot_keys())
-        calib_plot.xaxis_comboBox.setCurrentText('MR2K4:KBO:MMS:PITCH.RBV')
-        calib_plot.yaxis_comboBox.setCurrentText('cx')
+        calib_plot.xaxis_comboBox.setCurrentText('timestamps')
+        calib_plot.yaxis_comboBox.setCurrentText('MR2K4:KBO:MMS:PITCH.RBV')
+        calib_plot.min_lineEdit.setText('-100')
+        calib_plot.update_min()
         calib_plot.update_axes()
         calib_plot.show()
         self.plots.append(calib_plot)
 
-        self.calib = Calibration()
-        self.calib.finished.connect(calib_plot.closeEvent)
+        self.calib = Calibration(self.data_handler)
+        #self.calib.finished.connect(lambda event=0: calib_plot.closeEvent(event))
+        #self.calib.finished.connect(calib_plot.close)
         self.calib.start()
 
     def make_new_plot(self):
