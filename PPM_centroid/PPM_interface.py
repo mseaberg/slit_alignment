@@ -611,10 +611,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # wfs widget plots
         x_prime = data_dict['x_prime']
         y_prime = data_dict['y_prime']
-        # x_res = data_dict['x_res']
-        # y_res = data_dict['y_res']
-        x_res = data_dict['coma_x']
-        y_res = data_dict['coma_y']
+        x_res = data_dict['x_res']
+        y_res = data_dict['y_res']
         x_res_fit = np.zeros_like(x_res)
         y_res_fit = np.zeros_like(y_res)
 
@@ -640,7 +638,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
             # update wavefront tab stripchart plots
             self.focus_plot.update_plots(data_dict['timestamps'], x=data_dict['z_x'], y=data_dict['z_y'], x_smooth=data_dict['z_x_smooth'], y_smooth=data_dict['z_y_smooth'])
-            self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['rms_x'], y=data_dict['rms_y'], x_smooth=data_dict['rms_x_smooth'], y_smooth=data_dict['rms_y_smooth'])
+            self.rms_plot.update_plots(data_dict['timestamps'], x=data_dict['coma_x'], y=data_dict['coma_y'], x_smooth=data_dict['rms_x_smooth'], y_smooth=data_dict['rms_y_smooth'])
 
             self.wfsStats.update_stats(data_dict)
 
