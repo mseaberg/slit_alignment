@@ -44,6 +44,7 @@
         "pixel": 1.0,
         "orientation": "action180",
         "z": 699.468,
+        "FOV": 0,
         "cx": 0,
         "cy": 0
     },
@@ -51,6 +52,7 @@
         "pixel": 5.4,
         "zoom": 190.4,
         "focus": 9.64,
+        "FOV": 0,
         "ND": "T50",
         "AcquireTime": 0.001,
         "orientation": "action180",
@@ -79,8 +81,8 @@
         "orientation": "action180",
         "FOV": 5.0,
         "z": 761.101,
-        "cx": -204,
-        "cy": -190
+        "cx": -495,
+        "cy": 330
     },
     "IM3K4": {
         "pixel": 4.594732749964082,
@@ -93,6 +95,7 @@
     "IM1K4": {
         "orientation": "action0",
         "z": 752,
+        "FOV": 0,
         "distance": 0,
         "pixel": 5.5,
         "cx": 0,

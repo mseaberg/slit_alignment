@@ -178,6 +178,8 @@ class YagAlign:
         # get theta nearest to zero
         if theta_offset > 45:
             theta_offset = 90 - theta_offset
+        if theta_offset < 45:
+            theta_offset = 90 - theta_offset
 
         # get background value of image
         bgval = self.get_borderval(img)
