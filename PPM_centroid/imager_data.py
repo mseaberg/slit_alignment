@@ -20,7 +20,7 @@ class DataHandler:
         self.stripchart_imager_keys = ['cx', 'cy', 'wx', 'wy', 'intensity']
 
         # keys for wfs data that is calculated on every shot
-        self.stripchart_wfs_keys = ['z_x', 'z_y', 'rms_x', 'rms_y']
+        self.stripchart_wfs_keys = ['z_x', 'z_y', 'rms_x', 'rms_y', 'coma_x', 'coma_y']
 
         # keys for all stripchart data
         self.stripchart_all_keys = self.stripchart_imager_keys + self.stripchart_wfs_keys
@@ -64,7 +64,7 @@ class DataHandler:
 
         # update keys that are allowed for plotting
         self.key_list = ['timestamps', 'cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
-                         'rms_y', 'intensity']
+                         'rms_y', 'intensity', 'coma_x', 'coma_y']
 
         # set initialized to False until we get an imager
         self.initialized = False
@@ -165,7 +165,7 @@ class DataHandler:
 
         # update keys that are allowed for plotting
         self.key_list = ['timestamps','cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
-                'rms_y', 'intensity']
+                'rms_y', 'intensity', 'coma_x', 'coma_y']
         
         # connect to epics signals and add to data_dict
         self.connect_epics_pvs()

@@ -611,8 +611,10 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # wfs widget plots
         x_prime = data_dict['x_prime']
         y_prime = data_dict['y_prime']
-        x_res = data_dict['x_res']
-        y_res = data_dict['y_res']
+        # x_res = data_dict['x_res']
+        # y_res = data_dict['y_res']
+        x_res = data_dict['coma_x']
+        y_res = data_dict['coma_y']
         x_res_fit = np.zeros_like(x_res)
         y_res_fit = np.zeros_like(y_res)
 
