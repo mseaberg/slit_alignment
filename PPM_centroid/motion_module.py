@@ -72,6 +72,7 @@ class Alignment(QtCore.QThread):
         coma_y = 0
 
         while counter < 3:
+            print('counter %d' % counter)
             data_dict = self.data_handler.data_dict
             # wait for at least 3 shots in a row of the incoming data to be valid
             counter = np.sum(data_dict['wavefront_is_valid'][-3:])
