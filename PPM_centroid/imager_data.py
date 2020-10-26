@@ -17,7 +17,7 @@ class DataHandler:
         self.timestamp_key = 'timestamps'
 
         # keys for data that is calculated on every shot
-        self.stripchart_imager_keys = ['cx', 'cy', 'wx', 'wy', 'intensity']
+        self.stripchart_imager_keys = ['cx', 'cy', 'wx', 'wy', 'intensity', 'centroid_is_valid', 'wavefront_is_valid']
 
         # keys for wfs data that is calculated on every shot
         self.stripchart_wfs_keys = ['z_x', 'z_y', 'rms_x', 'rms_y', 'coma_x', 'coma_y']
@@ -29,10 +29,9 @@ class DataHandler:
         self.stripchart_smooth_keys = [key+'_smooth' for key in self.stripchart_all_keys]
 
         # keys for constants
-        self.constant_keys = ['counter', 'pixSize', 'cx_ref', 'cy_ref', 'tx', 'centroid_is_valid',
-                              'wavefront_is_valid']
+        self.constant_keys = ['counter', 'pixSize', 'cx_ref', 'cy_ref', 'tx']
 
-        self.valid_keys = ['centroid_is_valid', 'wavefront_is_valid']
+        # self.valid_keys = ['centroid_is_valid', 'wavefront_is_valid']
 
         # keys for 1-D coordinates
         self.coord_keys = ['x', 'y']
@@ -64,7 +63,7 @@ class DataHandler:
 
         # update keys that are allowed for plotting
         self.key_list = ['timestamps', 'cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
-                         'rms_y', 'intensity', 'coma_x', 'coma_y']
+                         'rms_y', 'intensity', 'coma_x', 'coma_y', 'centroid_is_valid', 'wavefront_is_valid']
 
         # set initialized to False until we get an imager
         self.initialized = False
@@ -165,7 +164,7 @@ class DataHandler:
 
         # update keys that are allowed for plotting
         self.key_list = ['timestamps','cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
-                'rms_y', 'intensity', 'coma_x', 'coma_y']
+                'rms_y', 'intensity', 'coma_x', 'coma_y', 'centroid_is_valid', 'wavefront_is_valid']
         
         # connect to epics signals and add to data_dict
         self.connect_epics_pvs()
@@ -214,8 +213,8 @@ class DataHandler:
                 self.update_1d_data(key, np.nan)
 
         # update validity data
-        for key in self.valid_keys:
-            self.data_dict[key] = getattr(self.imager, key)
+        # for key in self.valid_keys:
+        #     self.data_dict[key] = getattr(self.imager, key)
 
         # update running averages
         for key in self.stripchart_smooth_keys:

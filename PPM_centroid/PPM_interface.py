@@ -18,7 +18,7 @@ from processing_module import RunProcessing
 from Image_registration_epics import App
 import PPM_widgets
 from imager_data import DataHandler
-from motion_module import Calibration
+from motion_module import Calibration, Alignment
 
 Ui_MainWindow, QMainWindow = loadUiType('PPM_screen.ui')
 
@@ -221,6 +221,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         # initialize registration object
         self.processing = None
         self.calib = None
+        self.alignment_message = None
+        self.align = None
 
         self.plots = []
 
@@ -234,10 +236,48 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         calib_plot.show()
         self.plots.append(calib_plot)
 
+        self.calibrateButton.setEnabled(False)
+
         self.calib = Calibration(self.data_handler)
         #self.calib.finished.connect(lambda event=0: calib_plot.closeEvent(event))
         #self.calib.finished.connect(calib_plot.close)
+        self.calib.finished.connect(self.enable_calibrate)
         self.calib.start()
+
+    def enable_calibrate(self):
+        self.calibrateButton.setEnabled(True)
+
+    def align_focus(self):
+
+        # get current z position goal
+        zTarget = self.displayWidget.focus_z
+
+        # disable alignment button
+        self.alignmentButton.setEnabled(False)
+
+        goals = {
+            'x': np.array([zTarget, 0]),
+            'y': np.array([zTarget, 0])
+        }
+
+        self.align = Alignment(self.data_handler, goals)
+        self.align.finished.connect(self.enable_align)
+
+        # make a dialog box to allow killing the thread
+        self.alignment_message = QtWidgets.QMessageBox()
+        self.alignment_message.setIcon(QtWidgets.QMessageBox.Information)
+        self.alignment_message.setText("Attempting focus alignment")
+        self.alignment_message.setWindowTitle("Alignment")
+        self.alignment_message.setStandardButtons(QtWidgets.QMessageBox.Cancel)
+
+        self.alignment_message.buttonClicked.connect(self.align.quit)
+
+        self.align.finished.connect(self.alignment_message.close)
+        # start alignment
+        self.align.start()
+
+    def enable_align(self):
+        self.alignmentButton.setEnabled(True)
 
     def make_new_plot(self):
         plot_window = PPM_widgets.NewPlot(self, self.data_handler.plot_keys())
@@ -480,6 +520,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             self.lineComboBox.setEnabled(False)
             self.imagerComboBox.setEnabled(False)
             self.calibrateButton.setEnabled(True)
+            self.alignmentButton.setEnabled(True)
 
         # check if "Stop" was selected
         elif self.runButton.text() == 'Stop':
@@ -492,6 +533,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             # update the button to be ready to "Run"
             self.runButton.setText('Run')
             self.calibrateButton.setEnabled(False)
+            self.alignmentButton.setEnabled(False)
             # re-enable wavefront sensor checkbox if imager is has a wavefront sensor
             if self.imager in self.WFS_list:
                 self.wavefrontCheckBox.setEnabled(True)
@@ -588,12 +630,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         centroid_validity = data_dict['centroid_is_valid']
         wavefront_validity = data_dict['wavefront_is_valid']
 
-        if centroid_validity:
+        # check if the most recent measurement was valid
+        if centroid_validity[-1]:
             self.groupBox_3.setStyleSheet("QGroupBox#CentroidStatsGroupBox { border: 2px solid green;}")
         else:
             self.groupBox_3.setStyleSheet("QGroupBox#CentroidStatsGroupBox { border: 2px solid red;}")
 
-        if wavefront_validity:
+        # check if the most recent measurement was valid
+        if wavefront_validity[-1]:
             self.groupBox_5.setStyleSheet("QGroupBox#WavefrontStatsGroupBox { border: 2px solid green;}")
         else:
             self.groupBox_5.setStyleSheet("QGroupBox#WavefrontStatsGroupBox { border: 2px solid red;}")
