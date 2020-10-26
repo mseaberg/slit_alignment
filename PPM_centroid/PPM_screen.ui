@@ -524,6 +524,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="alignmentButton">
+         <property name="text">
+          <string>Align Focus</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="calibrateButton">
          <property name="text">
           <string>Calibrate</string>

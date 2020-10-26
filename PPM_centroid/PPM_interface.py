@@ -38,6 +38,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.runButton.clicked.connect(self.change_state)
         # button to start calibration
         self.calibrateButton.clicked.connect(self.calibrate)
+        self.alignmentButton.clicked.connect(self.align_focus)
 
         self.plotButton.clicked.connect(self.make_new_plot)
         # method to save an image. Maybe replace and/or supplement this with image "recording" in the future
@@ -213,6 +214,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         # disable calibrate button unless processing is running
         self.calibrateButton.setEnabled(False)
+        self.alignmentButton.setEnabled(False)
 
         # more initialization...
         self.lineComboBox.setCurrentIndex(line_index)
@@ -275,6 +277,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.align.finished.connect(self.alignment_message.close)
         # start alignment
         self.align.start()
+
+        self.alignment_message.exec()
 
     def enable_align(self):
         self.alignmentButton.setEnabled(True)
