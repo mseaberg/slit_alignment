@@ -58,6 +58,8 @@ class Alignment(QtCore.QThread):
         self.x_goals = goals['x']
         self.y_goals = goals['y']
 
+        self.running = True
+
     def run(self):
         # need to get some updates from the RunProcessing object to see where we are currently. We also need to
 
@@ -70,7 +72,6 @@ class Alignment(QtCore.QThread):
         coma_y = 0
 
         while counter < 3:
-
             data_dict = self.data_handler.data_dict
             # wait for at least 3 shots in a row of the incoming data to be valid
             counter = np.sum(data_dict['wavefront_is_valid'][-3:])
@@ -81,6 +82,9 @@ class Alignment(QtCore.QThread):
 
             # wait for a couple seconds before checking again
             time.sleep(2)
+
+            if not self.running:
+                return
 
         # calculate desired move
         current_x = np.array([z_x, coma_x])
@@ -97,6 +101,9 @@ class Alignment(QtCore.QThread):
         # self.mr2k4.ds.mvr(motion_x[1])
         # self.mr3k4.us.mvr(motion_y[0])
         # self.mr3k4.ds.mvr(motion_y[1])
+
+    def cancel(self):
+        self.running = False
 
 
 class Motor():
