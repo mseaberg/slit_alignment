@@ -24,10 +24,11 @@ class Calibration(QtCore.QThread):
         print('calibration complete')
 
 
-class Alignment(QtCore.QThread):
+class Alignment(QtCore.QObject):
 
     def __init__(self, data_handler, goals):
-        QtCore.QThread.__init__(self)
+        super(Alignment, self).__init__()
+
         self.data_handler = data_handler
         self.mr2k4 = KBMirror('MR2K4:KBO')
         self.mr3k4 = KBMirror('MR3K4:KBO')
@@ -58,26 +59,22 @@ class Alignment(QtCore.QThread):
         self.x_goals = goals['x']
         self.y_goals = goals['y']
 
-        self.running = True
-
     def run(self):
+
+        self.running = True
+        self._update()
+
+    def _update(self):
         # need to get some updates from the RunProcessing object to see where we are currently. We also need to
 
         # need a while loop here to collect some data
-        counter = 0
 
-        z_x = 0
-        z_y = 0
-        coma_x = 0
-        coma_y = 0
+        if self.running:
 
-        while counter < 3:
-            if not self.running:
-                return
-            print('counter %d' % counter)
             data_dict = self.data_handler.data_dict
             # wait for at least 3 shots in a row of the incoming data to be valid
             counter = np.sum(data_dict['wavefront_is_valid'][-3:])
+            print('counter %d' % counter)
             z_x = np.mean(data_dict['z_x'][-3:])
             z_y = np.mean(data_dict['z_y'][-3:])
             coma_x = np.mean(data_dict['coma_x'][-3:])
@@ -86,21 +83,25 @@ class Alignment(QtCore.QThread):
             # wait for a couple seconds before checking again
             time.sleep(2)
 
-        # calculate desired move
-        current_x = np.array([z_x, coma_x])
-        current_y = np.array([z_y, coma_y])
+            if counter < 3:
+                QtCore.QTimer.singleShot(2000, self._update)
+            else:
 
-        delta_x = self.x_goals - current_x
-        delta_y = self.y_goals - current_y
+                # calculate desired move
+                current_x = np.array([z_x, coma_x])
+                current_y = np.array([z_y, coma_y])
 
-        motion_x = np.dot(self.Ax, delta_x)
-        motion_y = np.dot(self.Ay, delta_y)
+                delta_x = self.x_goals - current_x
+                delta_y = self.y_goals - current_y
 
-        # move the mirrors
-        # self.mr2k4.us.mvr(motion_x[0])
-        # self.mr2k4.ds.mvr(motion_x[1])
-        # self.mr3k4.us.mvr(motion_y[0])
-        # self.mr3k4.ds.mvr(motion_y[1])
+                motion_x = np.dot(self.Ax, delta_x)
+                motion_y = np.dot(self.Ay, delta_y)
+
+                # move the mirrors
+                # self.mr2k4.us.mvr(motion_x[0])
+                # self.mr2k4.ds.mvr(motion_x[1])
+                # self.mr3k4.us.mvr(motion_y[0])
+                # self.mr3k4.ds.mvr(motion_y[1])
 
     def cancel(self):
         self.running = False

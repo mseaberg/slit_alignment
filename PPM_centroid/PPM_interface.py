@@ -226,6 +226,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.calib = None
         self.alignment_message = None
         self.align = None
+        self.alignment_thread = None
 
         self.plots = []
 
@@ -265,6 +266,14 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         self.align = Alignment(self.data_handler, goals)
         self.align.finished.connect(self.enable_align)
+
+        # initialize a new thread
+        self.alignment_thread = QtCore.QThread()
+
+        # move to new thread and connect to thread signals
+        self.align.moveToThread(self.alignment_thread)
+        self.alignment_thread.started.connect(self.align.run)
+        self.alignment_thread.finished.connect(self.align.cancel)
 
         # make a dialog box to allow killing the thread
         self.alignment_message = QtWidgets.QMessageBox()
