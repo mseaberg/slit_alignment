@@ -23,6 +23,7 @@ from motion_module import Calibration, Alignment
 Ui_MainWindow, QMainWindow = loadUiType('PPM_screen.ui')
 
 class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
+    kill_sig = QtCore.pyqtSignal()
 
     def __init__(self, parent=None, args=None):
         super(PPM_Interface, self).__init__()
@@ -264,6 +265,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
         self.align = Alignment(self.data_handler, goals)
         self.align.finished.connect(self.enable_align)
+        self.align.cancel.connect(self.kill_sig)
 
         # make a dialog box to allow killing the thread
         self.alignment_message = QtWidgets.QMessageBox()
@@ -272,7 +274,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.alignment_message.setWindowTitle("Alignment")
         self.alignment_message.setStandardButtons(QtWidgets.QMessageBox.Cancel)
 
-        self.alignment_message.buttonClicked.connect(self.align.quit)
+        self.alignment_message.buttonClicked.connect(self.kill_sig.emit)
 
         self.align.finished.connect(self.alignment_message.close)
         # start alignment
