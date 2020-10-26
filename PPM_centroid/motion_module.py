@@ -72,6 +72,8 @@ class Alignment(QtCore.QThread):
         coma_y = 0
 
         while counter < 3:
+            if not self.running:
+                return
             print('counter %d' % counter)
             data_dict = self.data_handler.data_dict
             # wait for at least 3 shots in a row of the incoming data to be valid
@@ -83,9 +85,6 @@ class Alignment(QtCore.QThread):
 
             # wait for a couple seconds before checking again
             time.sleep(2)
-
-            if not self.running:
-                return
 
         # calculate desired move
         current_x = np.array([z_x, coma_x])
