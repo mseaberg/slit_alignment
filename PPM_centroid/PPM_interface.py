@@ -253,43 +253,70 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
 
     def align_focus(self):
 
-        # get current z position goal
-        zTarget = self.displayWidget.focus_z
+        # get current z position goals
+        try:
+            z_x_target = float(self.xFocusLineEdit.text())
+        except ValueError:
+            z_x_target = 0.0
+            self.xFocusLineEdit.setText('0.0')
+        try:
+            z_y_target = float(self.yFocusLineEdit.text())
+        except ValueError:
+            z_y_target = 0.0
+            self.yFocusLineEdit.setText('0.0')
 
         # disable alignment button
         self.alignmentButton.setEnabled(False)
 
         goals = {
-            'x': np.array([zTarget, 0]),
-            'y': np.array([zTarget, 0])
+            'x': np.array([z_x_target, 0]),
+            'y': np.array([z_y_target, 0])
         }
 
+        self.alignment_message = QtWidgets.QMessageBox()
         self.align = Alignment(self.data_handler, goals)
-        self.align.finished.connect(self.enable_align)
+        self.align.sig_finished.connect(self.alignment_finished)
 
         # initialize a new thread
         self.alignment_thread = QtCore.QThread()
 
+        self.alignment_thread.finished.connect(self.enable_align)
         # move to new thread and connect to thread signals
         self.align.moveToThread(self.alignment_thread)
         self.alignment_thread.started.connect(self.align.run)
         self.alignment_thread.finished.connect(self.align.cancel)
 
         # make a dialog box to allow killing the thread
-        self.alignment_message = QtWidgets.QMessageBox()
         self.alignment_message.setIcon(QtWidgets.QMessageBox.Information)
         self.alignment_message.setText("Attempting focus alignment")
         self.alignment_message.setWindowTitle("Alignment")
         self.alignment_message.setStandardButtons(QtWidgets.QMessageBox.Cancel)
 
         #self.alignment_message.buttonClicked.connect(self.kill_sig.emit)
-        self.alignment_message.buttonClicked.connect(self.align.cancel)
+        #self.alignment_message.buttonClicked.connect(self.align.cancel)
+        #self.alignment_message.buttonClicked.connect(self.enable_align)
+        self.alignment_message.buttonClicked.connect(self.alignment_canceled)
 
-        self.align.finished.connect(self.alignment_message.close)
+        self.alignment_thread.finished.connect(self.alignment_message.close)
         # start alignment
-        self.align.start()
+        self.alignment_thread.start()
 
         self.alignment_message.exec()
+
+    def alignment_finished(self):
+        self.alignment_thread.quit()
+        self.alignment_thread.wait()
+        try:
+            self.alignment_message.close()
+        except:
+            print('message already closed')
+        self.enable_align()
+
+    def alignment_canceled(self):
+        if self.alignment_thread is not None:
+            self.alignment_thread.quit()
+            self.alignment_thread.wait()
+            self.enable_align()
 
     def enable_align(self):
         self.alignmentButton.setEnabled(True)
@@ -534,7 +561,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             # disable imager selection until Stop is pressed
             self.lineComboBox.setEnabled(False)
             self.imagerComboBox.setEnabled(False)
-            self.calibrateButton.setEnabled(True)
+            #self.calibrateButton.setEnabled(True)
             self.alignmentButton.setEnabled(True)
 
         # check if "Stop" was selected
