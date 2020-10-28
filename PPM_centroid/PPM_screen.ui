@@ -623,6 +623,7 @@
     </property>
     <addaction name="actionSave"/>
     <addaction name="actionAlignment_Screen"/>
+    <addaction name="actionSave_with_hdf5_plugin"/>
    </widget>
    <widget class="QMenu" name="menuOrientation">
     <property name="title">
@@ -724,6 +725,11 @@
   <action name="actionSave_orientation">
    <property name="text">
     <string>Save orientation</string>
+   </property>
+  </action>
+  <action name="actionSave_with_hdf5_plugin">
+   <property name="text">
+    <string>Save with hdf5 plugin</string>
    </property>
   </action>
  </widget>
