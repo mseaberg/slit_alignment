@@ -3,6 +3,7 @@ import time
 from pyqtgraph.Qt import QtCore
 from ophyd import EpicsSignalRO as SignalRO
 from ophyd import EpicsSignal as Signal
+from pcdsdevices.mirror import KBOMirror
 
 
 class Calibration(QtCore.QThread):
@@ -11,17 +12,26 @@ class Calibration(QtCore.QThread):
         #super(Calibration, self).__init__()
         QtCore.QThread.__init__(self)
         self.data_handler = data_handler
-        self.mr2k4 = KBMirror('MR2K4:KBO')
-        self.mr3k4 = KBMirror('MR3K4:KBO')
+        self.mr2k4 = KBOMirror('MR2K4:KBO', name='mr2k4')
+        self.mr3k4 = KBOMirror('MR3K4:KBO', name='mr3k4')
+        try:
+            self.mr2k4.wait_for_connection()
+        except:
+            print('failed to connect to all mr2k4 signals')
+        try:
+            self.mr3k4.wait_for_connection()
+        except:
+            print('failed to connect to all mr3k4 signals')
 
     def run(self):
-        starting_point = self.mr2k4.pitch.get()
+        starting_point = self.mr2k4.pitch.position
 
         for i in range(10):
             self.mr2k4.pitch.mvr(1, wait=True)
             time.sleep(2)
         self.mr2k4.pitch.mv(starting_point)
         print('calibration complete')
+        self.quit()
 
 
 class Alignment(QtCore.QObject):
@@ -35,8 +45,8 @@ class Alignment(QtCore.QObject):
 
 
         self.data_handler = data_handler
-        self.mr2k4 = KBMirror('MR2K4:KBO')
-        self.mr3k4 = KBMirror('MR3K4:KBO')
+        self.mr2k4 = KBMirror('MR2K4:KBO', name='mr2k4')
+        self.mr3k4 = KBMirror('MR3K4:KBO', name='mr3k4')
 
         lambda_ref = 1239.8/870.0*1e-9
 
@@ -106,10 +116,10 @@ class Alignment(QtCore.QObject):
                 motion_y = np.dot(self.Ay, delta_y)
 
                 # move the mirrors
-                self.mr2k4.us.mvr(motion_x[0])
-                self.mr2k4.ds.mvr(motion_x[1])
-                self.mr3k4.us.mvr(motion_y[0])
-                self.mr3k4.ds.mvr(motion_y[1])
+                self.mr2k4.bender_us.mvr(motion_x[0])
+                self.mr2k4.bender_ds.mvr(motion_x[1])
+                self.mr3k4.bender_us.mvr(motion_y[0])
+                self.mr3k4.bender_ds.mvr(motion_y[1])
                 self.sig_finished.emit()
 
     def cancel(self):
@@ -141,8 +151,9 @@ class Motor():
 
 class KBMirror():
 
-    def __init__(self, mirror_base):
+    def __init__(self, mirror_base, name=None):
         # initialize attributes
+        self.name = name
         self.mirror_base = mirror_base
         self.motor_base = self.mirror_base + ':MMS'
         # initialize epics signals

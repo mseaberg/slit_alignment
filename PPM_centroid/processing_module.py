@@ -17,10 +17,14 @@ from imager_data import DataHandler
 
 class RunProcessing(QtCore.QObject):
     sig = QtCore.pyqtSignal()
+    sig_initialized = QtCore.pyqtSignal()
+    sig_finished = QtCore.pyqtSignal()
 
-    def __init__(self, imager_prefix, data_handler, averageWidget, wfs_name=None, threshold=0.1, focusFOV=10, fraction=1, focus_z=0, displayWidget=None):
+    def __init__(self, imager_prefix, data_handler, averageWidget, wfs_name=None, threshold=0.1, focusFOV=10, fraction=1, focus_z=0, displayWidget=None, thread=None):
         super(RunProcessing, self).__init__()
         #QtCore.QThread.__init__(self)
+
+        self.thread = thread
 
         # get wavefront sensor (may be None)
         self.wfs_name = wfs_name
@@ -76,6 +80,7 @@ class RunProcessing(QtCore.QObject):
             fit_object = LegendreFit2D(Nd, Md, order)
             self.PPM_object.add_fit_object(fit_object)
         self.running = True
+        self.sig_initialized.emit()
         self._update()
 
     def set_orientation(self, orientation):
@@ -118,6 +123,9 @@ class RunProcessing(QtCore.QObject):
                 QtCore.QTimer.singleShot(500, self._update)
             else:
                 self.PPM_object.reset_camera()
+                self.sig_finished.emit()
+        else:
+            self.sig_finished.emit()
 
     def stop(self):
         self.running = False

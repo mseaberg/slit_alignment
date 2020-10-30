@@ -492,6 +492,15 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
         self.data_handler.uninitialize()
         self.load_orientation()
 
+    def enable_run_button(self):
+        self.runButton.setEnabled(True)
+        self.statusbar.clearMessage()
+        if self.runButton.text() == 'Stop':
+            self.alignmentButton.setEnabled(True)
+
+    def quit_thread(self):
+        self.thread.quit()
+
     def change_state(self):
         """
         Method to start the calculation running, or stop it.
@@ -513,13 +522,19 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                 fraction = float(self.wfsControls.fractionLineEdit.text())
             except ValueError:
                 fraction = 1
+            
+            # initialize a new thread
+            self.thread = QtCore.QThread()
 
             # initialize processing object. This really needs a dictionary as input...
             self.processing = RunProcessing(self.imagerpv, self.data_handler, self.averageWidget, wfs_name=wfs_name,
-                                            threshold=self.imagerStats.get_threshold(), focusFOV=self.displayWidget.FOV, fraction=fraction, focus_z=self.displayWidget.focus_z, displayWidget=self.displayWidget)
+                                            threshold=self.imagerStats.get_threshold(), focusFOV=self.displayWidget.FOV, fraction=fraction, focus_z=self.displayWidget.focus_z, displayWidget=self.displayWidget, thread=self.thread)
 
             # connect processing object to plotting function
             self.processing.sig.connect(self.update_plots)
+            
+            # connect to initialized signal
+            self.processing.sig_initialized.connect(self.enable_run_button)
 
             # find out what the FOV of the screen is
             width, height = self.processing.get_FOV()
@@ -547,14 +562,16 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             # move to new thread and connect to thread signals
             self.processing.moveToThread(self.thread)
             self.thread.started.connect(self.processing.run)
-            self.thread.finished.connect(self.processing.stop)
+            self.thread.finished.connect(self.enable_run_button)
+            self.kill_sig.connect(self.processing.stop)
+            self.processing.sig_finished.connect(self.quit_thread)
 
             # start processing
             self.thread.start()
 
             # change the button state
             self.runButton.setText('Stop')
-            self.runButton.setEnabled(True)
+            #self.runButton.setEnabled(True)
             # disable wavefront sensor checkbox until stop is pressed
             self.wavefrontCheckBox.setEnabled(False)
 
@@ -562,15 +579,18 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             self.lineComboBox.setEnabled(False)
             self.imagerComboBox.setEnabled(False)
             #self.calibrateButton.setEnabled(True)
-            self.alignmentButton.setEnabled(True)
+            #self.alignmentButton.setEnabled(True)
+            self.statusbar.showMessage('Starting acquisition...')
 
         # check if "Stop" was selected
         elif self.runButton.text() == 'Stop':
 
             self.runButton.setEnabled(False)
             # stop processing and quit the thread
-            self.thread.quit()
-            self.thread.wait()
+            #self.thread.quit()
+            #self.thread.wait()
+            self.kill_sig.emit()
+            self.statusbar.showMessage('Stopping acquisition...')
 
             # update the button to be ready to "Run"
             self.runButton.setText('Run')
@@ -580,7 +600,7 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             if self.imager in self.WFS_list:
                 self.wavefrontCheckBox.setEnabled(True)
 
-            self.runButton.setEnabled(True)
+            #self.runButton.setEnabled(True)
             # re-enable imager selection
             self.lineComboBox.setEnabled(True)
             self.imagerComboBox.setEnabled(True)
