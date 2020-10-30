@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from ophyd import EpicsSignalRO as SignalRO
 from ophyd.signal import ReadTimeoutError
-
+from copy import copy
 
 class DataHandler:
     """
@@ -20,7 +20,8 @@ class DataHandler:
         self.stripchart_imager_keys = ['cx', 'cy', 'wx', 'wy', 'intensity', 'centroid_is_valid', 'wavefront_is_valid']
 
         # keys for wfs data that is calculated on every shot
-        self.stripchart_wfs_keys = ['z_x', 'z_y', 'rms_x', 'rms_y', 'coma_x', 'coma_y']
+        self.stripchart_wfs_keys = ['z_x', 'z_y', 'rms_x', 'rms_y', 'coma_x', 'coma_y',
+                'focus_fwhm_horizontal', 'focus_fwhm_vertical']
 
         # keys for all stripchart data
         self.stripchart_all_keys = self.stripchart_imager_keys + self.stripchart_wfs_keys
@@ -62,8 +63,11 @@ class DataHandler:
         self.epics_signals = {}
 
         # update keys that are allowed for plotting
-        self.key_list = ['timestamps', 'cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
-                         'rms_y', 'intensity', 'coma_x', 'coma_y', 'centroid_is_valid', 'wavefront_is_valid']
+        self.initial_keys = ['timestamps', 'cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
+                         'rms_y', 'intensity', 'coma_x', 'coma_y', 'centroid_is_valid', 'wavefront_is_valid',
+                         'focus_fwhm_horizontal', 'focus_fwhm_vertical']
+
+        self.key_list = copy(self.initial_keys)
 
         # set initialized to False until we get an imager
         self.initialized = False
@@ -163,8 +167,9 @@ class DataHandler:
             self.data_dict[key] = np.full(self.N, np.nan, dtype=float)
 
         # update keys that are allowed for plotting
-        self.key_list = ['timestamps','cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
-                'rms_y', 'intensity', 'coma_x', 'coma_y', 'centroid_is_valid', 'wavefront_is_valid']
+        self.key_list = copy(self.initial_keys)
+        #self.key_list = ['timestamps','cx', 'cy', 'wx', 'wy', 'z_x', 'z_y', 'rms_x',
+        #        'rms_y', 'intensity', 'coma_x', 'coma_y', 'centroid_is_valid', 'wavefront_is_valid']
         
         # connect to epics signals and add to data_dict
         self.connect_epics_pvs()
