@@ -160,6 +160,6 @@ class KBMirror():
         self.pitch = Motor(self.motor_base+':PITCH')
         self.x = Motor(self.motor_base+':X')
         self.y = Motor(self.motor_base+':Y')
-        self.us = Motor(self.motor_base+':BEND:US')
-        self.ds = Motor(self.motor_base+':BEND:DS')
+        self.bender_us = Motor(self.motor_base+':BEND:US')
+        self.bender_ds = Motor(self.motor_base+':BEND:DS')
 
