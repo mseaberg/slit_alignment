@@ -145,7 +145,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
             'K1': ['IM1K1', 'IM2K1'],
             'K2': ['IM1K2', 'IM2K2', 'IM3K2', 'IM4K2', 'IM5K2', 'IM6K2', 'IM7K2'],
             'K3': ['IM1K3', 'IM2K3', 'IM3K3'],
-            'K4': ['IM1K4', 'IM2K4', 'IM3K4', 'IM4K4', 'IM5K4', 'IM6K4']
+            'K4': ['IM1K4', 'IM2K4', 'IM3K4', 'IM4K4', 'IM5K4', 'IM6K4'],
+            'TST': ['GIGE13']
         }
 
         # dictionary of imager PV prefixes
@@ -159,7 +160,8 @@ class PPM_Interface(QtGui.QMainWindow, Ui_MainWindow):
                    'IM6K2:PPM:', 'IM7K2:PPM:'],
             'K3': ['IM1K3:PPM:', 'IM2K3:PPM:', 'IM3K3:PPM:'],
             'K4': ['IM1K4:XTES:', 'IM2K4:PPM:', 'IM3K4:PPM:', 'IM4K4:PPM:', 'IM5K4:PPM:',
-                   'IM6K4:PPM:']
+                   'IM6K4:PPM:'],
+            'TST': ['TST:GIGE:13']
         }
 
         # list of imagers with a wavefront sensor

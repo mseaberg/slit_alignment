@@ -44,7 +44,7 @@ class RunProcessing(QtCore.QObject):
             self.WFS_object = None
 
         # PPM object for image acquisition and processing
-        self.PPM_object = optics.PPM_Device(imager_prefix, average=averageWidget, threshold=self.threshold)
+        self.PPM_object = optics.EXS_Device(imager_prefix, average=averageWidget, threshold=self.threshold)
 
         # frame rate initialization
         self.fps = 0.
